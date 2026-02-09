@@ -1,0 +1,329 @@
+/*!
+ * @kurkle/color v0.3.4
+ * https://github.com/kurkle/color#readme
+ * (c) 2024 Jukka Kurkela
+ * Released under the MIT License
+ */
+
+/*!
+ * Chart.js v4.5.1
+ * https://www.chartjs.org
+ * (c) 2025 Chart.js Contributors
+ * Released under the MIT License
+ */
+
+/*!
+ * SPDX-FileCopyrightText: 2019 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/*!
+ * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/*!
+ * SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/*!
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
+ */
+
+/*!
+ * Vue.js v2.7.16
+ * (c) 2014-2023 Evan You
+ * Released under the MIT License.
+ */
+
+/*! !!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./AlertCard.vue?vue&type=style&index=0&id=2c203c8c&scoped=true&lang=css */
+
+/*! !!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./Dashboard.vue?vue&type=style&index=0&id=aae30ed8&scoped=true&lang=css */
+
+/*! !!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./DonutChart.vue?vue&type=style&index=0&id=3c728a0c&scoped=true&lang=css */
+
+/*! !!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./KpiCard.vue?vue&type=style&index=0&id=f5f87658&scoped=true&lang=css */
+
+/*! !!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SafetyPanel.vue?vue&type=style&index=0&id=03913352&scoped=true&lang=css */
+
+/*! !../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */
+
+/*! !../../node_modules/style-loader/dist/runtime/insertBySelector.js */
+
+/*! !../../node_modules/style-loader/dist/runtime/insertStyleElement.js */
+
+/*! !../../node_modules/style-loader/dist/runtime/setAttributesWithoutAttributes.js */
+
+/*! !../../node_modules/style-loader/dist/runtime/styleDomAPI.js */
+
+/*! !../../node_modules/style-loader/dist/runtime/styleTagTransform.js */
+
+/*! !../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./AlertCard.vue?vue&type=script&lang=js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./Dashboard.vue?vue&type=script&lang=js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./DonutChart.vue?vue&type=script&lang=js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./KpiCard.vue?vue&type=script&lang=js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SafetyPanel.vue?vue&type=script&lang=js */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./AlertCard.vue?vue&type=template&id=2c203c8c&scoped=true */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./Dashboard.vue?vue&type=template&id=aae30ed8&scoped=true */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./DonutChart.vue?vue&type=template&id=3c728a0c&scoped=true */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./KpiCard.vue?vue&type=template&id=f5f87658&scoped=true */
+
+/*! -!../../node_modules/babel-loader/lib/index.js!../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SafetyPanel.vue?vue&type=template&id=03913352&scoped=true */
+
+/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./AlertCard.vue?vue&type=style&index=0&id=2c203c8c&scoped=true&lang=css */
+
+/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./Dashboard.vue?vue&type=style&index=0&id=aae30ed8&scoped=true&lang=css */
+
+/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./DonutChart.vue?vue&type=style&index=0&id=3c728a0c&scoped=true&lang=css */
+
+/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./KpiCard.vue?vue&type=style&index=0&id=f5f87658&scoped=true&lang=css */
+
+/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js!../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../node_modules/vue-loader/lib/index.js??vue-loader-options!./SafetyPanel.vue?vue&type=style&index=0&id=03913352&scoped=true&lang=css */
+
+/*! ../../../helpers/AxiosURLSearchParams.js */
+
+/*! ../../node_modules/css-loader/dist/runtime/api.js */
+
+/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */
+
+/*! ../adapters/adapters.js */
+
+/*! ../cancel/CanceledError.js */
+
+/*! ../cancel/isCancel.js */
+
+/*! ../classes/semver */
+
+/*! ../core/AxiosError.js */
+
+/*! ../core/AxiosHeaders.js */
+
+/*! ../core/buildFullPath.js */
+
+/*! ../core/mergeConfig.js */
+
+/*! ../core/settle.js */
+
+/*! ../defaults/index.js */
+
+/*! ../defaults/transitional.js */
+
+/*! ../env/data.js */
+
+/*! ../helpers/AxiosURLSearchParams.js */
+
+/*! ../helpers/buildURL.js */
+
+/*! ../helpers/combineURLs.js */
+
+/*! ../helpers/composeSignals.js */
+
+/*! ../helpers/formDataToJSON.js */
+
+/*! ../helpers/isAbsoluteURL.js */
+
+/*! ../helpers/parseHeaders.js */
+
+/*! ../helpers/parseProtocol.js */
+
+/*! ../helpers/progressEventReducer.js */
+
+/*! ../helpers/resolveConfig.js */
+
+/*! ../helpers/toFormData.js */
+
+/*! ../helpers/toURLEncodedForm.js */
+
+/*! ../helpers/trackStream.js */
+
+/*! ../helpers/validator.js */
+
+/*! ../internal/constants */
+
+/*! ../internal/debug */
+
+/*! ../internal/identifiers */
+
+/*! ../internal/parse-options */
+
+/*! ../internal/re */
+
+/*! ../platform/index.js */
+
+/*! ../platform/node/classes/FormData.js */
+
+/*! ../utils.js */
+
+/*! ./AlertCard.vue */
+
+/*! ./AlertCard.vue?vue&type=script&lang=js */
+
+/*! ./AlertCard.vue?vue&type=style&index=0&id=2c203c8c&scoped=true&lang=css */
+
+/*! ./AlertCard.vue?vue&type=template&id=2c203c8c&scoped=true */
+
+/*! ./AxiosError.js */
+
+/*! ./AxiosHeaders.js */
+
+/*! ./CanceledError.js */
+
+/*! ./Dashboard.vue?vue&type=script&lang=js */
+
+/*! ./Dashboard.vue?vue&type=style&index=0&id=aae30ed8&scoped=true&lang=css */
+
+/*! ./Dashboard.vue?vue&type=template&id=aae30ed8&scoped=true */
+
+/*! ./DonutChart.vue */
+
+/*! ./DonutChart.vue?vue&type=script&lang=js */
+
+/*! ./DonutChart.vue?vue&type=style&index=0&id=3c728a0c&scoped=true&lang=css */
+
+/*! ./DonutChart.vue?vue&type=template&id=3c728a0c&scoped=true */
+
+/*! ./InterceptorManager.js */
+
+/*! ./KpiCard.vue */
+
+/*! ./KpiCard.vue?vue&type=script&lang=js */
+
+/*! ./KpiCard.vue?vue&type=style&index=0&id=f5f87658&scoped=true&lang=css */
+
+/*! ./KpiCard.vue?vue&type=template&id=f5f87658&scoped=true */
+
+/*! ./SafetyPanel.vue */
+
+/*! ./SafetyPanel.vue?vue&type=script&lang=js */
+
+/*! ./SafetyPanel.vue?vue&type=style&index=0&id=03913352&scoped=true&lang=css */
+
+/*! ./SafetyPanel.vue?vue&type=template&id=03913352&scoped=true */
+
+/*! ./ScopedStorage.js */
+
+/*! ./StorageBuilder.js */
+
+/*! ./adapters/adapters.js */
+
+/*! ./buildFullPath.js */
+
+/*! ./buildURL.js */
+
+/*! ./cancel/CancelToken.js */
+
+/*! ./cancel/CanceledError.js */
+
+/*! ./cancel/isCancel.js */
+
+/*! ./chunks/helpers.dataset.js */
+
+/*! ./classes/Blob.js */
+
+/*! ./classes/FormData.js */
+
+/*! ./classes/URLSearchParams.js */
+
+/*! ./common/utils.js */
+
+/*! ./components/Dashboard.vue */
+
+/*! ./constants */
+
+/*! ./cookies.js */
+
+/*! ./core/Axios.js */
+
+/*! ./core/AxiosError.js */
+
+/*! ./core/AxiosHeaders.js */
+
+/*! ./core/mergeConfig.js */
+
+/*! ./debug */
+
+/*! ./defaults/index.js */
+
+/*! ./dispatchRequest.js */
+
+/*! ./env/data.js */
+
+/*! ./fetch.js */
+
+/*! ./helpers/HttpStatusCode.js */
+
+/*! ./helpers/bind.js */
+
+/*! ./helpers/formDataToJSON.js */
+
+/*! ./helpers/isAxiosError.js */
+
+/*! ./helpers/spread.js */
+
+/*! ./helpers/toFormData.js */
+
+/*! ./http.js */
+
+/*! ./isURLSameOrigin.js */
+
+/*! ./lib/axios.js */
+
+/*! ./mergeConfig.js */
+
+/*! ./node/index.js */
+
+/*! ./node_modules/process/browser.js */
+
+/*! ./parse */
+
+/*! ./speedometer.js */
+
+/*! ./throttle.js */
+
+/*! ./toFormData.js */
+
+/*! ./transformData.js */
+
+/*! ./transitional.js */
+
+/*! ./utils.js */
+
+/*! ./xhr.js */
+
+/*! @kurkle/color */
+
+/*! @nextcloud/auth */
+
+/*! @nextcloud/axios */
+
+/*! @nextcloud/browser-storage */
+
+/*! @nextcloud/event-bus */
+
+/*! @nextcloud/router */
+
+/*! axios */
+
+/*! chart.js */
+
+/*! semver/functions/major.js */
+
+/*! semver/functions/valid.js */
+
+/*! vue */
+
+/*!*********************!*\
+  !*** ./src/main.js ***!
+  \*********************/
