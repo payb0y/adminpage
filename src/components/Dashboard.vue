@@ -57,9 +57,20 @@ export default {
 }
 </script>
 
+<style>
+#app-content:has(.adminpage-dashboard) {
+	background-color: #f0f1f5 !important;
+}
+
+#adminpage-root {
+	background-color: #f0f1f5 !important;
+	min-height: 100vh;
+}
+</style>
+
 <style scoped>
 .adminpage-dashboard {
-	--bg-page: #f5f6fa;
+	--bg-page: #f0f1f5;
 	--bg-card: #ffffff;
 	--shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
 	--shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -87,6 +98,7 @@ export default {
 	--spacing-xl: 32px;
 	--spacing-2xl: 40px;
 
+	background-color: var(--bg-page);
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: var(--spacing-lg);
