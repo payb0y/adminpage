@@ -12,10 +12,16 @@
     <category>tools</category>
     <bugs>https://github.com/example/adminpage/issues</bugs>
     <dependencies>
-        <nextcloud min-version="28" max-version="32"/>
+        <nextcloud min-version="28" max-version="34"/>
     </dependencies>
     <settings>
         <admin>OCA\AdminPage\Settings\Admin</admin>
         <admin-section>OCA\AdminPage\Settings\AdminSection</admin-section>
     </settings>
+    <navigation>
+        <name>Admin Page</name>
+        <icon>app.svg</icon>
+        <order>10</order>
+        <route>adminpage.page.index</route>
+    </navigation>
 </info>
