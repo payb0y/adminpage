@@ -7,6 +7,7 @@ namespace OCA\AdminPage\Controller;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;
+use OCP\Util;
 
 class PageController extends Controller {
 
@@ -21,6 +22,7 @@ class PageController extends Controller {
      * @return TemplateResponse
      */
     public function index(): TemplateResponse {
-        return new TemplateResponse('adminpage', 'app');
+        Util::addScript('adminpage', 'adminpage-main');
+        return new TemplateResponse('adminpage', 'index');
     }
 }
