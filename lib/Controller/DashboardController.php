@@ -208,11 +208,15 @@ class DashboardController extends Controller {
             $relative = "/ocs/v2.php/apps/deck/api/v1.0/overview/upcoming?done=" . ($done ? "true" : "false");
             $url = $this->urlGenerator->getAbsoluteURL($relative);
 
+            // Forward cookies from the incoming request for authentication
+            $cookies = $this->request->getHeader('Cookie');
+
             $client = $this->clientService->newClient();
             $response = $client->get($url, [
                 'headers' => [
                     'OCS-APIRequest' => 'true',
                     'Accept' => 'application/json',
+                    'Cookie' => $cookies,
                 ],
             ]);
 
