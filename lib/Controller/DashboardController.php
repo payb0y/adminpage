@@ -6,12 +6,24 @@ namespace OCA\AdminPage\Controller;
 
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\Http\Client\IClientService;
 use OCP\IRequest;
+use OCP\IURLGenerator;
 
 class DashboardController extends Controller {
 
-    public function __construct(string $appName, IRequest $request) {
+    private IClientService $clientService;
+    private IURLGenerator $urlGenerator;
+
+    public function __construct(
+        string $appName,
+        IRequest $request,
+        IClientService $clientService,
+        IURLGenerator $urlGenerator
+    ) {
         parent::__construct($appName, $request);
+        $this->clientService = $clientService;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -182,5 +194,34 @@ class DashboardController extends Controller {
         ];
 
         return new JSONResponse($data);
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     *
+     * @param bool $done
+     * @return JSONResponse
+     */
+    public function getUpcomingTasks(bool $done = false): JSONResponse {
+        try {
+            $relative = "/ocs/v2.php/apps/deck/api/v1.0/overview/upcoming?done=" . ($done ? "true" : "false");
+            $url = $this->urlGenerator->getAbsoluteURL($relative);
+
+            $client = $this->clientService->newClient();
+            $response = $client->get($url, [
+                'headers' => [
+                    'OCS-APIRequest' => 'true',
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return new JSONResponse($data);
+        } catch (\Exception $e) {
+            return new JSONResponse([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
