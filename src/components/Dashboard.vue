@@ -33,6 +33,14 @@
 			:severity-chart="data.severityChart"
 			:causes="data.causes"
 		/>
+
+		<!-- PROJECT PERFORMANCE ANALYTICS -->
+		<ProjectPerformancePanel
+			:project-progress="data.projectProgress"
+			:productivity-by-discipline="data.productivityByDiscipline"
+			:task-delay-projects="data.taskDelayProjects"
+			:task-completion-projects="data.taskCompletionProjects"
+		/>
 	</div>
 </template>
 
@@ -40,6 +48,7 @@
 import KpiCard from './KpiCard.vue'
 import AlertCard from './AlertCard.vue'
 import SafetyPanel from './SafetyPanel.vue'
+import ProjectPerformancePanel from './ProjectPerformancePanel.vue'
 
 export default {
 	name: 'Dashboard',
@@ -47,6 +56,7 @@ export default {
 		KpiCard,
 		AlertCard,
 		SafetyPanel,
+		ProjectPerformancePanel,
 	},
 	props: {
 		data: {

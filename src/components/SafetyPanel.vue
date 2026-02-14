@@ -161,6 +161,10 @@ export default {
 	align-items: flex-start;
 	justify-content: space-between;
 	margin-bottom: var(--spacing-lg, 24px);
+	background: #fcfdff;
+	border: 1px solid #eef1f5;
+	border-radius: var(--radius-card, 12px);
+	padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
 }
 
 .safety-panel__header-text {
@@ -382,6 +386,10 @@ export default {
 }
 
 @media (max-width: 640px) {
+	.safety-panel {
+		padding: var(--spacing-md, 16px);
+	}
+
 	.safety-panel__stats-grid {
 		grid-template-columns: 1fr;
 	}
