@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\AdminPage\Controller;
 
+use OCA\AdminPage\Service\DeckService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
@@ -14,16 +15,19 @@ class DashboardController extends Controller {
 
     private IClientService $clientService;
     private IURLGenerator $urlGenerator;
+    private DeckService $deckService;
 
     public function __construct(
         string $appName,
         IRequest $request,
         IClientService $clientService,
-        IURLGenerator $urlGenerator
+        IURLGenerator $urlGenerator,
+        DeckService $deckService
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
         $this->urlGenerator = $urlGenerator;
+        $this->deckService = $deckService;
     }
 
     /**
@@ -33,6 +37,9 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getData(): JSONResponse {
+        // Fetch live project performance data from Deck database
+        $perfData = $this->deckService->getProjectPerformanceData();
+
         $data = [
             'kpis' => [
                 [
@@ -145,52 +152,11 @@ class DashboardController extends Controller {
                 'Weather-related risks',
             ],
 
-            // ── Project Performance Analytics ──
-            'projectProgress' => [
-                ['name' => 'Multi-Utility Network Installation', 'progress' => 36],
-                ['name' => 'Urban Network Rehabilitation', 'progress' => 72],
-                ['name' => 'Industrial Park Multi-Utility Installation', 'progress' => 45],
-                ['name' => 'Northern Fiber Optic Backbone', 'progress' => 86],
-                ['name' => 'Gas Distribution Line Rehabilitation', 'progress' => 11],
-                ['name' => 'Water Supply Renewal – District 5', 'progress' => 57],
-            ],
-            'productivityByDiscipline' => [
-                ['name' => 'Electricity', 'progress' => 78],
-                ['name' => 'Water', 'progress' => 65],
-                ['name' => 'Gas', 'progress' => 88],
-                ['name' => 'Fiber Optics', 'progress' => 91],
-                ['name' => 'Coax', 'progress' => 82],
-            ],
-            'taskDelayProjects' => [
-                [
-                    'name' => 'Multi-Utility Network Installation',
-                    'chart' => [
-                        'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
-                        'data' => [70, 20, 10],
-                        'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
-                    ],
-                ],
-                [
-                    'name' => 'Urban Network Rehabilitation',
-                    'chart' => [
-                        'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
-                        'data' => [60, 25, 15],
-                        'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
-                    ],
-                ],
-            ],
-            'taskCompletionProjects' => [
-                [
-                    'name' => 'Multi-Utility Network Installation',
-                    'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                    'data' => [3, 5, 4, 6, 7, 5],
-                ],
-                [
-                    'name' => 'Urban Network Rehabilitation',
-                    'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                    'data' => [2, 4, 6, 5, 8, 7],
-                ],
-            ],
+            // ── Project Performance Analytics (live from Deck DB) ──
+            'projectProgress' => $perfData['projectProgress'],
+            'productivityByDiscipline' => $perfData['productivityByDiscipline'],
+            'taskDelayProjects' => $perfData['taskDelayProjects'],
+            'taskCompletionProjects' => $perfData['taskCompletionProjects'],
         ];
 
         return new JSONResponse($data);
