@@ -50,28 +50,32 @@ class DeckService {
                     WHEN DATE(c.duedate) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'nextSevenDays'
                     ELSE 'later'
                 END AS due_bucket
-            FROM oc_deck_cards c
-            JOIN oc_deck_stacks s  ON s.id  = c.stack_id
-            JOIN oc_deck_boards b  ON b.id  = s.board_id
+            FROM *PREFIX*deck_cards c
+            JOIN *PREFIX*deck_stacks s  ON s.id  = c.stack_id
+            JOIN *PREFIX*deck_boards b  ON b.id  = s.board_id
             LEFT JOIN (
                 SELECT x.*
                 FROM (
                     SELECT
-                        p.*,
+                        p.id,
+                        p.name,
+                        p.status,
+                        p.board_id,
+                        p.updated_at,
                         ROW_NUMBER() OVER (
                             PARTITION BY p.board_id
                             ORDER BY p.updated_at DESC, p.id DESC
                         ) AS rn
-                    FROM oc_custom_projects p
+                    FROM *PREFIX*custom_projects p
                 ) x
                 WHERE x.rn = 1
             ) cp ON cp.board_id = CAST(b.id AS CHAR(64))
             ORDER BY b.id, c.id
         ";
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->db->prepare($sql);
+        $result->execute();
+        return $result->fetchAll();
     }
 
     /**
@@ -84,13 +88,13 @@ class DeckService {
             SELECT
                 al.card_id,
                 l.title AS label_title
-            FROM oc_deck_assigned_labels al
-            JOIN oc_deck_labels l ON l.id = al.label_id
+            FROM *PREFIX*deck_assigned_labels al
+            JOIN *PREFIX*deck_labels l ON l.id = al.label_id
         ";
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->db->prepare($sql);
+        $result->execute();
+        $rows = $result->fetchAll();
 
         $map = [];
         foreach ($rows as $row) {
