@@ -115,6 +115,9 @@ export default {
               const { ctx: context, data: chartDataRef } = chart;
               chart.getDatasetMeta(0).data.forEach((arc, i) => {
                 const value = chartDataRef.datasets[0].data[i];
+                if (value === 0) {
+                  return;
+                }
                 const percentage = Math.round((value / total) * 100);
                 const midAngle = (arc.startAngle + arc.endAngle) / 2;
                 const radius = (arc.outerRadius + arc.innerRadius) / 2;
