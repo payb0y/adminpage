@@ -61,14 +61,14 @@ class DeckService {
                 b.title         AS board_title,
                 s.title         AS stack_title,
                 c.duedate,
-                c.done,
                 c.archived,
                 c.deleted_at,
+                c.last_modified,
                 c.created_at    AS card_created_at,
                 CASE
-                    WHEN c.deleted_at <> 0     THEN 'deleted'
-                    WHEN c.archived = 1        THEN 'archived'
-                    WHEN c.done IS NOT NULL     THEN 'done'
+                    WHEN c.deleted_at <> 0          THEN 'deleted'
+                    WHEN c.archived = 1             THEN 'archived'
+                    WHEN s.title = 'Approved/Done'  THEN 'done'
                     ELSE 'open'
                 END AS task_status,
                 CASE
@@ -244,8 +244,8 @@ class DeckService {
                     continue;
                 }
                 if ($t['task_status'] === 'done') {
-                    if ($t['duedate'] !== null && $t['done'] !== null) {
-                        $doneDate = new \DateTime($t['done']);
+                    if ($t['duedate'] !== null && $t['last_modified'] !== null) {
+                        $doneDate = (new \DateTime())->setTimestamp((int)$t['last_modified']);
                         $dueDate  = new \DateTime($t['duedate']);
                         if ($doneDate > $dueDate) {
                             $delayed++;
@@ -289,8 +289,8 @@ class DeckService {
         foreach ($projectMap as $proj) {
             $completedDates = [];
             foreach ($proj['tasks'] as $t) {
-                if ($t['task_status'] === 'done' && $t['done'] !== null) {
-                    $completedDates[] = new \DateTime($t['done']);
+                if ($t['task_status'] === 'done' && $t['last_modified'] !== null) {
+                    $completedDates[] = (new \DateTime())->setTimestamp((int)$t['last_modified']);
                 }
             }
 
