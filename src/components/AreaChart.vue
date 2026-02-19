@@ -133,8 +133,11 @@ export default {
 						id: 'peakLabel',
 						afterDraw: (chart) => {
 							const dataset = chart.data.datasets[0]
-							const meta = chart.getDatasetMeta(0)
 							const maxVal = Math.max(...dataset.data)
+							if (maxVal === 0) {
+								return
+							}
+							const meta = chart.getDatasetMeta(0)
 							const maxIdx = dataset.data.indexOf(maxVal)
 							const point = meta.data[maxIdx]
 
