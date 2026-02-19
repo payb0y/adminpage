@@ -1,6 +1,11 @@
 <template>
 	<div class="donut-chart">
-		<canvas ref="chartCanvas" width="220" height="220"></canvas>
+		<div v-if="hasData">
+			<canvas ref="chartCanvas" width="220" height="220"></canvas>
+		</div>
+		<div v-else class="donut-chart__empty">
+			<span class="donut-chart__empty-text">No tasks yet</span>
+		</div>
 		<div class="donut-chart__legend">
 			<div
 				v-for="(label, index) in chartData.labels"
@@ -41,8 +46,15 @@ export default {
 			chart: null,
 		}
 	},
+	computed: {
+		hasData() {
+			return this.chartData.data && this.chartData.data.some(v => v > 0)
+		},
+	},
 	mounted() {
-		this.renderChart()
+		if (this.hasData) {
+			this.renderChart()
+		}
 	},
 	beforeDestroy() {
 		if (this.chart) {
@@ -137,6 +149,22 @@ export default {
 .donut-chart canvas {
 	max-width: 220px;
 	max-height: 220px;
+}
+
+.donut-chart__empty {
+	width: 220px;
+	height: 220px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px dashed var(--color-border, #e5e7eb);
+	border-radius: 50%;
+}
+
+.donut-chart__empty-text {
+	font-size: 14px;
+	color: var(--color-text-secondary, #6b7280);
+	font-weight: 500;
 }
 
 .donut-chart__legend {

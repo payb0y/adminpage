@@ -97,7 +97,7 @@
 					<button class="perf-panel__nav-btn" @click="nextDelayProject">&rsaquo;</button>
 				</div>
 
-				<DonutChart :chart-data="activeDelayProject.chart" />
+				<DonutChart :key="'donut-' + delayIndex" :chart-data="activeDelayProject.chart" />
 				</div>
 
 				<!-- Task Completion Over Time -->
