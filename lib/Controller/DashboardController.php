@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\AdminPage\Controller;
 
+use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
@@ -16,18 +17,21 @@ class DashboardController extends Controller {
     private IClientService $clientService;
     private IURLGenerator $urlGenerator;
     private DeckService $deckService;
+    private AlertService $alertService;
 
     public function __construct(
         string $appName,
         IRequest $request,
         IClientService $clientService,
         IURLGenerator $urlGenerator,
-        DeckService $deckService
+        DeckService $deckService,
+        AlertService $alertService
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
         $this->urlGenerator = $urlGenerator;
         $this->deckService = $deckService;
+        $this->alertService = $alertService;
     }
 
     /**
@@ -76,28 +80,7 @@ class DashboardController extends Controller {
                     ],
                 ],
             ],
-            'alerts' => [
-                [
-                    'badgeType' => 'action',
-                    'badgeLabel' => 'Action required',
-                    'description' => '7 invoices overdue more than 60 days',
-                ],
-                [
-                    'badgeType' => 'action',
-                    'badgeLabel' => 'Action required',
-                    'description' => '2 projects exceeding budget',
-                ],
-                [
-                    'badgeType' => 'attention',
-                    'badgeLabel' => 'Attention needed',
-                    'description' => '1 project at risk of delay',
-                ],
-                [
-                    'badgeType' => 'ontrack',
-                    'badgeLabel' => 'On track',
-                    'description' => 'All field teams clocked in today',
-                ],
-            ],
+            'alerts' => $this->alertService->getAlerts(),
             'safetyStats' => [
                 [
                     'label' => 'Safety Incidents',
