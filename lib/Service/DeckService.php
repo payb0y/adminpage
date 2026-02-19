@@ -15,12 +15,44 @@ class DeckService {
     }
 
     /**
-     * Fetch all task rows joined with boards and projects.
-     * Returns raw rows with computed task_status and due_bucket.
+     * Fetch all projects that have an existing (non-deleted) board.
      *
      * @return array
      */
-    private function fetchTaskRows(): array {
+    private function fetchProjects(): array {
+        $sql = "
+            SELECT
+                cp.id           AS project_id,
+                cp.name         AS project_name,
+                cp.status       AS project_status,
+                cp.board_id     AS project_board_id,
+                b.id            AS board_id,
+                b.title         AS board_title
+            FROM *PREFIX*custom_projects cp
+            INNER JOIN *PREFIX*deck_boards b
+                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                AND b.deleted_at = 0
+            ORDER BY cp.id
+        ";
+
+        $result = $this->db->prepare($sql);
+        $result->execute();
+        return $result->fetchAll();
+    }
+
+    /**
+     * Fetch all task rows for given board IDs, with computed status/due info.
+     *
+     * @param int[] $boardIds
+     * @return array
+     */
+    private function fetchTaskRowsForBoards(array $boardIds): array {
+        if (empty($boardIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
+
         $sql = "
             SELECT
                 c.id            AS task_id,
@@ -28,9 +60,6 @@ class DeckService {
                 b.id            AS board_id,
                 b.title         AS board_title,
                 s.title         AS stack_title,
-                cp.id           AS project_id,
-                cp.name         AS project_name,
-                cp.status       AS project_status,
                 c.duedate,
                 c.done,
                 c.archived,
@@ -53,46 +82,48 @@ class DeckService {
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s  ON s.id  = c.stack_id
             JOIN *PREFIX*deck_boards b  ON b.id  = s.board_id
-            LEFT JOIN (
-                SELECT x.*
-                FROM (
-                    SELECT
-                        p.id,
-                        p.name,
-                        p.status,
-                        p.board_id,
-                        p.updated_at,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY p.board_id
-                            ORDER BY p.updated_at DESC, p.id DESC
-                        ) AS rn
-                    FROM *PREFIX*custom_projects p
-                ) x
-                WHERE x.rn = 1
-            ) cp ON cp.board_id = CAST(b.id AS CHAR(64))
+            WHERE b.id IN ({$placeholders})
             ORDER BY b.id, c.id
         ";
 
         $result = $this->db->prepare($sql);
+        $idx = 1;
+        foreach ($boardIds as $bid) {
+            $result->bindValue($idx++, $bid, \PDO::PARAM_INT);
+        }
         $result->execute();
         return $result->fetchAll();
     }
 
     /**
-     * Fetch label (discipline) data for all cards.
+     * Fetch label (discipline) data for cards belonging to given board IDs.
      *
+     * @param int[] $boardIds
      * @return array  card_id => [label_title, ...]
      */
-    private function fetchCardLabels(): array {
+    private function fetchCardLabels(array $boardIds): array {
+        if (empty($boardIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
+
         $sql = "
             SELECT
                 al.card_id,
                 l.title AS label_title
             FROM *PREFIX*deck_assigned_labels al
             JOIN *PREFIX*deck_labels l ON l.id = al.label_id
+            JOIN *PREFIX*deck_cards c ON c.id = al.card_id
+            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            WHERE s.board_id IN ({$placeholders})
         ";
 
         $result = $this->db->prepare($sql);
+        $idx = 1;
+        foreach ($boardIds as $bid) {
+            $result->bindValue($idx++, $bid, \PDO::PARAM_INT);
+        }
         $result->execute();
         $rows = $result->fetchAll();
 
@@ -106,30 +137,49 @@ class DeckService {
     /**
      * Build all Project Performance Analytics data from the Deck database.
      *
+     * Approach: start from projects → get linked boards → fetch tasks & labels
+     * only for those boards. Projects with 0 cards still appear in every widget.
+     *
      * @return array  with keys: projectProgress, productivityByDiscipline,
      *                taskDelayProjects, taskCompletionProjects
      */
     public function getProjectPerformanceData(): array {
-        $rows = $this->fetchTaskRows();
-        $cardLabels = $this->fetchCardLabels();
+        // 1. Fetch all projects that have a valid (non-deleted) board
+        $projectRows = $this->fetchProjects();
 
-        // ─── Group rows by project/board ───
-        $projects = [];      // key = project_name|board_title => [...]
-        $disciplines = [];   // label_title => { total, done }
+        if (empty($projectRows)) {
+            return $this->emptyResponse();
+        }
 
-        foreach ($rows as $row) {
-            $projKey = $row['project_name'] ?? $row['board_title'];
+        // Build a project map keyed by board_id, and collect board IDs
+        $projectMap = [];   // board_id => { name, board_id, tasks[] }
+        $boardIds   = [];
 
-            if (!isset($projects[$projKey])) {
-                $projects[$projKey] = [
-                    'name' => $projKey,
-                    'board_id' => (int)$row['board_id'],
-                    'tasks' => [],
-                ];
+        foreach ($projectRows as $p) {
+            $bid = (int)$p['board_id'];
+            $boardIds[] = $bid;
+            $projectMap[$bid] = [
+                'name'     => $p['project_name'],
+                'board_id' => $bid,
+                'tasks'    => [],
+            ];
+        }
+
+        // 2. Fetch tasks and labels scoped to those boards
+        $taskRows   = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels = $this->fetchCardLabels($boardIds);
+
+        // 3. Group tasks into their project by board_id
+        foreach ($taskRows as $row) {
+            $bid = (int)$row['board_id'];
+            if (isset($projectMap[$bid])) {
+                $projectMap[$bid]['tasks'][] = $row;
             }
-            $projects[$projKey]['tasks'][] = $row;
+        }
 
-            // Discipline stats from labels
+        // 4. Build discipline (label) stats across all tasks
+        $disciplines = [];   // label_title => { total, done }
+        foreach ($taskRows as $row) {
             $taskId = (int)$row['task_id'];
             $labels = $cardLabels[$taskId] ?? [];
             foreach ($labels as $label) {
@@ -143,14 +193,12 @@ class DeckService {
             }
         }
 
-        // ─── 1. Project Progress Comparison ───
-        // Progress = (done tasks / total active tasks) × 100
+        // ─── Widget 1: Project Progress Comparison ───
         $projectProgress = [];
-        foreach ($projects as $proj) {
+        foreach ($projectMap as $proj) {
             $total = 0;
-            $done = 0;
+            $done  = 0;
             foreach ($proj['tasks'] as $t) {
-                // Skip deleted tasks
                 if ($t['task_status'] === 'deleted') {
                     continue;
                 }
@@ -161,34 +209,33 @@ class DeckService {
             }
             $progress = $total > 0 ? (int)round(($done / $total) * 100) : 0;
             $projectProgress[] = [
-                'name' => $proj['name'],
+                'name'     => $proj['name'],
                 'progress' => $progress,
             ];
         }
 
-        // ─── 2. Productivity by Discipline (label) ───
+        // ─── Widget 2: Productivity by Discipline (label) ───
         $productivityByDiscipline = [];
         foreach ($disciplines as $label => $stats) {
             $progress = $stats['total'] > 0
                 ? (int)round(($stats['done'] / $stats['total']) * 100)
                 : 0;
             $productivityByDiscipline[] = [
-                'name' => $label,
+                'name'     => $label,
                 'progress' => $progress,
             ];
         }
-        // If no labels found, provide a default entry
         if (empty($productivityByDiscipline)) {
             $productivityByDiscipline[] = [
-                'name' => 'All Tasks',
+                'name'     => 'All Tasks',
                 'progress' => 0,
             ];
         }
 
-        // ─── 3. Project Tasks Delay Overview (donut per project) ───
+        // ─── Widget 3: Project Tasks Delay Overview (donut per project) ───
         $taskDelayProjects = [];
-        foreach ($projects as $proj) {
-            $onTime = 0;
+        foreach ($projectMap as $proj) {
+            $onTime  = 0;
             $delayed = 0;
             $blocked = 0;
 
@@ -197,10 +244,9 @@ class DeckService {
                     continue;
                 }
                 if ($t['task_status'] === 'done') {
-                    // Check if it was completed past due
                     if ($t['duedate'] !== null && $t['done'] !== null) {
                         $doneDate = new \DateTime($t['done']);
-                        $dueDate = new \DateTime($t['duedate']);
+                        $dueDate  = new \DateTime($t['duedate']);
                         if ($doneDate > $dueDate) {
                             $delayed++;
                         } else {
@@ -211,17 +257,13 @@ class DeckService {
                     }
                     continue;
                 }
-                // Open / archived tasks
                 if ($t['task_status'] === 'archived') {
                     $blocked++;
                     continue;
                 }
-                // Open task – check due bucket
-                if (in_array($t['due_bucket'], ['overdue'], true)) {
+                // Open task
+                if ($t['due_bucket'] === 'overdue') {
                     $delayed++;
-                } elseif ($t['due_bucket'] === 'nodue') {
-                    // No due date set – consider on-time
-                    $onTime++;
                 } else {
                     $onTime++;
                 }
@@ -229,11 +271,11 @@ class DeckService {
 
             $total = $onTime + $delayed + $blocked;
             $taskDelayProjects[] = [
-                'name' => $proj['name'],
+                'name'  => $proj['name'],
                 'chart' => [
                     'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
-                    'data' => [
-                        $total > 0 ? (int)round(($onTime / $total) * 100) : 0,
+                    'data'   => [
+                        $total > 0 ? (int)round(($onTime  / $total) * 100) : 0,
                         $total > 0 ? (int)round(($delayed / $total) * 100) : 0,
                         $total > 0 ? (int)round(($blocked / $total) * 100) : 0,
                     ],
@@ -242,10 +284,9 @@ class DeckService {
             ];
         }
 
-        // ─── 4. Task Completion Over Time (per project, weekly) ───
+        // ─── Widget 4: Task Completion Over Time (per project, weekly) ───
         $taskCompletionProjects = [];
-        foreach ($projects as $proj) {
-            // Gather done dates
+        foreach ($projectMap as $proj) {
             $completedDates = [];
             foreach ($proj['tasks'] as $t) {
                 if ($t['task_status'] === 'done' && $t['done'] !== null) {
@@ -254,26 +295,23 @@ class DeckService {
             }
 
             if (empty($completedDates)) {
-                // Still include the project with empty weeks
                 $taskCompletionProjects[] = [
-                    'name' => $proj['name'],
+                    'name'  => $proj['name'],
                     'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                    'data' => [0, 0, 0, 0, 0, 0],
+                    'data'  => [0, 0, 0, 0, 0, 0],
                 ];
                 continue;
             }
 
-            // Build 6-week buckets ending at current week
-            $now = new \DateTime();
+            $now        = new \DateTime();
             $weekLabels = [];
             $weekCounts = [];
 
             for ($i = 5; $i >= 0; $i--) {
                 $weekStart = (clone $now)->modify("-{$i} weeks")->modify('monday this week');
-                $weekEnd = (clone $weekStart)->modify('+6 days')->setTime(23, 59, 59);
+                $weekEnd   = (clone $weekStart)->modify('+6 days')->setTime(23, 59, 59);
 
-                $label = $weekStart->format('M d');
-                $weekLabels[] = $label;
+                $weekLabels[] = $weekStart->format('M d');
 
                 $count = 0;
                 foreach ($completedDates as $d) {
@@ -285,36 +323,46 @@ class DeckService {
             }
 
             $taskCompletionProjects[] = [
-                'name' => $proj['name'],
+                'name'  => $proj['name'],
                 'weeks' => $weekLabels,
-                'data' => $weekCounts,
-            ];
-        }
-
-        // Ensure we always have at least one entry for donut/area charts
-        if (empty($taskDelayProjects)) {
-            $taskDelayProjects[] = [
-                'name' => 'No Projects',
-                'chart' => [
-                    'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
-                    'data' => [0, 0, 0],
-                    'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
-                ],
-            ];
-        }
-        if (empty($taskCompletionProjects)) {
-            $taskCompletionProjects[] = [
-                'name' => 'No Projects',
-                'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                'data' => [0, 0, 0, 0, 0, 0],
+                'data'  => $weekCounts,
             ];
         }
 
         return [
-            'projectProgress' => $projectProgress,
+            'projectProgress'         => $projectProgress,
             'productivityByDiscipline' => $productivityByDiscipline,
-            'taskDelayProjects' => $taskDelayProjects,
-            'taskCompletionProjects' => $taskCompletionProjects,
+            'taskDelayProjects'        => $taskDelayProjects,
+            'taskCompletionProjects'   => $taskCompletionProjects,
+        ];
+    }
+
+    /**
+     * Return a safe empty response when no projects exist.
+     */
+    private function emptyResponse(): array {
+        return [
+            'projectProgress' => [],
+            'productivityByDiscipline' => [
+                ['name' => 'All Tasks', 'progress' => 0],
+            ],
+            'taskDelayProjects' => [
+                [
+                    'name'  => 'No Projects',
+                    'chart' => [
+                        'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
+                        'data'   => [0, 0, 0],
+                        'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
+                    ],
+                ],
+            ],
+            'taskCompletionProjects' => [
+                [
+                    'name'  => 'No Projects',
+                    'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    'data'  => [0, 0, 0, 0, 0, 0],
+                ],
+            ],
         ];
     }
 }
