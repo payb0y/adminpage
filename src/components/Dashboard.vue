@@ -13,20 +13,7 @@
     </section>
 
     <!-- ALERTS & EXCEPTIONS -->
-    <section class="adminpage-dashboard__section">
-      <h2 class="adminpage-dashboard__section-title">
-        Alerts &amp; Exceptions
-      </h2>
-      <div class="adminpage-dashboard__alerts-grid">
-        <AlertCard
-          v-for="(alert, index) in data.alerts"
-          :key="'alert-' + index"
-          :badge-type="alert.badgeType"
-          :badge-label="alert.badgeLabel"
-          :description="alert.description"
-        />
-      </div>
-    </section>
+    <AlertsPanel :alerts="data.alerts" />
 
     <!-- SAFETY SECTION -->
     <SafetyPanel
@@ -50,7 +37,7 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import KpiCard from "./KpiCard.vue";
-import AlertCard from "./AlertCard.vue";
+import AlertsPanel from "./AlertsPanel.vue";
 import SafetyPanel from "./SafetyPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 
@@ -58,7 +45,7 @@ export default {
   name: "Dashboard",
   components: {
     KpiCard,
-    AlertCard,
+    AlertsPanel,
     SafetyPanel,
     ProjectPerformancePanel,
   },
@@ -156,24 +143,8 @@ export default {
   border: none;
 }
 
-.adminpage-dashboard__alerts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: var(--spacing-md);
-}
-
 @media (max-width: 1024px) {
   .adminpage-dashboard__kpi-strip {
-    grid-template-columns: 1fr;
-  }
-
-  .adminpage-dashboard__alerts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .adminpage-dashboard__alerts-grid {
     grid-template-columns: 1fr;
   }
 }

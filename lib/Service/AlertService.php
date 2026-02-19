@@ -15,101 +15,74 @@ class AlertService {
     }
 
     /**
-     * Build all alerts from Nextcloud data.
+     * Build detailed alerts data for the admin dashboard.
      *
-     * @return array  list of { badgeType, badgeLabel, description }
+     * @return array  structured alert data with summaries and per-project details
      */
     public function getAlerts(): array {
-        $alerts = [];
+        $overdueTasks      = $this->getOverdueTaskDetails();
+        $unassignedTasks   = $this->getUnassignedTaskDetails();
+        $noDueDateTasks    = $this->getNoDueDateTaskDetails();
+        $stalledProjects   = $this->getStalledProjects();
+        $zeroProgressProjs = $this->getZeroProgressProjects();
+        $pendingUpdates    = $this->getPendingUpdateDetails();
 
-        // ── 1. Overdue tasks (past due, not done, not deleted) ──
-        $overdue = $this->countOverdueTasks();
-        if ($overdue > 0) {
-            $alerts[] = [
-                'badgeType'   => 'action',
-                'badgeLabel'  => 'Action required',
-                'description' => $overdue . ' task' . ($overdue > 1 ? 's' : '') . ' overdue across projects',
-            ];
-        }
+        // ── Summary counters ──
+        $totalOverdue    = array_sum(array_column($overdueTasks, 'count'));
+        $totalUnassigned = array_sum(array_column($unassignedTasks, 'count'));
+        $totalNoDueDate  = array_sum(array_column($noDueDateTasks, 'count'));
 
-        // ── 2. Unassigned tasks ──
-        $unassigned = $this->countUnassignedTasks();
-        if ($unassigned > 0) {
-            $alerts[] = [
-                'badgeType'   => 'attention',
-                'badgeLabel'  => 'Attention needed',
-                'description' => $unassigned . ' task' . ($unassigned > 1 ? 's have' : ' has') . ' no assignee',
-            ];
-        }
+        $summary = [
+            [
+                'label' => 'Overdue Tasks',
+                'value' => $totalOverdue,
+                'type'  => $totalOverdue > 0 ? 'danger' : 'success',
+            ],
+            [
+                'label' => 'Unassigned Tasks',
+                'value' => $totalUnassigned,
+                'type'  => $totalUnassigned > 0 ? 'warning' : 'success',
+            ],
+            [
+                'label' => 'No Due Date',
+                'value' => $totalNoDueDate,
+                'type'  => $totalNoDueDate > 0 ? 'warning' : 'success',
+            ],
+            [
+                'label' => 'Stalled Projects',
+                'value' => count($stalledProjects),
+                'type'  => count($stalledProjects) > 0 ? 'warning' : 'success',
+            ],
+            [
+                'label' => 'App Updates',
+                'value' => count($pendingUpdates),
+                'type'  => count($pendingUpdates) > 0 ? 'warning' : 'success',
+            ],
+        ];
 
-        // ── 3. Tasks without due date ──
-        $noDueDate = $this->countTasksWithoutDueDate();
-        if ($noDueDate > 0) {
-            $alerts[] = [
-                'badgeType'   => 'attention',
-                'badgeLabel'  => 'Attention needed',
-                'description' => $noDueDate . ' task' . ($noDueDate > 1 ? 's have' : ' has') . ' no due date set',
-            ];
-        }
-
-        // ── 4. Stalled projects (no card activity in 7+ days) ──
-        $stalledProjects = $this->getStalledProjects();
-        foreach ($stalledProjects as $proj) {
-            $alerts[] = [
-                'badgeType'   => 'attention',
-                'badgeLabel'  => 'Attention needed',
-                'description' => 'Project "' . $proj['name'] . '" has had no activity in 7+ days',
-            ];
-        }
-
-        // ── 5. Projects with zero progress ──
-        $zeroProgress = $this->getZeroProgressProjects();
-        if (count($zeroProgress) > 0) {
-            $names = implode(', ', $zeroProgress);
-            $alerts[] = [
-                'badgeType'   => 'attention',
-                'badgeLabel'  => 'Attention needed',
-                'description' => count($zeroProgress) . ' project' . (count($zeroProgress) > 1 ? 's have' : ' has') . ' zero completed tasks (' . $names . ')',
-            ];
-        }
-
-        // ── 6. Pending app updates ──
-        $pendingUpdates = $this->countPendingUpdates();
-        if ($pendingUpdates > 0) {
-            $alerts[] = [
-                'badgeType'   => 'attention',
-                'badgeLabel'  => 'Attention needed',
-                'description' => $pendingUpdates . ' app update' . ($pendingUpdates > 1 ? 's' : '') . ' available',
-            ];
-        }
-
-        // ── 7. Positive signals ──
-        if ($overdue === 0) {
-            $alerts[] = [
-                'badgeType'   => 'ontrack',
-                'badgeLabel'  => 'On track',
-                'description' => 'No overdue tasks across all projects',
-            ];
-        }
-
-        $totalActive = $this->countActiveProjectTasks();
-        if ($totalActive > 0 && $unassigned === 0) {
-            $alerts[] = [
-                'badgeType'   => 'ontrack',
-                'badgeLabel'  => 'On track',
-                'description' => 'All active tasks have an assignee',
-            ];
-        }
-
-        return $alerts;
+        return [
+            'summary'          => $summary,
+            'overdueTasks'     => $overdueTasks,
+            'unassignedTasks'  => $unassignedTasks,
+            'noDueDateTasks'   => $noDueDateTasks,
+            'stalledProjects'  => $stalledProjects,
+            'zeroProgress'     => $zeroProgressProjs,
+            'pendingUpdates'   => $pendingUpdates,
+        ];
     }
 
     /**
-     * Count tasks that are past due date, not in Approved/Done, not deleted.
+     * Overdue tasks grouped by project, with task details.
      */
-    private function countOverdueTasks(): int {
+    private function getOverdueTaskDetails(): array {
         $sql = "
-            SELECT COUNT(*) AS cnt
+            SELECT
+                cp.name         AS project_name,
+                c.id            AS task_id,
+                c.title         AS task_title,
+                c.duedate,
+                s.title         AS stack_title,
+                DATEDIFF(NOW(), c.duedate) AS days_overdue
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
@@ -120,19 +93,26 @@ class AlertService {
               AND c.deleted_at = 0
               AND b.deleted_at = 0
               AND s.title <> 'Approved/Done'
+            ORDER BY cp.name, c.duedate ASC
         ";
         $result = $this->db->prepare($sql);
         $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        $rows = $result->fetchAll();
+
+        return $this->groupTasksByProject($rows);
     }
 
     /**
-     * Count tasks with no user assigned (on project boards only).
+     * Unassigned tasks grouped by project, with task details.
      */
-    private function countUnassignedTasks(): int {
+    private function getUnassignedTaskDetails(): array {
         $sql = "
-            SELECT COUNT(*) AS cnt
+            SELECT
+                cp.name         AS project_name,
+                c.id            AS task_id,
+                c.title         AS task_title,
+                c.duedate,
+                s.title         AS stack_title
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
@@ -143,19 +123,25 @@ class AlertService {
               AND c.deleted_at = 0
               AND b.deleted_at = 0
               AND s.title <> 'Approved/Done'
+            ORDER BY cp.name, s.title, c.title
         ";
         $result = $this->db->prepare($sql);
         $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        $rows = $result->fetchAll();
+
+        return $this->groupTasksByProject($rows);
     }
 
     /**
-     * Count open tasks (not done/deleted) with no due date set.
+     * Tasks without due date, grouped by project.
      */
-    private function countTasksWithoutDueDate(): int {
+    private function getNoDueDateTaskDetails(): array {
         $sql = "
-            SELECT COUNT(*) AS cnt
+            SELECT
+                cp.name         AS project_name,
+                c.id            AS task_id,
+                c.title         AS task_title,
+                s.title         AS stack_title
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
@@ -165,21 +151,27 @@ class AlertService {
               AND c.deleted_at = 0
               AND b.deleted_at = 0
               AND s.title <> 'Approved/Done'
+            ORDER BY cp.name, s.title, c.title
         ";
         $result = $this->db->prepare($sql);
         $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        $rows = $result->fetchAll();
+
+        return $this->groupTasksByProject($rows);
     }
 
     /**
-     * Find projects where the most recent card activity is older than 7 days.
+     * Projects where the most recent card activity is older than 7 days.
      */
     private function getStalledProjects(): array {
         $sevenDaysAgo = time() - (7 * 86400);
 
         $sql = "
-            SELECT cp.name, MAX(c.last_modified) AS latest_activity
+            SELECT
+                cp.name         AS project_name,
+                MAX(c.last_modified) AS latest_activity,
+                COUNT(c.id)     AS total_tasks,
+                SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) AS done_tasks
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
@@ -192,17 +184,29 @@ class AlertService {
         $result = $this->db->prepare($sql);
         $result->bindValue(1, $sevenDaysAgo, \PDO::PARAM_INT);
         $result->execute();
-        return $result->fetchAll();
+        $rows = $result->fetchAll();
+
+        return array_map(function ($row) {
+            $lastActive = (int)$row['latest_activity'];
+            $daysAgo = (int)round((time() - $lastActive) / 86400);
+            return [
+                'project_name'    => $row['project_name'],
+                'days_inactive'   => $daysAgo,
+                'total_tasks'     => (int)$row['total_tasks'],
+                'done_tasks'      => (int)$row['done_tasks'],
+                'last_activity'   => date('Y-m-d H:i', $lastActive),
+            ];
+        }, $rows);
     }
 
     /**
-     * Find projects that have tasks but none in Approved/Done.
+     * Projects that have tasks but none in Approved/Done.
      */
     private function getZeroProgressProjects(): array {
         $sql = "
-            SELECT cp.name,
-                   COUNT(c.id) AS total_tasks,
-                   SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) AS done_tasks
+            SELECT
+                cp.name         AS project_name,
+                COUNT(c.id)     AS total_tasks
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
@@ -210,51 +214,55 @@ class AlertService {
             LEFT JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             GROUP BY cp.id, cp.name
-            HAVING total_tasks > 0 AND done_tasks = 0
+            HAVING total_tasks > 0
+               AND SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) = 0
         ";
         $result = $this->db->prepare($sql);
         $result->execute();
         $rows = $result->fetchAll();
 
         return array_map(function ($row) {
-            return $row['name'];
+            return [
+                'project_name' => $row['project_name'],
+                'total_tasks'  => (int)$row['total_tasks'],
+            ];
         }, $rows);
     }
 
     /**
-     * Count pending app update notifications.
+     * Pending app update details.
      */
-    private function countPendingUpdates(): int {
+    private function getPendingUpdateDetails(): array {
         $sql = "
-            SELECT COUNT(*) AS cnt
+            SELECT object_type AS app_name, subject
             FROM *PREFIX*notifications
             WHERE app = 'updatenotification'
               AND subject = 'update_available'
         ";
         $result = $this->db->prepare($sql);
         $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        return $result->fetchAll();
     }
 
     /**
-     * Count total active (non-deleted, non-done) tasks on project boards.
+     * Group task rows by project_name.
+     *
+     * @return array [ { project_name, count, tasks: [...] }, ... ]
      */
-    private function countActiveProjectTasks(): int {
-        $sql = "
-            SELECT COUNT(*) AS cnt
-            FROM *PREFIX*deck_cards c
-            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
-            JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
-            WHERE c.deleted_at = 0
-              AND b.deleted_at = 0
-              AND s.title <> 'Approved/Done'
-        ";
-        $result = $this->db->prepare($sql);
-        $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+    private function groupTasksByProject(array $rows): array {
+        $grouped = [];
+        foreach ($rows as $row) {
+            $projName = $row['project_name'];
+            if (!isset($grouped[$projName])) {
+                $grouped[$projName] = [
+                    'project_name' => $projName,
+                    'count'        => 0,
+                    'tasks'        => [],
+                ];
+            }
+            $grouped[$projName]['count']++;
+            $grouped[$projName]['tasks'][] = $row;
+        }
+        return array_values($grouped);
     }
 }
