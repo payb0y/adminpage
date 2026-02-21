@@ -15,14 +15,6 @@
     <!-- ALERTS & EXCEPTIONS -->
     <AlertsPanel :alerts="data.alerts" />
 
-    <!-- SAFETY SECTION -->
-    <SafetyPanel
-      :safety-stats="data.safetyStats"
-      :project-incidents="data.projectIncidents"
-      :severity-chart="data.severityChart"
-      :causes="data.causes"
-    />
-
     <!-- PROJECT PERFORMANCE ANALYTICS -->
     <ProjectPerformancePanel
       :project-progress="data.projectProgress"
@@ -36,6 +28,14 @@
     <FinancialPanel
       v-if="data.financialData"
       :financial-data="data.financialData"
+    />
+
+    <!-- SAFETY SECTION -->
+    <SafetyPanel
+      :safety-stats="data.safetyStats"
+      :project-incidents="data.projectIncidents"
+      :severity-chart="data.severityChart"
+      :causes="data.causes"
     />
   </div>
 </template>
