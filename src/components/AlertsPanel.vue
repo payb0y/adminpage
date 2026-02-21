@@ -28,321 +28,333 @@
     </div>
 
     <div v-show="!collapsed">
-      <!-- SUMMARY STRIP — clickable tiles -->
+      <!-- SUMMARY STRIP -->
       <div class="alerts-panel__summary-strip">
-        <button
-          v-for="(item, idx) in summaryTiles"
+        <div
+          v-for="(item, idx) in alerts.summary"
           :key="'sum-' + idx"
           class="alerts-panel__summary-card"
-          :class="[
-            'alerts-panel__summary-card--' + item.type,
-            { 'alerts-panel__summary-card--clickable': item.hasDetail },
-          ]"
-          @click="item.hasDetail ? openDrawer(item.key) : null"
+          :class="'alerts-panel__summary-card--' + item.type"
         >
           <span class="alerts-panel__summary-value">{{ item.value }}</span>
           <span class="alerts-panel__summary-label">{{ item.label }}</span>
-          <span v-if="item.hasDetail" class="alerts-panel__summary-hint">
-            click to view
-          </span>
-        </button>
+        </div>
       </div>
-    </div>
 
-    <!-- SLIDE-OVER DRAWER -->
-    <transition name="drawer">
-      <div
-        v-if="activeDrawer"
-        class="alerts-drawer__backdrop"
-        @click.self="closeDrawer"
-      >
-        <div class="alerts-drawer" @click.stop>
-          <!-- Drawer Header -->
-          <div
-            class="alerts-drawer__header"
-            :class="'alerts-drawer__header--' + drawerConfig.type"
-          >
-            <div class="alerts-drawer__header-left">
-              <span class="alerts-drawer__icon">{{ drawerConfig.icon }}</span>
-              <h3 class="alerts-drawer__title">{{ drawerConfig.title }}</h3>
-            </div>
-            <button class="alerts-drawer__close" @click="closeDrawer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+      <!-- DETAIL WIDGETS ROW -->
+      <div class="alerts-panel__details-grid">
+        <!-- Overdue Tasks Widget -->
+        <div class="alerts-panel__widget">
+          <div class="alerts-panel__widget-header">
+            <h3 class="alerts-panel__widget-title">
+              <span
+                class="alerts-panel__widget-icon alerts-panel__widget-icon--danger"
+                >!</span
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+              Overdue Tasks
+            </h3>
+            <span
+              class="alerts-panel__widget-count alerts-panel__widget-count--danger"
+            >
+              {{ overdueTotal }}
+            </span>
           </div>
-
-          <!-- Drawer Body -->
-          <div class="alerts-drawer__body">
-            <!-- ── Overdue Tasks ── -->
-            <template v-if="activeDrawer === 'overdue'">
-              <div
-                v-if="alerts.overdueTasks.length === 0"
-                class="alerts-panel__empty"
-              >
-                <span class="alerts-panel__empty-check">✓</span>
-                No overdue tasks
-              </div>
-              <div
-                v-for="group in alerts.overdueTasks"
-                :key="'od-' + group.project_name"
-                class="alerts-drawer__project-group"
-              >
-                <div class="alerts-drawer__project-header">
-                  <span class="alerts-drawer__project-name">{{
-                    group.project_name
-                  }}</span>
-                  <span class="alerts-drawer__badge alerts-drawer__badge--danger">
-                    {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
-                  </span>
-                </div>
-                <table class="alerts-drawer__table">
-                  <thead>
-                    <tr>
-                      <th>Task</th>
-                      <th>Status</th>
-                      <th>Overdue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="task in visibleTasks('overdue', group.project_name, group.tasks)"
-                      :key="'od-t-' + task.task_id"
-                    >
-                      <td class="alerts-drawer__cell-name">{{ task.task_title }}</td>
-                      <td>
-                        <span class="alerts-drawer__stack-tag">{{ task.stack_title }}</span>
-                      </td>
-                      <td>
-                        <span class="alerts-drawer__overdue-tag">
-                          {{ task.days_overdue }}d
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <button
-                  v-if="group.tasks.length > 5"
-                  class="alerts-drawer__show-more"
-                  @click="toggleExpanded('overdue', group.project_name)"
+          <div class="alerts-panel__widget-body">
+            <div
+              v-if="alerts.overdueTasks.length === 0"
+              class="alerts-panel__empty"
+            >
+              <span class="alerts-panel__empty-check">✓</span>
+              No overdue tasks
+            </div>
+            <div
+              v-for="group in alerts.overdueTasks"
+              :key="'od-' + group.project_name"
+              class="alerts-panel__project-group"
+            >
+              <div class="alerts-panel__project-header">
+                <span class="alerts-panel__project-name">{{
+                  group.project_name
+                }}</span>
+                <span
+                  class="alerts-panel__project-count alerts-panel__project-count--danger"
                 >
-                  {{ isExpanded('overdue', group.project_name)
-                    ? 'Show less'
-                    : `+${group.tasks.length - 5} more` }}
-                </button>
+                  {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
+                </span>
               </div>
-            </template>
-
-            <!-- ── Unassigned Tasks ── -->
-            <template v-if="activeDrawer === 'unassigned'">
-              <div
-                v-if="alerts.unassignedTasks.length === 0"
-                class="alerts-panel__empty"
-              >
-                <span class="alerts-panel__empty-check">✓</span>
-                All tasks have an assignee
-              </div>
-              <div
-                v-for="group in alerts.unassignedTasks"
-                :key="'ua-' + group.project_name"
-                class="alerts-drawer__project-group"
-              >
-                <div class="alerts-drawer__project-header">
-                  <span class="alerts-drawer__project-name">{{
-                    group.project_name
-                  }}</span>
-                  <span class="alerts-drawer__badge alerts-drawer__badge--warning">
-                    {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
-                  </span>
-                </div>
-                <table class="alerts-drawer__table">
-                  <thead>
-                    <tr>
-                      <th>Task</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="task in visibleTasks('unassigned', group.project_name, group.tasks)"
-                      :key="'ua-t-' + task.task_id"
-                    >
-                      <td class="alerts-drawer__cell-name">{{ task.task_title }}</td>
-                      <td>
-                        <span class="alerts-drawer__stack-tag">{{ task.stack_title }}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <button
-                  v-if="group.tasks.length > 5"
-                  class="alerts-drawer__show-more"
-                  @click="toggleExpanded('unassigned', group.project_name)"
+              <ul class="alerts-panel__task-list">
+                <li
+                  v-for="task in group.tasks"
+                  :key="'od-t-' + task.task_id"
+                  class="alerts-panel__task-item"
                 >
-                  {{ isExpanded('unassigned', group.project_name)
-                    ? 'Show less'
-                    : `+${group.tasks.length - 5} more` }}
-                </button>
-              </div>
-            </template>
-
-            <!-- ── No Due Date Tasks ── -->
-            <template v-if="activeDrawer === 'nodue'">
-              <div
-                v-if="alerts.noDueDateTasks.length === 0"
-                class="alerts-panel__empty"
-              >
-                <span class="alerts-panel__empty-check">✓</span>
-                All tasks have a due date
-              </div>
-              <div
-                v-for="group in alerts.noDueDateTasks"
-                :key="'nd-' + group.project_name"
-                class="alerts-drawer__project-group"
-              >
-                <div class="alerts-drawer__project-header">
-                  <span class="alerts-drawer__project-name">{{
-                    group.project_name
+                  <span class="alerts-panel__task-name">{{
+                    task.task_title
                   }}</span>
-                  <span class="alerts-drawer__badge alerts-drawer__badge--warning">
-                    {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
-                  </span>
-                </div>
-                <table class="alerts-drawer__table">
-                  <thead>
-                    <tr>
-                      <th>Task</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="task in visibleTasks('nodue', group.project_name, group.tasks)"
-                      :key="'nd-t-' + task.task_id"
-                    >
-                      <td class="alerts-drawer__cell-name">{{ task.task_title }}</td>
-                      <td>
-                        <span class="alerts-drawer__stack-tag">{{ task.stack_title }}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <button
-                  v-if="group.tasks.length > 5"
-                  class="alerts-drawer__show-more"
-                  @click="toggleExpanded('nodue', group.project_name)"
+                  <div class="alerts-panel__task-meta">
+                    <span class="alerts-panel__task-stack">{{
+                      task.stack_title
+                    }}</span>
+                    <span class="alerts-panel__task-overdue">
+                      {{ task.days_overdue }}d overdue
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unassigned Tasks Widget -->
+        <div class="alerts-panel__widget">
+          <div class="alerts-panel__widget-header">
+            <h3 class="alerts-panel__widget-title">
+              <span
+                class="alerts-panel__widget-icon alerts-panel__widget-icon--warning"
+                >?</span
+              >
+              Unassigned Tasks
+            </h3>
+            <span
+              class="alerts-panel__widget-count alerts-panel__widget-count--warning"
+            >
+              {{ unassignedTotal }}
+            </span>
+          </div>
+          <div class="alerts-panel__widget-body">
+            <div
+              v-if="alerts.unassignedTasks.length === 0"
+              class="alerts-panel__empty"
+            >
+              <span class="alerts-panel__empty-check">✓</span>
+              All tasks have an assignee
+            </div>
+            <div
+              v-for="group in alerts.unassignedTasks"
+              :key="'ua-' + group.project_name"
+              class="alerts-panel__project-group"
+            >
+              <div class="alerts-panel__project-header">
+                <span class="alerts-panel__project-name">{{
+                  group.project_name
+                }}</span>
+                <span
+                  class="alerts-panel__project-count alerts-panel__project-count--warning"
                 >
-                  {{ isExpanded('nodue', group.project_name)
-                    ? 'Show less'
-                    : `+${group.tasks.length - 5} more` }}
-                </button>
+                  {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
+                </span>
               </div>
-            </template>
-
-            <!-- ── Stalled Projects ── -->
-            <template v-if="activeDrawer === 'stalled'">
-              <div
-                v-if="alerts.stalledProjects.length === 0 && alerts.zeroProgress.length === 0"
-                class="alerts-panel__empty"
+              <ul class="alerts-panel__task-list">
+                <li
+                  v-for="task in group.tasks.slice(
+                    0,
+                    expandedUnassigned[group.project_name] ? undefined : 3,
+                  )"
+                  :key="'ua-t-' + task.task_id"
+                  class="alerts-panel__task-item"
+                >
+                  <span class="alerts-panel__task-name">{{
+                    task.task_title
+                  }}</span>
+                  <span class="alerts-panel__task-stack">{{
+                    task.stack_title
+                  }}</span>
+                </li>
+              </ul>
+              <button
+                v-if="group.tasks.length > 3"
+                class="alerts-panel__show-more"
+                @click="
+                  $set(
+                    expandedUnassigned,
+                    group.project_name,
+                    !expandedUnassigned[group.project_name],
+                  )
+                "
               >
-                <span class="alerts-panel__empty-check">✓</span>
-                All projects are active
-              </div>
-
-              <div v-if="alerts.stalledProjects.length > 0" class="alerts-drawer__section">
-                <h4 class="alerts-drawer__section-title">Stalled Projects</h4>
-                <table class="alerts-drawer__table">
-                  <thead>
-                    <tr>
-                      <th>Project</th>
-                      <th>Inactive</th>
-                      <th>Progress</th>
-                      <th>Last Activity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="proj in alerts.stalledProjects"
-                      :key="'stalled-' + proj.project_name"
-                    >
-                      <td class="alerts-drawer__cell-name">{{ proj.project_name }}</td>
-                      <td>
-                        <span class="alerts-drawer__overdue-tag">{{ proj.days_inactive }}d</span>
-                      </td>
-                      <td>{{ proj.done_tasks }}/{{ proj.total_tasks }} done</td>
-                      <td class="alerts-drawer__cell-muted">{{ proj.last_activity }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div v-if="alerts.zeroProgress.length > 0" class="alerts-drawer__section">
-                <h4 class="alerts-drawer__section-title">Zero Progress</h4>
-                <table class="alerts-drawer__table">
-                  <thead>
-                    <tr>
-                      <th>Project</th>
-                      <th>Total Tasks</th>
-                      <th>Completed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="proj in alerts.zeroProgress"
-                      :key="'zp-' + proj.project_name"
-                    >
-                      <td class="alerts-drawer__cell-name">{{ proj.project_name }}</td>
-                      <td>{{ proj.total_tasks }}</td>
-                      <td><span class="alerts-drawer__overdue-tag">0</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
-
-            <!-- ── App Updates ── -->
-            <template v-if="activeDrawer === 'updates'">
-              <div
-                v-if="alerts.pendingUpdates.length === 0"
-                class="alerts-panel__empty"
-              >
-                <span class="alerts-panel__empty-check">✓</span>
-                All apps are up to date
-              </div>
-              <table v-else class="alerts-drawer__table">
-                <thead>
-                  <tr>
-                    <th>Application</th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(upd, idx) in alerts.pendingUpdates"
-                    :key="'upd-' + idx"
-                  >
-                    <td class="alerts-drawer__cell-name">{{ upd.app_name }}</td>
-                    <td class="alerts-drawer__cell-muted">{{ upd.subject || '—' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </template>
+                {{
+                  expandedUnassigned[group.project_name]
+                    ? "Show less"
+                    : `+${group.tasks.length - 3} more`
+                }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </transition>
+
+      <!-- SECOND ROW -->
+      <div class="alerts-panel__details-grid">
+        <!-- No Due Date Widget -->
+        <div class="alerts-panel__widget">
+          <div class="alerts-panel__widget-header">
+            <h3 class="alerts-panel__widget-title">
+              <span
+                class="alerts-panel__widget-icon alerts-panel__widget-icon--warning"
+                >⏱</span
+              >
+              Tasks Without Due Date
+            </h3>
+            <span
+              class="alerts-panel__widget-count alerts-panel__widget-count--warning"
+            >
+              {{ noDueDateTotal }}
+            </span>
+          </div>
+          <div class="alerts-panel__widget-body">
+            <div
+              v-if="alerts.noDueDateTasks.length === 0"
+              class="alerts-panel__empty"
+            >
+              <span class="alerts-panel__empty-check">✓</span>
+              All tasks have a due date
+            </div>
+            <div
+              v-for="group in alerts.noDueDateTasks"
+              :key="'nd-' + group.project_name"
+              class="alerts-panel__project-group"
+            >
+              <div class="alerts-panel__project-header">
+                <span class="alerts-panel__project-name">{{
+                  group.project_name
+                }}</span>
+                <span
+                  class="alerts-panel__project-count alerts-panel__project-count--warning"
+                >
+                  {{ group.count }} task{{ group.count > 1 ? "s" : "" }}
+                </span>
+              </div>
+              <ul class="alerts-panel__task-list">
+                <li
+                  v-for="task in group.tasks.slice(
+                    0,
+                    expandedNoDueDate[group.project_name] ? undefined : 3,
+                  )"
+                  :key="'nd-t-' + task.task_id"
+                  class="alerts-panel__task-item"
+                >
+                  <span class="alerts-panel__task-name">{{
+                    task.task_title
+                  }}</span>
+                  <span class="alerts-panel__task-stack">{{
+                    task.stack_title
+                  }}</span>
+                </li>
+              </ul>
+              <button
+                v-if="group.tasks.length > 3"
+                class="alerts-panel__show-more"
+                @click="
+                  $set(
+                    expandedNoDueDate,
+                    group.project_name,
+                    !expandedNoDueDate[group.project_name],
+                  )
+                "
+              >
+                {{
+                  expandedNoDueDate[group.project_name]
+                    ? "Show less"
+                    : `+${group.tasks.length - 3} more`
+                }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stalled Projects + Zero Progress + Updates -->
+        <div class="alerts-panel__widget">
+          <div class="alerts-panel__widget-header">
+            <h3 class="alerts-panel__widget-title">
+              <span
+                class="alerts-panel__widget-icon alerts-panel__widget-icon--warning"
+                >⚡</span
+              >
+              Project Health
+            </h3>
+          </div>
+          <div class="alerts-panel__widget-body">
+            <!-- Stalled Projects -->
+            <div
+              v-if="alerts.stalledProjects.length > 0"
+              class="alerts-panel__subsection"
+            >
+              <h4 class="alerts-panel__subsection-title">Stalled Projects</h4>
+              <div
+                v-for="proj in alerts.stalledProjects"
+                :key="'stalled-' + proj.project_name"
+                class="alerts-panel__stalled-item"
+              >
+                <div class="alerts-panel__stalled-row">
+                  <span class="alerts-panel__project-name">{{
+                    proj.project_name
+                  }}</span>
+                  <span class="alerts-panel__stalled-days">
+                    {{ proj.days_inactive }}d inactive
+                  </span>
+                </div>
+                <div class="alerts-panel__stalled-meta">
+                  {{ proj.done_tasks }}/{{ proj.total_tasks }} tasks done · Last
+                  activity {{ proj.last_activity }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Zero Progress Projects -->
+            <div
+              v-if="alerts.zeroProgress.length > 0"
+              class="alerts-panel__subsection"
+            >
+              <h4 class="alerts-panel__subsection-title">Zero Progress</h4>
+              <div
+                v-for="proj in alerts.zeroProgress"
+                :key="'zp-' + proj.project_name"
+                class="alerts-panel__stalled-item"
+              >
+                <div class="alerts-panel__stalled-row">
+                  <span class="alerts-panel__project-name">{{
+                    proj.project_name
+                  }}</span>
+                  <span class="alerts-panel__stalled-days">
+                    {{ proj.total_tasks }} tasks, 0 done
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- App Updates -->
+            <div
+              v-if="alerts.pendingUpdates.length > 0"
+              class="alerts-panel__subsection"
+            >
+              <h4 class="alerts-panel__subsection-title">
+                Pending App Updates
+              </h4>
+              <div
+                v-for="(upd, idx) in alerts.pendingUpdates"
+                :key="'upd-' + idx"
+                class="alerts-panel__update-item"
+              >
+                <span class="alerts-panel__update-app">{{ upd.app_name }}</span>
+              </div>
+            </div>
+
+            <!-- All clear -->
+            <div
+              v-if="
+                alerts.stalledProjects.length === 0 &&
+                alerts.zeroProgress.length === 0 &&
+                alerts.pendingUpdates.length === 0
+              "
+              class="alerts-panel__empty"
+            >
+              <span class="alerts-panel__empty-check">✓</span>
+              All projects healthy, no pending updates
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -358,8 +370,8 @@ export default {
   data() {
     return {
       collapsed: false,
-      activeDrawer: null,
-      expandedGroups: {},
+      expandedUnassigned: {},
+      expandedNoDueDate: {},
     };
   },
   computed: {
@@ -372,62 +384,6 @@ export default {
     noDueDateTotal() {
       return this.alerts.noDueDateTasks.reduce((sum, g) => sum + g.count, 0);
     },
-    stalledTotal() {
-      return this.alerts.stalledProjects.length + this.alerts.zeroProgress.length;
-    },
-    summaryTiles() {
-      return this.alerts.summary.map((item) => {
-        const keyMap = {
-          'Overdue Tasks': 'overdue',
-          'Unassigned Tasks': 'unassigned',
-          'No Due Date': 'nodue',
-          'Stalled Projects': 'stalled',
-          'App Updates': 'updates',
-        };
-        return {
-          ...item,
-          key: keyMap[item.label] || item.label,
-          hasDetail: item.value > 0,
-        };
-      });
-    },
-    drawerConfig() {
-      const configs = {
-        overdue: { title: 'Overdue Tasks', icon: '!', type: 'danger' },
-        unassigned: { title: 'Unassigned Tasks', icon: '?', type: 'warning' },
-        nodue: { title: 'Tasks Without Due Date', icon: '⏱', type: 'warning' },
-        stalled: { title: 'Project Health', icon: '⚡', type: 'warning' },
-        updates: { title: 'Pending App Updates', icon: '↑', type: 'warning' },
-      };
-      return configs[this.activeDrawer] || { title: '', icon: '', type: '' };
-    },
-  },
-  methods: {
-    openDrawer(key) {
-      this.expandedGroups = {};
-      this.activeDrawer = key;
-      document.body.style.overflow = 'hidden';
-    },
-    closeDrawer() {
-      this.activeDrawer = null;
-      document.body.style.overflow = '';
-    },
-    expandKey(drawer, projectName) {
-      return `${drawer}::${projectName}`;
-    },
-    isExpanded(drawer, projectName) {
-      return !!this.expandedGroups[this.expandKey(drawer, projectName)];
-    },
-    toggleExpanded(drawer, projectName) {
-      const key = this.expandKey(drawer, projectName);
-      this.$set(this.expandedGroups, key, !this.expandedGroups[key]);
-    },
-    visibleTasks(drawer, projectName, tasks) {
-      return this.isExpanded(drawer, projectName) ? tasks : tasks.slice(0, 5);
-    },
-  },
-  beforeDestroy() {
-    document.body.style.overflow = '';
   },
 };
 </script>
@@ -504,27 +460,6 @@ export default {
   align-items: center;
   gap: 4px;
   border-top: 3px solid transparent;
-  border-left: none;
-  border-right: none;
-  border-bottom: none;
-  font-family: inherit;
-  cursor: default;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.alerts-panel__summary-card--clickable {
-  cursor: pointer;
-}
-
-.alerts-panel__summary-card--clickable:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-.alerts-panel__summary-card--clickable:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .alerts-panel__summary-card--danger {
@@ -565,17 +500,213 @@ export default {
   text-align: center;
 }
 
-.alerts-panel__summary-hint {
-  font-size: 10px;
-  color: #9ca3af;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  position: absolute;
-  bottom: 4px;
+/* ─── Detail Grid ─── */
+.alerts-panel__details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md, 16px);
+  margin-bottom: var(--spacing-md, 16px);
 }
 
-.alerts-panel__summary-card--clickable:hover .alerts-panel__summary-hint {
-  opacity: 1;
+/* ─── Widget Card ─── */
+.alerts-panel__widget {
+  background: var(--bg-card, #fff);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
+  padding: var(--spacing-lg, 24px);
+  transition: box-shadow 0.2s ease;
+}
+
+.alerts-panel__widget:hover {
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+.alerts-panel__widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md, 16px);
+  padding-bottom: var(--spacing-sm, 8px);
+  border-bottom: 1px solid #f0f1f5;
+}
+
+.alerts-panel__widget-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alerts-panel__widget-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.alerts-panel__widget-icon--danger {
+  background-color: #fde8e8;
+  color: #b91c1c;
+}
+
+.alerts-panel__widget-icon--warning {
+  background-color: #fef3cd;
+  color: #92400e;
+}
+
+.alerts-panel__widget-count {
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 2px 10px;
+}
+
+.alerts-panel__widget-count--danger {
+  background-color: #fde8e8;
+  color: #b91c1c;
+}
+
+.alerts-panel__widget-count--warning {
+  background-color: #fef3cd;
+  color: #92400e;
+}
+
+/* ─── Widget Body ─── */
+.alerts-panel__widget-body {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.alerts-panel__widget-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.alerts-panel__widget-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+/* ─── Project Group ─── */
+.alerts-panel__project-group {
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.alerts-panel__project-group:last-child {
+  margin-bottom: 0;
+}
+
+.alerts-panel__project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.alerts-panel__project-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.alerts-panel__project-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.alerts-panel__project-count--danger {
+  background-color: #fde8e8;
+  color: #b91c1c;
+}
+
+.alerts-panel__project-count--warning {
+  background-color: #fef3cd;
+  color: #92400e;
+}
+
+/* ─── Task List ─── */
+.alerts-panel__task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.alerts-panel__task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #f8f9fa;
+  gap: 8px;
+}
+
+.alerts-panel__task-item:last-child {
+  border-bottom: none;
+}
+
+.alerts-panel__task-name {
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 400;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerts-panel__task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.alerts-panel__task-stack {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+  background: #f5f6fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.alerts-panel__task-overdue {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b91c1c;
+  background-color: #fde8e8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ─── Show More Button ─── */
+.alerts-panel__show-more {
+  background: none;
+  border: none;
+  color: #4a90d9;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 4px;
+}
+
+.alerts-panel__show-more:hover {
+  text-decoration: underline;
 }
 
 /* ─── Empty State ─── */
@@ -605,304 +736,68 @@ export default {
   flex-shrink: 0;
 }
 
-/* ─── Drawer Backdrop ─── */
-.alerts-drawer__backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 9999;
-  display: flex;
-  justify-content: flex-end;
+/* ─── Subsections (Project Health) ─── */
+.alerts-panel__subsection {
+  margin-bottom: var(--spacing-md, 16px);
 }
 
-/* ─── Drawer Panel ─── */
-.alerts-drawer {
-  width: 560px;
-  max-width: 90vw;
-  height: 100vh;
-  background: #fff;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.alerts-panel__subsection:last-child {
+  margin-bottom: 0;
 }
 
-.alerts-drawer__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eef1f5;
-  flex-shrink: 0;
-}
-
-.alerts-drawer__header--danger {
-  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
-  border-bottom-color: #fde8e8;
-}
-
-.alerts-drawer__header--warning {
-  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
-  border-bottom-color: #fef3cd;
-}
-
-.alerts-drawer__header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.alerts-drawer__icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.alerts-drawer__header--danger .alerts-drawer__icon {
-  background-color: #fde8e8;
-  color: #b91c1c;
-}
-
-.alerts-drawer__header--warning .alerts-drawer__icon {
-  background-color: #fef3cd;
-  color: #92400e;
-}
-
-.alerts-drawer__title {
-  font-size: 18px;
+.alerts-panel__subsection-title {
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
-  margin: 0;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px 0;
   padding: 0;
   border: none;
 }
 
-.alerts-drawer__close {
-  background: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #6b7280;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
+.alerts-panel__stalled-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f8f9fa;
 }
 
-.alerts-drawer__close:hover {
-  background: #f3f4f6;
-  color: #1a1a2e;
+.alerts-panel__stalled-item:last-child {
+  border-bottom: none;
 }
 
-/* ─── Drawer Body ─── */
-.alerts-drawer__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-}
-
-.alerts-drawer__body::-webkit-scrollbar {
-  width: 5px;
-}
-
-.alerts-drawer__body::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-
-/* ─── Project Group inside drawer ─── */
-.alerts-drawer__project-group {
-  margin-bottom: 24px;
-}
-
-.alerts-drawer__project-group:last-child {
-  margin-bottom: 0;
-}
-
-.alerts-drawer__project-header {
+.alerts-panel__stalled-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f0f1f5;
 }
 
-.alerts-drawer__project-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-primary, #1a1a2e);
-}
-
-.alerts-drawer__badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-}
-
-.alerts-drawer__badge--danger {
-  background-color: #fde8e8;
-  color: #b91c1c;
-}
-
-.alerts-drawer__badge--warning {
-  background-color: #fef3cd;
-  color: #92400e;
-}
-
-/* ─── Tables ─── */
-.alerts-drawer__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.alerts-drawer__table thead th {
-  text-align: left;
+.alerts-panel__stalled-days {
   font-size: 11px;
   font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 6px 8px;
-  border-bottom: 1px solid #f0f1f5;
+  color: #92400e;
+  background: #fef3cd;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-.alerts-drawer__table tbody tr {
-  transition: background 0.1s ease;
-}
-
-.alerts-drawer__table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.alerts-drawer__table tbody td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #f8f9fa;
-  color: var(--color-text-primary, #1a1a2e);
-  vertical-align: middle;
-}
-
-.alerts-drawer__cell-name {
-  font-weight: 500;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.alerts-drawer__cell-muted {
-  color: #9ca3af;
-  font-size: 12px;
-}
-
-.alerts-drawer__stack-tag {
+.alerts-panel__stalled-meta {
   font-size: 11px;
   color: var(--color-text-muted, #9ca3af);
-  background: #f5f6fa;
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
+  margin-top: 2px;
 }
 
-.alerts-drawer__overdue-tag {
-  font-size: 11px;
-  font-weight: 600;
-  color: #b91c1c;
-  background-color: #fde8e8;
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-/* ─── Show More ─── */
-.alerts-drawer__show-more {
-  background: none;
-  border: none;
-  color: #4a90d9;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
+.alerts-panel__update-item {
   padding: 6px 0;
-  margin-top: 4px;
+  border-bottom: 1px solid #f8f9fa;
 }
 
-.alerts-drawer__show-more:hover {
-  text-decoration: underline;
+.alerts-panel__update-item:last-child {
+  border-bottom: none;
 }
 
-/* ─── Section (Stalled/Health) ─── */
-.alerts-drawer__section {
-  margin-bottom: 24px;
-}
-
-.alerts-drawer__section:last-child {
-  margin-bottom: 0;
-}
-
-.alerts-drawer__section-title {
+.alerts-panel__update-app {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0 0 12px 0;
-  padding: 0 0 8px 0;
-  border: none;
-  border-bottom: 2px solid #f0f1f5;
-}
-
-/* ─── Drawer Transition ─── */
-.drawer-enter-active {
-  transition: opacity 0.25s ease;
-}
-
-.drawer-enter-active .alerts-drawer {
-  animation: slideIn 0.25s ease forwards;
-}
-
-.drawer-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.drawer-leave-active .alerts-drawer {
-  animation: slideOut 0.2s ease forwards;
-}
-
-.drawer-enter,
-.drawer-leave-to {
-  opacity: 0;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
+  color: var(--color-text-primary, #1a1a2e);
 }
 
 /* ─── Responsive ─── */
@@ -911,19 +806,14 @@ export default {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .alerts-drawer {
-    width: 480px;
+  .alerts-panel__details-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
   .alerts-panel__summary-strip {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .alerts-drawer {
-    width: 100vw;
-    max-width: 100vw;
   }
 }
 </style>
