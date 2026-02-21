@@ -6,6 +6,7 @@ namespace OCA\AdminPage\Controller;
 
 use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
+use OCA\AdminPage\Service\FinancialService;
 use OCA\AdminPage\Service\KpiService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
@@ -20,6 +21,7 @@ class DashboardController extends Controller {
     private DeckService $deckService;
     private AlertService $alertService;
     private KpiService $kpiService;
+    private FinancialService $financialService;
 
     public function __construct(
         string $appName,
@@ -28,7 +30,8 @@ class DashboardController extends Controller {
         IURLGenerator $urlGenerator,
         DeckService $deckService,
         AlertService $alertService,
-        KpiService $kpiService
+        KpiService $kpiService,
+        FinancialService $financialService
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
@@ -36,6 +39,7 @@ class DashboardController extends Controller {
         $this->deckService = $deckService;
         $this->alertService = $alertService;
         $this->kpiService = $kpiService;
+        $this->financialService = $financialService;
     }
 
     /**
@@ -113,6 +117,9 @@ class DashboardController extends Controller {
 
             // ── Drill-down detail for perf tiles ──
             'performanceDetails' => $this->deckService->getPerformanceDetails(),
+
+            // ── Financial overview ──
+            'financialData' => $this->financialService->getFinancialData(),
         ];
 
         return new JSONResponse($data);

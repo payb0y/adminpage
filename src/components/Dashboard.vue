@@ -31,6 +31,12 @@
       :task-completion-projects="data.taskCompletionProjects"
       :performance-details="data.performanceDetails"
     />
+
+    <!-- FINANCIAL OVERVIEW -->
+    <FinancialPanel
+      v-if="data.financialData"
+      :financial-data="data.financialData"
+    />
   </div>
 </template>
 
@@ -41,6 +47,7 @@ import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import SafetyPanel from "./SafetyPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
+import FinancialPanel from "./FinancialPanel.vue";
 
 export default {
   name: "Dashboard",
@@ -49,6 +56,7 @@ export default {
     AlertsPanel,
     SafetyPanel,
     ProjectPerformancePanel,
+    FinancialPanel,
   },
   props: {
     data: {
