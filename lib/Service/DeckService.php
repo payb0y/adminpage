@@ -365,4 +365,221 @@ class DeckService {
             ],
         ];
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Detail data for drill-down modals
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Get the task-level detail behind each performance widget, used for
+     * drill-down modals in the frontend.
+     *
+     * @return array  with keys matching the 4 widgets
+     */
+    public function getPerformanceDetails(): array {
+        $projectRows = $this->fetchProjects();
+        if (empty($projectRows)) {
+            return [
+                'progressDetails'       => [],
+                'disciplineDetails'     => [],
+                'delayDetails'          => [],
+                'completionDetails'     => [],
+            ];
+        }
+
+        $boardIds = [];
+        $projectMap = [];
+        foreach ($projectRows as $p) {
+            $bid = (int)$p['board_id'];
+            $boardIds[] = $bid;
+            $projectMap[$bid] = [
+                'name'     => $p['project_name'],
+                'board_id' => $bid,
+                'tasks'    => [],
+            ];
+        }
+
+        $taskRows   = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels = $this->fetchCardLabels($boardIds);
+
+        foreach ($taskRows as $row) {
+            $bid = (int)$row['board_id'];
+            if (isset($projectMap[$bid])) {
+                $projectMap[$bid]['tasks'][] = $row;
+            }
+        }
+
+        return [
+            'progressDetails'   => $this->buildProgressDetails($projectMap),
+            'disciplineDetails' => $this->buildDisciplineDetails($taskRows, $cardLabels),
+            'delayDetails'      => $this->buildDelayDetails($projectMap),
+            'completionDetails' => $this->buildCompletionDetails($projectMap),
+        ];
+    }
+
+    /**
+     * Progress detail: per-project list of tasks with status and due info.
+     */
+    private function buildProgressDetails(array $projectMap): array {
+        $result = [];
+        foreach ($projectMap as $proj) {
+            $total = 0;
+            $done  = 0;
+            $tasks = [];
+            foreach ($proj['tasks'] as $t) {
+                if ($t['task_status'] === 'deleted') {
+                    continue;
+                }
+                $total++;
+                if ($t['task_status'] === 'done') {
+                    $done++;
+                }
+                $tasks[] = [
+                    'title'  => $t['task_title'],
+                    'status' => $t['task_status'],
+                    'stack'  => $t['stack_title'],
+                    'due'    => $t['duedate'],
+                ];
+            }
+            $result[] = [
+                'name'     => $proj['name'],
+                'total'    => $total,
+                'done'     => $done,
+                'progress' => $total > 0 ? (int)round(($done / $total) * 100) : 0,
+                'tasks'    => $tasks,
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Discipline detail: per-label list of tasks.
+     */
+    private function buildDisciplineDetails(array $taskRows, array $cardLabels): array {
+        $disciplines = []; // label => { total, done, tasks[] }
+        foreach ($taskRows as $row) {
+            $taskId = (int)$row['task_id'];
+            $labels = $cardLabels[$taskId] ?? [];
+            if (empty($labels)) {
+                $labels = ['Unlabelled'];
+            }
+            foreach ($labels as $label) {
+                if (!isset($disciplines[$label])) {
+                    $disciplines[$label] = ['total' => 0, 'done' => 0, 'tasks' => []];
+                }
+                $disciplines[$label]['total']++;
+                if ($row['task_status'] === 'done') {
+                    $disciplines[$label]['done']++;
+                }
+                $disciplines[$label]['tasks'][] = [
+                    'title'   => $row['task_title'],
+                    'status'  => $row['task_status'],
+                    'project' => $row['board_title'],
+                    'stack'   => $row['stack_title'],
+                ];
+            }
+        }
+
+        $result = [];
+        foreach ($disciplines as $label => $data) {
+            $result[] = [
+                'name'     => $label,
+                'total'    => $data['total'],
+                'done'     => $data['done'],
+                'progress' => $data['total'] > 0 ? (int)round(($data['done'] / $data['total']) * 100) : 0,
+                'tasks'    => $data['tasks'],
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Delay detail: per-project task-level on-time / delayed / blocked breakdown.
+     */
+    private function buildDelayDetails(array $projectMap): array {
+        $result = [];
+        foreach ($projectMap as $proj) {
+            $tasks = [];
+            foreach ($proj['tasks'] as $t) {
+                if ($t['task_status'] === 'deleted') {
+                    continue;
+                }
+
+                $category = 'on-time';
+                $daysOverdue = null;
+
+                if ($t['task_status'] === 'done') {
+                    if ($t['duedate'] !== null && $t['last_modified'] !== null) {
+                        $doneDate = (new \DateTime())->setTimestamp((int)$t['last_modified']);
+                        $dueDate  = new \DateTime($t['duedate']);
+                        if ($doneDate > $dueDate) {
+                            $category = 'delayed';
+                            $daysOverdue = (int)$doneDate->diff($dueDate)->days;
+                        }
+                    }
+                } elseif ($t['task_status'] === 'archived') {
+                    $category = 'blocked';
+                } elseif ($t['due_bucket'] === 'overdue') {
+                    $category = 'delayed';
+                    if ($t['duedate'] !== null) {
+                        $now = new \DateTime();
+                        $due = new \DateTime($t['duedate']);
+                        $daysOverdue = (int)$now->diff($due)->days;
+                    }
+                }
+
+                $tasks[] = [
+                    'title'        => $t['task_title'],
+                    'status'       => $t['task_status'],
+                    'stack'        => $t['stack_title'],
+                    'due'          => $t['duedate'],
+                    'category'     => $category,
+                    'days_overdue' => $daysOverdue,
+                ];
+            }
+            $result[] = [
+                'name'  => $proj['name'],
+                'tasks' => $tasks,
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Completion detail: per-project list of completed tasks with completion date.
+     */
+    private function buildCompletionDetails(array $projectMap): array {
+        $result = [];
+        foreach ($projectMap as $proj) {
+            $completed = [];
+            $totalTasks = 0;
+            foreach ($proj['tasks'] as $t) {
+                if ($t['task_status'] === 'deleted') {
+                    continue;
+                }
+                $totalTasks++;
+                if ($t['task_status'] === 'done' && $t['last_modified'] !== null) {
+                    $dt = (new \DateTime())->setTimestamp((int)$t['last_modified']);
+                    $completed[] = [
+                        'title'        => $t['task_title'],
+                        'completed_at' => $dt->format('Y-m-d H:i'),
+                        'stack'        => $t['stack_title'],
+                        'due'          => $t['duedate'],
+                    ];
+                }
+            }
+            // Sort by completed_at descending (newest first)
+            usort($completed, function ($a, $b) {
+                return strcmp($b['completed_at'], $a['completed_at']);
+            });
+
+            $result[] = [
+                'name'        => $proj['name'],
+                'total_tasks' => $totalTasks,
+                'completed'   => count($completed),
+                'tasks'       => $completed,
+            ];
+        }
+        return $result;
+    }
 }

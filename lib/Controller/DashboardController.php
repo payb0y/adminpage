@@ -6,6 +6,7 @@ namespace OCA\AdminPage\Controller;
 
 use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
+use OCA\AdminPage\Service\KpiService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
@@ -18,6 +19,7 @@ class DashboardController extends Controller {
     private IURLGenerator $urlGenerator;
     private DeckService $deckService;
     private AlertService $alertService;
+    private KpiService $kpiService;
 
     public function __construct(
         string $appName,
@@ -25,13 +27,15 @@ class DashboardController extends Controller {
         IClientService $clientService,
         IURLGenerator $urlGenerator,
         DeckService $deckService,
-        AlertService $alertService
+        AlertService $alertService,
+        KpiService $kpiService
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
         $this->urlGenerator = $urlGenerator;
         $this->deckService = $deckService;
         $this->alertService = $alertService;
+        $this->kpiService = $kpiService;
     }
 
     /**
@@ -45,41 +49,7 @@ class DashboardController extends Controller {
         $perfData = $this->deckService->getProjectPerformanceData();
 
         $data = [
-            'kpis' => [
-                [
-                    'id' => 'operational',
-                    'title' => 'Operational',
-                    'icon' => 'icon-folder',
-                    'iconColor' => '#4A90D9',
-                    'metrics' => [
-                        ['value' => '12', 'label' => 'Active Projects'],
-                        ['value' => '3', 'label' => 'Projects Behind Schedule'],
-                        ['value' => '14', 'label' => 'Delayed Tasks'],
-                    ],
-                ],
-                [
-                    'id' => 'financial',
-                    'title' => 'Financial',
-                    'icon' => 'icon-quota',
-                    'iconColor' => '#2E9E5A',
-                    'metrics' => [
-                        ['value' => '€148K', 'label' => 'Approved Revenue'],
-                        ['value' => '€38K', 'label' => 'Outstanding Invoices'],
-                        ['value' => '7', 'label' => 'Invoices Overdue'],
-                    ],
-                ],
-                [
-                    'id' => 'commercial',
-                    'title' => 'Commercial',
-                    'icon' => 'icon-mail',
-                    'iconColor' => '#E67E5A',
-                    'metrics' => [
-                        ['value' => '26', 'label' => 'Quotes Sent'],
-                        ['value' => '7', 'label' => 'Unpaid Quotes'],
-                        ['value' => '62%', 'label' => 'Conversion Rate'],
-                    ],
-                ],
-            ],
+            'kpis' => $this->kpiService->getKpis(),
             'alerts' => $this->alertService->getAlerts(),
             'safetyStats' => [
                 [
@@ -140,6 +110,9 @@ class DashboardController extends Controller {
             'productivityByDiscipline' => $perfData['productivityByDiscipline'],
             'taskDelayProjects' => $perfData['taskDelayProjects'],
             'taskCompletionProjects' => $perfData['taskCompletionProjects'],
+
+            // ── Drill-down detail for perf tiles ──
+            'performanceDetails' => $this->deckService->getPerformanceDetails(),
         ];
 
         return new JSONResponse($data);

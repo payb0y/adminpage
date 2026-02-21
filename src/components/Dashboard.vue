@@ -29,6 +29,7 @@
       :productivity-by-discipline="data.productivityByDiscipline"
       :task-delay-projects="data.taskDelayProjects"
       :task-completion-projects="data.taskCompletionProjects"
+      :performance-details="data.performanceDetails"
     />
   </div>
 </template>
