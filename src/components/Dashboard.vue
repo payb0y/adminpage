@@ -31,12 +31,14 @@
     />
 
     <!-- SAFETY SECTION -->
+    <!--
     <SafetyPanel
       :safety-stats="data.safetyStats"
       :project-incidents="data.projectIncidents"
       :severity-chart="data.severityChart"
       :causes="data.causes"
     />
+    -->
   </div>
 </template>
 
