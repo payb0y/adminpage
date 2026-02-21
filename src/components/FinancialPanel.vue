@@ -28,11 +28,15 @@
       <!-- REVENUE KPI STRIP -->
       <div class="fin-panel__kpi-strip">
         <div class="fin-panel__kpi-card fin-panel__kpi-card--accent">
-          <span class="fin-panel__kpi-value">€{{ formatCurrency(revenue.mrr) }}</span>
+          <span class="fin-panel__kpi-value"
+            >€{{ formatCurrency(revenue.mrr) }}</span
+          >
           <span class="fin-panel__kpi-label">Monthly Revenue</span>
         </div>
         <div class="fin-panel__kpi-card">
-          <span class="fin-panel__kpi-value">€{{ formatCurrency(revenue.arr) }}</span>
+          <span class="fin-panel__kpi-value"
+            >€{{ formatCurrency(revenue.arr) }}</span
+          >
           <span class="fin-panel__kpi-label">Annual Revenue</span>
         </div>
         <div class="fin-panel__kpi-card">
@@ -63,11 +67,17 @@
             >
               <div class="fin-panel__plan-info">
                 <span class="fin-panel__plan-name">{{ item.plan }}</span>
-                <span class="fin-panel__plan-subs">{{ item.subs }} sub{{ item.subs !== 1 ? 's' : '' }}</span>
+                <span class="fin-panel__plan-subs"
+                  >{{ item.subs }} sub{{ item.subs !== 1 ? "s" : "" }}</span
+                >
               </div>
               <div class="fin-panel__plan-amounts">
-                <span class="fin-panel__plan-price">€{{ item.price.toFixed(2) }}/mo</span>
-                <span class="fin-panel__plan-mrr">€{{ item.mrr.toFixed(2) }}</span>
+                <span class="fin-panel__plan-price"
+                  >€{{ item.price.toFixed(2) }}/mo</span
+                >
+                <span class="fin-panel__plan-mrr"
+                  >€{{ item.mrr.toFixed(2) }}</span
+                >
               </div>
             </div>
           </div>
@@ -96,7 +106,11 @@
             <h3 class="fin-panel__card-title">Organizations</h3>
             <div class="fin-panel__card-title-underline"></div>
           </div>
-          <span class="fin-panel__org-count">{{ organizations.length }} organization{{ organizations.length !== 1 ? 's' : '' }}</span>
+          <span class="fin-panel__org-count"
+            >{{ organizations.length }} organization{{
+              organizations.length !== 1 ? "s" : ""
+            }}</span
+          >
         </div>
         <div class="fin-panel__table-wrap">
           <table class="fin-panel__table">
@@ -120,26 +134,52 @@
               >
                 <td>
                   <div class="fin-panel__org-name-cell">
-                    <span class="fin-panel__org-avatar">{{ org.name.charAt(0).toUpperCase() }}</span>
+                    <span class="fin-panel__org-avatar">{{
+                      org.name.charAt(0).toUpperCase()
+                    }}</span>
                     <div>
                       <span class="fin-panel__org-name">{{ org.name }}</span>
-                      <span class="fin-panel__org-email">{{ org.contactEmail }}</span>
+                      <span class="fin-panel__org-email">{{
+                        org.contactEmail
+                      }}</span>
                     </div>
                   </div>
                 </td>
-                <td><span class="fin-panel__plan-badge" :class="planBadgeClass(org.plan)">{{ org.plan }}</span></td>
-                <td>{{ org.planPrice > 0 ? '€' + org.planPrice.toFixed(2) : 'Free' }}</td>
                 <td>
-                  <span class="fin-panel__usage" :class="usageClass(org.memberCount, org.maxMembers)">
+                  <span
+                    class="fin-panel__plan-badge"
+                    :class="planBadgeClass(org.plan)"
+                    >{{ org.plan }}</span
+                  >
+                </td>
+                <td>
+                  {{
+                    org.planPrice > 0 ? "€" + org.planPrice.toFixed(2) : "Free"
+                  }}
+                </td>
+                <td>
+                  <span
+                    class="fin-panel__usage"
+                    :class="usageClass(org.memberCount, org.maxMembers)"
+                  >
                     {{ org.memberCount }}/{{ org.maxMembers }}
                   </span>
                 </td>
                 <td>
-                  <span class="fin-panel__usage" :class="usageClass(org.projectCount, org.maxProjects)">
+                  <span
+                    class="fin-panel__usage"
+                    :class="usageClass(org.projectCount, org.maxProjects)"
+                  >
                     {{ org.projectCount }}/{{ org.maxProjects }}
                   </span>
                 </td>
-                <td><span class="fin-panel__status" :class="'fin-panel__status--' + org.subStatus">{{ org.subStatus }}</span></td>
+                <td>
+                  <span
+                    class="fin-panel__status"
+                    :class="'fin-panel__status--' + org.subStatus"
+                    >{{ org.subStatus }}</span
+                  >
+                </td>
                 <td class="fin-panel__date">{{ formatDate(org.startedAt) }}</td>
               </tr>
             </tbody>
@@ -167,14 +207,37 @@
             </thead>
             <tbody>
               <tr v-for="plan in plans" :key="'plan-' + plan.id">
-                <td><span class="fin-panel__plan-badge" :class="planBadgeClass(plan.name)">{{ plan.name }}</span></td>
-                <td class="fin-panel__price-cell">{{ plan.price > 0 ? '€' + plan.price.toFixed(2) : 'Free' }}<span v-if="plan.price > 0" class="fin-panel__price-period">/mo</span></td>
+                <td>
+                  <span
+                    class="fin-panel__plan-badge"
+                    :class="planBadgeClass(plan.name)"
+                    >{{ plan.name }}</span
+                  >
+                </td>
+                <td class="fin-panel__price-cell">
+                  {{ plan.price > 0 ? "€" + plan.price.toFixed(2) : "Free"
+                  }}<span v-if="plan.price > 0" class="fin-panel__price-period"
+                    >/mo</span
+                  >
+                </td>
                 <td>{{ plan.maxProjects }}</td>
                 <td>{{ plan.maxMembers }}</td>
                 <td>{{ plan.sharedGb }} GB</td>
                 <td>{{ plan.privateGb }} GB</td>
-                <td><span class="fin-panel__visibility" :class="plan.isPublic ? 'fin-panel__visibility--public' : 'fin-panel__visibility--private'">{{ plan.isPublic ? 'Public' : 'Private' }}</span></td>
-                <td><strong>{{ plan.activeSubs }}</strong></td>
+                <td>
+                  <span
+                    class="fin-panel__visibility"
+                    :class="
+                      plan.isPublic
+                        ? 'fin-panel__visibility--public'
+                        : 'fin-panel__visibility--private'
+                    "
+                    >{{ plan.isPublic ? "Public" : "Private" }}</span
+                  >
+                </td>
+                <td>
+                  <strong>{{ plan.activeSubs }}</strong>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -183,42 +246,82 @@
     </div>
 
     <!-- ORGANIZATION DETAIL MODAL -->
-    <div v-if="selectedOrg" class="fin-modal__backdrop" @click.self="selectedOrg = null">
+    <div
+      v-if="selectedOrg"
+      class="fin-modal__backdrop"
+      @click.self="selectedOrg = null"
+    >
       <div class="fin-modal">
         <div class="fin-modal__header">
           <div class="fin-modal__header-left">
-            <span class="fin-modal__avatar">{{ selectedOrg.name.charAt(0).toUpperCase() }}</span>
+            <span class="fin-modal__avatar">{{
+              selectedOrg.name.charAt(0).toUpperCase()
+            }}</span>
             <div>
               <h3 class="fin-modal__title">{{ selectedOrg.name }}</h3>
-              <span class="fin-modal__subtitle">{{ selectedOrg.contactEmail }}</span>
+              <span class="fin-modal__subtitle">{{
+                selectedOrg.contactEmail
+              }}</span>
             </div>
           </div>
-          <button class="fin-modal__close" @click="selectedOrg = null">&times;</button>
+          <button class="fin-modal__close" @click="selectedOrg = null">
+            &times;
+          </button>
         </div>
         <div class="fin-modal__body">
           <div class="fin-modal__grid">
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Plan</span>
-              <span class="fin-panel__plan-badge" :class="planBadgeClass(selectedOrg.plan)">{{ selectedOrg.plan }}</span>
+              <span
+                class="fin-panel__plan-badge"
+                :class="planBadgeClass(selectedOrg.plan)"
+                >{{ selectedOrg.plan }}</span
+              >
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Price</span>
-              <span class="fin-modal__detail-value">{{ selectedOrg.planPrice > 0 ? '€' + selectedOrg.planPrice.toFixed(2) + '/mo' : 'Free' }}</span>
+              <span class="fin-modal__detail-value">{{
+                selectedOrg.planPrice > 0
+                  ? "€" + selectedOrg.planPrice.toFixed(2) + "/mo"
+                  : "Free"
+              }}</span>
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Status</span>
-              <span class="fin-panel__status" :class="'fin-panel__status--' + selectedOrg.subStatus">{{ selectedOrg.subStatus }}</span>
+              <span
+                class="fin-panel__status"
+                :class="'fin-panel__status--' + selectedOrg.subStatus"
+                >{{ selectedOrg.subStatus }}</span
+              >
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Admin</span>
-              <span class="fin-modal__detail-value">{{ selectedOrg.adminUid }}</span>
+              <span class="fin-modal__detail-value">{{
+                selectedOrg.adminUid
+              }}</span>
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Members</span>
               <span class="fin-modal__detail-value">
                 {{ selectedOrg.memberCount }} / {{ selectedOrg.maxMembers }}
                 <span class="fin-panel__usage-bar">
-                  <span class="fin-panel__usage-fill" :style="{ width: Math.min(100, (selectedOrg.memberCount / selectedOrg.maxMembers) * 100) + '%' }" :class="usageClass(selectedOrg.memberCount, selectedOrg.maxMembers)"></span>
+                  <span
+                    class="fin-panel__usage-fill"
+                    :style="{
+                      width:
+                        Math.min(
+                          100,
+                          (selectedOrg.memberCount / selectedOrg.maxMembers) *
+                            100,
+                        ) + '%',
+                    }"
+                    :class="
+                      usageClass(
+                        selectedOrg.memberCount,
+                        selectedOrg.maxMembers,
+                      )
+                    "
+                  ></span>
                 </span>
               </span>
             </div>
@@ -227,25 +330,51 @@
               <span class="fin-modal__detail-value">
                 {{ selectedOrg.projectCount }} / {{ selectedOrg.maxProjects }}
                 <span class="fin-panel__usage-bar">
-                  <span class="fin-panel__usage-fill" :style="{ width: Math.min(100, (selectedOrg.projectCount / selectedOrg.maxProjects) * 100) + '%' }" :class="usageClass(selectedOrg.projectCount, selectedOrg.maxProjects)"></span>
+                  <span
+                    class="fin-panel__usage-fill"
+                    :style="{
+                      width:
+                        Math.min(
+                          100,
+                          (selectedOrg.projectCount / selectedOrg.maxProjects) *
+                            100,
+                        ) + '%',
+                    }"
+                    :class="
+                      usageClass(
+                        selectedOrg.projectCount,
+                        selectedOrg.maxProjects,
+                      )
+                    "
+                  ></span>
                 </span>
               </span>
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Shared Storage</span>
-              <span class="fin-modal__detail-value">{{ selectedOrg.sharedStorageGb }} GB / project</span>
+              <span class="fin-modal__detail-value"
+                >{{ selectedOrg.sharedStorageGb }} GB / project</span
+              >
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Private Storage</span>
-              <span class="fin-modal__detail-value">{{ selectedOrg.privateStorageGb }} GB / user</span>
+              <span class="fin-modal__detail-value"
+                >{{ selectedOrg.privateStorageGb }} GB / user</span
+              >
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Started</span>
-              <span class="fin-modal__detail-value">{{ formatDate(selectedOrg.startedAt) }}</span>
+              <span class="fin-modal__detail-value">{{
+                formatDate(selectedOrg.startedAt)
+              }}</span>
             </div>
             <div class="fin-modal__detail">
               <span class="fin-modal__detail-label">Expires</span>
-              <span class="fin-modal__detail-value">{{ selectedOrg.endedAt === '—' ? 'No expiry' : formatDate(selectedOrg.endedAt) }}</span>
+              <span class="fin-modal__detail-value">{{
+                selectedOrg.endedAt === "—"
+                  ? "No expiry"
+                  : formatDate(selectedOrg.endedAt)
+              }}</span>
             </div>
           </div>
         </div>
@@ -276,9 +405,17 @@ export default {
   },
   computed: {
     revenue: function () {
-      return this.financialData.revenueOverview || {
-        mrr: 0, arr: 0, potentialArr: 0, paidSubs: 0, freeSubs: 0, totalSubs: 0, revenueByPlan: []
-      };
+      return (
+        this.financialData.revenueOverview || {
+          mrr: 0,
+          arr: 0,
+          potentialArr: 0,
+          paidSubs: 0,
+          freeSubs: 0,
+          totalSubs: 0,
+          revenueByPlan: [],
+        }
+      );
     },
     organizations: function () {
       return this.financialData.organizations || [];
@@ -289,46 +426,52 @@ export default {
     hasDistributionData: function () {
       var dist = this.financialData.subscriptionDistribution;
       if (!dist || !dist.data) return false;
-      return dist.data.some(function (v) { return v > 0; });
+      return dist.data.some(function (v) {
+        return v > 0;
+      });
     },
   },
   methods: {
     formatCurrency: function (amount) {
       if (amount >= 1000) {
-        return (amount / 1000).toFixed(1) + 'K';
+        return (amount / 1000).toFixed(1) + "K";
       }
       return amount.toFixed(2);
     },
     formatDate: function (dateStr) {
-      if (!dateStr || dateStr === '—') return '—';
+      if (!dateStr || dateStr === "—") return "—";
       var d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
     planBadgeClass: function (planName) {
-      if (!planName) return '';
+      if (!planName) return "";
       var lower = planName.toLowerCase();
-      if (lower === 'free') return 'fin-panel__plan-badge--free';
-      if (lower === 'pro') return 'fin-panel__plan-badge--pro';
-      if (lower === 'enterprise') return 'fin-panel__plan-badge--enterprise';
-      return 'fin-panel__plan-badge--custom';
+      if (lower === "free") return "fin-panel__plan-badge--free";
+      if (lower === "pro") return "fin-panel__plan-badge--pro";
+      if (lower === "enterprise") return "fin-panel__plan-badge--enterprise";
+      return "fin-panel__plan-badge--custom";
     },
     usageClass: function (used, max) {
-      if (max === 0) return '';
+      if (max === 0) return "";
       var pct = (used / max) * 100;
-      if (pct >= 90) return 'fin-panel__usage--danger';
-      if (pct >= 70) return 'fin-panel__usage--warning';
-      return 'fin-panel__usage--ok';
+      if (pct >= 90) return "fin-panel__usage--danger";
+      if (pct >= 70) return "fin-panel__usage--warning";
+      return "fin-panel__usage--ok";
     },
     openOrgModal: function (org) {
       this.selectedOrg = org;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     },
   },
   watch: {
     selectedOrg: function (val) {
       if (!val) {
-        document.body.style.overflow = '';
+        document.body.style.overflow = "";
       }
     },
   },
@@ -410,7 +553,7 @@ export default {
 }
 
 .fin-panel__kpi-card--accent {
-  border-top-color: #2E9E5A;
+  border-top-color: #2e9e5a;
 }
 
 .fin-panel__kpi-value {
@@ -421,7 +564,7 @@ export default {
 }
 
 .fin-panel__kpi-card--accent .fin-panel__kpi-value {
-  color: #2E9E5A;
+  color: #2e9e5a;
 }
 
 .fin-panel__kpi-label {
@@ -475,7 +618,7 @@ export default {
 .fin-panel__card-title-underline {
   width: 36px;
   height: 3px;
-  background-color: #2E9E5A;
+  background-color: #2e9e5a;
   border-radius: 2px;
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -601,7 +744,7 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #4A90D9, #6cb0f0);
+  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -716,7 +859,7 @@ export default {
   height: 100%;
   border-radius: 2px;
   transition: width 0.3s ease;
-  background: #2E9E5A;
+  background: #2e9e5a;
 }
 
 .fin-panel__usage-fill.fin-panel__usage--warning {
@@ -796,8 +939,12 @@ export default {
 }
 
 @keyframes fin-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .fin-modal {
@@ -810,8 +957,14 @@ export default {
 }
 
 @keyframes fin-slide-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fin-modal__header {
@@ -832,7 +985,7 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4A90D9, #6cb0f0);
+  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
   color: #fff;
   font-size: 18px;
   font-weight: 700;
