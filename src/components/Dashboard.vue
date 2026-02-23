@@ -1,91 +1,83 @@
 <template>
   <div class="adminpage-dashboard">
-    <!-- TOP KPI STRIP -->
-    <section class="adminpage-dashboard__kpi-strip">
-      <KpiCard
-        v-for="kpi in data.kpis"
-        :key="kpi.id"
-        :title="kpi.title"
-        :icon="kpi.icon"
-        :icon-color="kpi.iconColor"
-        :metrics="kpi.metrics"
+    <!-- ── No Organization State ── -->
+    <div v-if="!data.orgOverview" class="adminpage-dashboard__empty">
+      <div class="adminpage-dashboard__empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <h2 class="adminpage-dashboard__empty-title">No Organization Found</h2>
+      <p class="adminpage-dashboard__empty-text">
+        Your account is not associated with any organization.<br />
+        Please contact your administrator.
+      </p>
+    </div>
+
+    <template v-else>
+      <!-- ── Org Header ── -->
+      <OrgHeaderBar :org-overview="data.orgOverview" />
+
+      <!-- ── KPI Strip ── -->
+      <section class="adminpage-dashboard__kpi-strip">
+        <KpiCard
+          v-for="kpi in data.kpis"
+          :key="kpi.id"
+          :title="kpi.title"
+          :icon="kpi.icon"
+          :icon-color="kpi.iconColor"
+          :metrics="kpi.metrics"
+        />
+      </section>
+
+      <!-- ── Alerts & Exceptions ── -->
+      <AlertsPanel :alerts="data.alerts" />
+
+      <!-- ── Project Performance Analytics ── -->
+      <ProjectPerformancePanel
+        :project-progress="data.projectProgress"
+        :productivity-by-discipline="data.productivityByDiscipline"
+        :task-delay-projects="data.taskDelayProjects"
+        :task-completion-projects="data.taskCompletionProjects"
+        :performance-details="data.performanceDetails"
       />
-    </section>
 
-    <!-- ALERTS & EXCEPTIONS -->
-    <AlertsPanel :alerts="data.alerts" />
+      <!-- ── Team Members ── -->
+      <MembersPanel
+        :members="data.orgOverview.members || []"
+      />
 
-    <!-- ORGANIZATION OVERVIEW -->
-    <OrgOverviewPanel
-      v-if="data.orgOverview"
-      :org-overview="data.orgOverview"
-    />
-
-    <!-- PROJECT PERFORMANCE ANALYTICS -->
-    <ProjectPerformancePanel
-      :project-progress="data.projectProgress"
-      :productivity-by-discipline="data.productivityByDiscipline"
-      :task-delay-projects="data.taskDelayProjects"
-      :task-completion-projects="data.taskCompletionProjects"
-      :performance-details="data.performanceDetails"
-    />
-
-    <!-- FINANCIAL OVERVIEW -->
-    <FinancialPanel
-      v-if="data.financialData"
-      :financial-data="data.financialData"
-    />
-
-    <!-- SAFETY SECTION -->
-    <!--
-    <SafetyPanel
-      :safety-stats="data.safetyStats"
-      :project-incidents="data.projectIncidents"
-      :severity-chart="data.severityChart"
-      :causes="data.causes"
-    />
-    -->
+      <!-- ── Subscription & Plan ── -->
+      <SubscriptionPanel
+        :subscription="data.orgOverview.subscription || {}"
+        :usage-summary="data.orgOverview.usageSummary || {}"
+      />
+    </template>
   </div>
 </template>
 
 <script>
-import axios from "@nextcloud/axios";
-import { generateUrl } from "@nextcloud/router";
 import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
-import OrgOverviewPanel from "./OrgOverviewPanel.vue";
-import SafetyPanel from "./SafetyPanel.vue";
+import OrgHeaderBar from "./OrgHeaderBar.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
-import FinancialPanel from "./FinancialPanel.vue";
+import MembersPanel from "./MembersPanel.vue";
+import SubscriptionPanel from "./SubscriptionPanel.vue";
 
 export default {
   name: "Dashboard",
   components: {
     KpiCard,
     AlertsPanel,
-    OrgOverviewPanel,
-    SafetyPanel,
+    OrgHeaderBar,
     ProjectPerformancePanel,
-    FinancialPanel,
+    MembersPanel,
+    SubscriptionPanel,
   },
   props: {
     data: {
       type: Object,
       required: true,
-    },
-  },
-  mounted() {
-    this.fetchUpcomingTasks();
-  },
-  methods: {
-    async fetchUpcomingTasks() {
-      try {
-        const url = generateUrl("/apps/adminpage/api/upcoming-tasks");
-        const response = await axios.get(url);
-        console.log("Upcoming tasks data:", response.data);
-      } catch (error) {
-        console.error("Error fetching upcoming tasks:", error);
-      }
     },
   },
 };
@@ -121,9 +113,6 @@ export default {
   --color-badge-warning-text: #92400e;
   --color-badge-success-bg: #d4edda;
   --color-badge-success-text: #166534;
-  --color-chart-minor: #2ec4b6;
-  --color-chart-moderate: #f4a261;
-  --color-chart-severe: #e63946;
   --color-border: #e5e7eb;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -149,17 +138,43 @@ export default {
   margin-bottom: var(--spacing-xl);
 }
 
-.adminpage-dashboard__section {
-  margin-bottom: var(--spacing-xl);
+/* ─── Empty State ─── */
+.adminpage-dashboard__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: var(--spacing-2xl);
 }
 
-.adminpage-dashboard__section-title {
+.adminpage-dashboard__empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: #e8f0fe;
+  color: #4A90D9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.adminpage-dashboard__empty-title {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0 0 8px 0;
   padding: 0;
   border: none;
+}
+
+.adminpage-dashboard__empty-text {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
 }
 
 @media (max-width: 1024px) {

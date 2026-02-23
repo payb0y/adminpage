@@ -49,7 +49,7 @@ class OrgOverviewService {
     // Org resolution
     // ─────────────────────────────────────────────────────────────────────
 
-    private function resolveOrgId(string $uid): ?int {
+    public function resolveOrgId(string $uid): ?int {
         // 1. Owner
         $sql = "SELECT id FROM *PREFIX*organizations WHERE admin_uid = ? LIMIT 1";
         $stmt = $this->db->prepare($sql);

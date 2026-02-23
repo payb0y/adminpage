@@ -15,29 +15,25 @@ class KpiService {
     }
 
     /**
-     * Build KPI card data for the top strip.
+     * Build KPI card data scoped to a single organization.
      *
-     * @return array  Three KPI cards: Operational, Financial, Commercial
+     * @param int $orgId
+     * @return array  Three KPI cards: Operational, Subscription, Team
      */
-    public function getKpis(): array {
+    public function getKpis(int $orgId): array {
         return [
-            $this->getOperationalKpi(),
-            $this->getFinancialKpi(),
-            $this->getCommercialKpi(),
+            $this->getOperationalKpi($orgId),
+            $this->getSubscriptionKpi($orgId),
+            $this->getTeamKpi($orgId),
         ];
     }
 
     // ─── OPERATIONAL ─────────────────────────────────────────────────────
 
-    private function getOperationalKpi(): array {
-        // Active projects = status IN (0, 1) (0=not started, 1=active)
-        $activeProjects = $this->countActiveProjects();
-
-        // Projects behind schedule = projects where overdue open tasks exist
-        $behindSchedule = $this->countProjectsBehindSchedule();
-
-        // Delayed (overdue) tasks across all project boards
-        $delayedTasks = $this->countDelayedTasks();
+    private function getOperationalKpi(int $orgId): array {
+        $activeProjects = $this->countActiveProjects($orgId);
+        $behindSchedule = $this->countProjectsBehindSchedule($orgId);
+        $delayedTasks   = $this->countDelayedTasks($orgId);
 
         return [
             'id'        => 'operational',
@@ -46,27 +42,28 @@ class KpiService {
             'iconColor' => '#4A90D9',
             'metrics'   => [
                 ['value' => (string)$activeProjects, 'label' => 'Active Projects'],
-                ['value' => (string)$behindSchedule, 'label' => 'Projects Behind Schedule'],
+                ['value' => (string)$behindSchedule, 'label' => 'Behind Schedule'],
                 ['value' => (string)$delayedTasks,   'label' => 'Delayed Tasks'],
             ],
         ];
     }
 
-    private function countActiveProjects(): int {
+    private function countActiveProjects(int $orgId): int {
         $sql = "
             SELECT COUNT(*) AS cnt
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
                 AND b.deleted_at = 0
+            WHERE cp.organization_id = ?
         ";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
         return (int)($row['cnt'] ?? 0);
     }
 
-    private function countProjectsBehindSchedule(): int {
+    private function countProjectsBehindSchedule(int $orgId): int {
         $sql = "
             SELECT COUNT(DISTINCT cp.id) AS cnt
             FROM *PREFIX*custom_projects cp
@@ -75,18 +72,19 @@ class KpiService {
                 AND b.deleted_at = 0
             JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             JOIN *PREFIX*deck_cards c ON c.stack_id = s.id
-            WHERE c.duedate IS NOT NULL
+            WHERE cp.organization_id = ?
+              AND c.duedate IS NOT NULL
               AND c.duedate < NOW()
               AND c.deleted_at = 0
               AND s.title <> 'Approved/Done'
         ";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
         return (int)($row['cnt'] ?? 0);
     }
 
-    private function countDelayedTasks(): int {
+    private function countDelayedTasks(int $orgId): int {
         $sql = "
             SELECT COUNT(*) AS cnt
             FROM *PREFIX*deck_cards c
@@ -94,143 +92,115 @@ class KpiService {
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
             INNER JOIN *PREFIX*custom_projects cp
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
-            WHERE c.duedate IS NOT NULL
+            WHERE cp.organization_id = ?
+              AND c.duedate IS NOT NULL
               AND c.duedate < NOW()
               AND c.deleted_at = 0
               AND b.deleted_at = 0
               AND s.title <> 'Approved/Done'
         ";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
         return (int)($row['cnt'] ?? 0);
     }
 
-    // ─── FINANCIAL ───────────────────────────────────────────────────────
+    // ─── SUBSCRIPTION ────────────────────────────────────────────────────
 
-    private function getFinancialKpi(): array {
-        // Monthly Recurring Revenue from active paid subscriptions
-        $mrr = $this->calculateMRR();
-
-        // Total number of active organizations
-        $totalOrgs = $this->countActiveOrganizations();
-
-        // Paid vs Free ratio
-        $paidOrgs = $this->countPaidOrganizations();
+    private function getSubscriptionKpi(int $orgId): array {
+        $sub = $this->fetchSubscription($orgId);
 
         return [
-            'id'        => 'financial',
-            'title'     => 'Financial',
+            'id'        => 'subscription',
+            'title'     => 'Subscription',
             'icon'      => 'icon-quota',
             'iconColor' => '#2E9E5A',
             'metrics'   => [
-                ['value' => '€' . $this->formatCurrency($mrr), 'label' => 'Monthly Revenue'],
-                ['value' => (string)$totalOrgs, 'label' => 'Organizations'],
-                ['value' => (string)$paidOrgs, 'label' => 'Paid Subscriptions'],
+                ['value' => $sub['planName'],    'label' => 'Current Plan'],
+                ['value' => $sub['price'],       'label' => 'Monthly Price'],
+                ['value' => $sub['status'],      'label' => 'Status'],
             ],
         ];
     }
 
-    private function calculateMRR(): float {
+    private function fetchSubscription(int $orgId): array {
         $sql = "
-            SELECT COALESCE(SUM(p.price), 0) AS total_mrr
+            SELECT p.name AS plan_name, p.price, sub.status
             FROM *PREFIX*subscriptions sub
             INNER JOIN *PREFIX*plans p ON p.id = sub.plan_id
-            WHERE sub.status = 'active'
-              AND p.price > 0
+            WHERE sub.organization_id = ?
+            ORDER BY sub.id DESC
+            LIMIT 1
         ";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
-        return (float)($row['total_mrr'] ?? 0.0);
+
+        if (!$row) {
+            return ['planName' => 'None', 'price' => '—', 'status' => '—'];
+        }
+
+        $price = (float)$row['price'];
+        return [
+            'planName' => $row['plan_name'],
+            'price'    => $price > 0 ? '€' . number_format($price, 2) : 'Free',
+            'status'   => ucfirst($row['status']),
+        ];
     }
 
-    private function countActiveOrganizations(): int {
-        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*organizations";
-        $result = $this->db->prepare($sql);
-        $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
+    // ─── TEAM ────────────────────────────────────────────────────────────
 
-    private function countPaidOrganizations(): int {
-        $sql = "
-            SELECT COUNT(*) AS cnt
-            FROM *PREFIX*subscriptions sub
-            INNER JOIN *PREFIX*plans p ON p.id = sub.plan_id
-            WHERE sub.status = 'active'
-              AND p.price > 0
-        ";
-        $result = $this->db->prepare($sql);
-        $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
-
-    // ─── COMMERCIAL ──────────────────────────────────────────────────────
-
-    private function getCommercialKpi(): array {
-        // Plans info
-        $totalPlans = $this->countPlans();
-        $publicPlans = $this->countPublicPlans();
-
-        // Total active subscriptions
-        $activeSubs = $this->countActiveSubscriptions();
-
-        // Members across all organizations
-        $totalMembers = $this->countTotalMembers();
+    private function getTeamKpi(int $orgId): array {
+        $memberCount = $this->countMembers($orgId);
+        $memberLimit = $this->getMemberLimit($orgId);
+        $adminCount  = $this->countAdmins($orgId);
 
         return [
-            'id'        => 'commercial',
-            'title'     => 'Commercial',
-            'icon'      => 'icon-mail',
+            'id'        => 'team',
+            'title'     => 'Team',
+            'icon'      => 'icon-contacts-dark',
             'iconColor' => '#E67E5A',
             'metrics'   => [
-                ['value' => (string)$activeSubs, 'label' => 'Active Subscriptions'],
-                ['value' => (string)$totalMembers, 'label' => 'Total Members'],
-                ['value' => $totalPlans . ' (' . $publicPlans . ' public)', 'label' => 'Plans Available'],
+                ['value' => (string)$memberCount, 'label' => 'Members'],
+                ['value' => $memberLimit !== null ? (string)$memberLimit : '∞', 'label' => 'Member Limit'],
+                ['value' => (string)$adminCount, 'label' => 'Admins'],
             ],
         ];
     }
 
-    private function countPlans(): int {
-        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*plans";
+    private function countMembers(int $orgId): int {
+        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*organization_members WHERE organization_id = ?";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
         return (int)($row['cnt'] ?? 0);
     }
 
-    private function countPublicPlans(): int {
-        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*plans WHERE is_public = 1";
+    private function getMemberLimit(int $orgId): ?int {
+        $sql = "
+            SELECT p.max_members
+            FROM *PREFIX*subscriptions sub
+            INNER JOIN *PREFIX*plans p ON p.id = sub.plan_id
+            WHERE sub.organization_id = ?
+              AND sub.status = 'active'
+            ORDER BY sub.id DESC
+            LIMIT 1
+        ";
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
 
-    private function countActiveSubscriptions(): int {
-        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*subscriptions WHERE status = 'active'";
-        $result = $this->db->prepare($sql);
-        $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
-
-    private function countTotalMembers(): int {
-        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*organization_members";
-        $result = $this->db->prepare($sql);
-        $result->execute();
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────
-
-    private function formatCurrency(float $amount): string {
-        if ($amount >= 1000) {
-            return number_format($amount / 1000, 1, '.', '') . 'K';
+        if (!$row || $row['max_members'] === null || (int)$row['max_members'] === 0) {
+            return null;
         }
-        return number_format($amount, 2, '.', '');
+        return (int)$row['max_members'];
+    }
+
+    private function countAdmins(int $orgId): int {
+        $sql = "SELECT COUNT(*) AS cnt FROM *PREFIX*organization_members WHERE organization_id = ? AND role = 'admin'";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        return (int)($row['cnt'] ?? 0);
     }
 }

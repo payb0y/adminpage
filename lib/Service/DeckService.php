@@ -15,11 +15,12 @@ class DeckService {
     }
 
     /**
-     * Fetch all projects that have an existing (non-deleted) board.
+     * Fetch all projects for a given organization that have an existing (non-deleted) board.
      *
+     * @param int $orgId
      * @return array
      */
-    private function fetchProjects(): array {
+    private function fetchProjects(int $orgId): array {
         $sql = "
             SELECT
                 cp.id           AS project_id,
@@ -32,11 +33,12 @@ class DeckService {
             INNER JOIN *PREFIX*deck_boards b
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
                 AND b.deleted_at = 0
+            WHERE cp.organization_id = ?
             ORDER BY cp.id
         ";
 
         $result = $this->db->prepare($sql);
-        $result->execute();
+        $result->execute([$orgId]);
         return $result->fetchAll();
     }
 
@@ -140,12 +142,13 @@ class DeckService {
      * Approach: start from projects → get linked boards → fetch tasks & labels
      * only for those boards. Projects with 0 cards still appear in every widget.
      *
+     * @param int $orgId
      * @return array  with keys: projectProgress, productivityByDiscipline,
      *                taskDelayProjects, taskCompletionProjects
      */
-    public function getProjectPerformanceData(): array {
+    public function getProjectPerformanceData(int $orgId): array {
         // 1. Fetch all projects that have a valid (non-deleted) board
-        $projectRows = $this->fetchProjects();
+        $projectRows = $this->fetchProjects($orgId);
 
         if (empty($projectRows)) {
             return $this->emptyResponse();
@@ -374,10 +377,11 @@ class DeckService {
      * Get the task-level detail behind each performance widget, used for
      * drill-down modals in the frontend.
      *
+     * @param int $orgId
      * @return array  with keys matching the 4 widgets
      */
-    public function getPerformanceDetails(): array {
-        $projectRows = $this->fetchProjects();
+    public function getPerformanceDetails(int $orgId): array {
+        $projectRows = $this->fetchProjects($orgId);
         if (empty($projectRows)) {
             return [
                 'progressDetails'       => [],

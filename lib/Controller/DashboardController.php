@@ -6,7 +6,6 @@ namespace OCA\AdminPage\Controller;
 
 use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
-use OCA\AdminPage\Service\FinancialService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
 use OCP\AppFramework\Controller;
@@ -23,7 +22,6 @@ class DashboardController extends Controller {
     private DeckService $deckService;
     private AlertService $alertService;
     private KpiService $kpiService;
-    private FinancialService $financialService;
     private OrgOverviewService $orgOverviewService;
     private IUserSession $userSession;
 
@@ -35,7 +33,6 @@ class DashboardController extends Controller {
         DeckService $deckService,
         AlertService $alertService,
         KpiService $kpiService,
-        FinancialService $financialService,
         OrgOverviewService $orgOverviewService,
         IUserSession $userSession
     ) {
@@ -45,7 +42,6 @@ class DashboardController extends Controller {
         $this->deckService = $deckService;
         $this->alertService = $alertService;
         $this->kpiService = $kpiService;
-        $this->financialService = $financialService;
         $this->orgOverviewService = $orgOverviewService;
         $this->userSession = $userSession;
     }
@@ -57,85 +53,47 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getData(): JSONResponse {
-        // Fetch live project performance data from Deck database
-        $perfData = $this->deckService->getProjectPerformanceData();
-
-        // Resolve current user UID for org-scoped overview
+        // Resolve current user → org
         $user = $this->userSession->getUser();
         $uid  = $user ? $user->getUID() : '';
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+
+        // No associated organization → return empty state
+        if ($orgId === null) {
+            return new JSONResponse([
+                'orgOverview' => null,
+                'kpis' => [],
+                'alerts' => ['summary' => [], 'overdueTasks' => [], 'unassignedTasks' => [], 'noDueDateTasks' => [], 'stalledProjects' => [], 'zeroProgress' => []],
+                'projectProgress' => [],
+                'productivityByDiscipline' => [],
+                'taskDelayProjects' => [],
+                'taskCompletionProjects' => [],
+                'performanceDetails' => null,
+            ]);
+        }
+
+        // All services scoped to the resolved orgId
         $orgOverview = $this->orgOverviewService->getOrgOverview($uid);
+        $perfData    = $this->deckService->getProjectPerformanceData($orgId);
 
         $data = [
-            'kpis' => $this->kpiService->getKpis(),
-            'alerts' => $this->alertService->getAlerts(),
-            'safetyStats' => [
-                [
-                    'label' => 'Safety Incidents',
-                    'sublabel' => 'Last 30 Days',
-                    'value' => '3',
-                    'unit' => 'incidents',
-                    'trend' => '-25% vs previous period',
-                    'trendType' => 'positive',
-                ],
-                [
-                    'label' => 'Near Misses Reported',
-                    'sublabel' => '',
-                    'value' => '6',
-                    'unit' => 'cases',
-                    'trend' => '',
-                    'trendType' => '',
-                ],
-                [
-                    'label' => 'Open Safety Actions',
-                    'sublabel' => '',
-                    'value' => '4',
-                    'unit' => 'actions',
-                    'trend' => '',
-                    'trendType' => '',
-                ],
-                [
-                    'label' => 'Days Since Last Incident',
-                    'sublabel' => '',
-                    'value' => '18',
-                    'unit' => 'days',
-                    'trend' => '',
-                    'trendType' => '',
-                ],
-            ],
-            'projectIncidents' => [
-                ['name' => 'Multi-Utility Network Installation', 'incidents' => 0],
-                ['name' => 'Urban Network Rehabilitation', 'incidents' => 0],
-                ['name' => 'Industrial Park Multi-Utility', 'incidents' => 2],
-                ['name' => 'Water Supply Renewal – District 5', 'incidents' => 1],
-                ['name' => 'Northern Fiber Optic Backbone', 'incidents' => 0],
-            ],
-            'severityChart' => [
-                'labels' => ['Minor', 'Moderate', 'Severe'],
-                'data' => [60, 10, 30],
-                'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
-            ],
-            'causes' => [
-                'Missing PPE',
-                'Unsafe trench conditions',
-                'Equipment malfunction',
-                'Poor site signaling',
-                'Weather-related risks',
-            ],
-
-            // ── Project Performance Analytics (live from Deck DB) ──
-            'projectProgress' => $perfData['projectProgress'],
-            'productivityByDiscipline' => $perfData['productivityByDiscipline'],
-            'taskDelayProjects' => $perfData['taskDelayProjects'],
-            'taskCompletionProjects' => $perfData['taskCompletionProjects'],
-
-            // ── Drill-down detail for perf tiles ──
-            'performanceDetails' => $this->deckService->getPerformanceDetails(),
-
-            // ── Financial overview ──
-            'financialData' => $this->financialService->getFinancialData(),
-
-            // ── Organization overview (scoped to logged-in admin) ──
+            // Organization overview (profile, subscription, members, projects, usage)
             'orgOverview' => $orgOverview,
+
+            // KPI strip (Operational, Subscription, Team)
+            'kpis' => $this->kpiService->getKpis($orgId),
+
+            // Alerts (overdue, unassigned, no due date, stalled, zero progress)
+            'alerts' => $this->alertService->getAlerts($orgId),
+
+            // Project Performance Analytics (live from Deck DB)
+            'projectProgress'          => $perfData['projectProgress'],
+            'productivityByDiscipline' => $perfData['productivityByDiscipline'],
+            'taskDelayProjects'        => $perfData['taskDelayProjects'],
+            'taskCompletionProjects'   => $perfData['taskCompletionProjects'],
+
+            // Drill-down detail for perf tiles
+            'performanceDetails' => $this->deckService->getPerformanceDetails($orgId),
         ];
 
         return new JSONResponse($data);
@@ -153,7 +111,6 @@ class DashboardController extends Controller {
             $relative = "/ocs/v2.php/apps/deck/api/v1.0/overview/upcoming?done=" . ($done ? "true" : "false");
             $url = $this->urlGenerator->getAbsoluteURL($relative);
 
-            // Forward cookies from the incoming request for authentication
             $cookies = $this->request->getHeader('Cookie');
 
             $client = $this->clientService->newClient();
