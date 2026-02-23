@@ -8,11 +8,13 @@ use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
 use OCA\AdminPage\Service\FinancialService;
 use OCA\AdminPage\Service\KpiService;
+use OCA\AdminPage\Service\OrgOverviewService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
 use OCP\IRequest;
 use OCP\IURLGenerator;
+use OCP\IUserSession;
 
 class DashboardController extends Controller {
 
@@ -22,6 +24,8 @@ class DashboardController extends Controller {
     private AlertService $alertService;
     private KpiService $kpiService;
     private FinancialService $financialService;
+    private OrgOverviewService $orgOverviewService;
+    private IUserSession $userSession;
 
     public function __construct(
         string $appName,
@@ -31,7 +35,9 @@ class DashboardController extends Controller {
         DeckService $deckService,
         AlertService $alertService,
         KpiService $kpiService,
-        FinancialService $financialService
+        FinancialService $financialService,
+        OrgOverviewService $orgOverviewService,
+        IUserSession $userSession
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
@@ -40,6 +46,8 @@ class DashboardController extends Controller {
         $this->alertService = $alertService;
         $this->kpiService = $kpiService;
         $this->financialService = $financialService;
+        $this->orgOverviewService = $orgOverviewService;
+        $this->userSession = $userSession;
     }
 
     /**
@@ -51,6 +59,11 @@ class DashboardController extends Controller {
     public function getData(): JSONResponse {
         // Fetch live project performance data from Deck database
         $perfData = $this->deckService->getProjectPerformanceData();
+
+        // Resolve current user UID for org-scoped overview
+        $user = $this->userSession->getUser();
+        $uid  = $user ? $user->getUID() : '';
+        $orgOverview = $this->orgOverviewService->getOrgOverview($uid);
 
         $data = [
             'kpis' => $this->kpiService->getKpis(),
@@ -120,6 +133,9 @@ class DashboardController extends Controller {
 
             // ── Financial overview ──
             'financialData' => $this->financialService->getFinancialData(),
+
+            // ── Organization overview (scoped to logged-in admin) ──
+            'orgOverview' => $orgOverview,
         ];
 
         return new JSONResponse($data);

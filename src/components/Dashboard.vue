@@ -15,6 +15,12 @@
     <!-- ALERTS & EXCEPTIONS -->
     <AlertsPanel :alerts="data.alerts" />
 
+    <!-- ORGANIZATION OVERVIEW -->
+    <OrgOverviewPanel
+      v-if="data.orgOverview"
+      :org-overview="data.orgOverview"
+    />
+
     <!-- PROJECT PERFORMANCE ANALYTICS -->
     <ProjectPerformancePanel
       :project-progress="data.projectProgress"
@@ -47,6 +53,7 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
+import OrgOverviewPanel from "./OrgOverviewPanel.vue";
 import SafetyPanel from "./SafetyPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import FinancialPanel from "./FinancialPanel.vue";
@@ -56,6 +63,7 @@ export default {
   components: {
     KpiCard,
     AlertsPanel,
+    OrgOverviewPanel,
     SafetyPanel,
     ProjectPerformancePanel,
     FinancialPanel,
