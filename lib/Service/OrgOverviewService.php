@@ -60,7 +60,7 @@ class OrgOverviewService {
         }
 
         // 2. Member with admin role
-        $sql2 = "SELECT organization_id FROM *PREFIX*organization_members WHERE user_id = ? LIMIT 1";
+        $sql2 = "SELECT organization_id FROM *PREFIX*organization_members WHERE user_uid = ? LIMIT 1";
         $stmt2 = $this->db->prepare($sql2);
         $stmt2->execute([$uid]);
         $row2 = $stmt2->fetch();
@@ -160,10 +160,10 @@ class OrgOverviewService {
 
     private function getMembers(int $orgId): array {
         $sql = "
-            SELECT om.user_id, om.role
+            SELECT om.user_uid, om.role
             FROM *PREFIX*organization_members om
             WHERE om.organization_id = ?
-            ORDER BY om.role DESC, om.user_id ASC
+            ORDER BY om.role DESC, om.user_uid ASC
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$orgId]);
@@ -171,7 +171,7 @@ class OrgOverviewService {
 
         return array_map(function ($row) {
             return [
-                'userId' => $row['user_id'],
+                'userId' => $row['user_uid'],
                 'role'   => $row['role'] ?? 'member',
             ];
         }, $rows);
