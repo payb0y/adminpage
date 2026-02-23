@@ -1,40 +1,72 @@
 <template>
   <section class="perf-panel">
     <!-- HEADER -->
-    <div class="perf-panel__header">
-      <div class="perf-panel__header-text">
-        <h2 class="perf-panel__title">Project Performance Analytics</h2>
-      </div>
-      <button class="perf-panel__collapse-btn" @click="collapsed = !collapsed">
+    <div class="perf-panel__header" @click="collapsed = !collapsed">
+      <h3 class="perf-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          :class="{ 'perf-panel__collapse-icon--rotated': collapsed }"
-          class="perf-panel__collapse-icon"
         >
-          <polyline points="18 15 12 9 6 15" />
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
         </svg>
-      </button>
+        Project Performance Analytics
+      </h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="perf-panel__chevron"
+        :class="{ 'perf-panel__chevron--rotated': collapsed }"
+      >
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
     </div>
 
     <div v-show="!collapsed">
       <!-- TOP ROW: Progress + Productivity -->
       <div class="perf-panel__top-grid">
         <!-- Project Progress Comparison -->
-        <div class="perf-panel__card perf-panel__card--clickable" @click="openModal('progress')">
+        <div
+          class="perf-panel__card perf-panel__card--clickable"
+          @click="openModal('progress')"
+        >
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
               Project Progress<br />Comparison
             </h3>
             <span class="perf-panel__card-drill" title="Click for details">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path
+                  d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"
+                />
+              </svg>
             </span>
           </div>
           <div class="perf-panel__card-title-underline"></div>
@@ -58,29 +90,58 @@
           </div>
         </div>
 
-        <!-- Productivity by Discipline -->
-        <div class="perf-panel__card perf-panel__card--clickable" @click="openModal('discipline')">
+        <!-- Member Performance -->
+        <div
+          class="perf-panel__card perf-panel__card--clickable"
+          @click="openModal('member')"
+        >
           <div class="perf-panel__card-header-row">
-            <h3 class="perf-panel__card-title">
-              Productivity<br />by Discipline
-            </h3>
+            <h3 class="perf-panel__card-title">Member<br />Performance</h3>
             <span class="perf-panel__card-drill" title="Click for details">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path
+                  d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"
+                />
+              </svg>
             </span>
           </div>
           <div class="perf-panel__card-title-underline"></div>
           <p class="perf-panel__card-desc">
-            Tasks completed in relation to the assigned task
+            Tasks completed per member vs assigned tasks
           </p>
-          <div class="perf-panel__bar-list">
+          <div class="perf-panel__member-list">
             <div
-              v-for="(item, idx) in productivityByDiscipline"
-              :key="'disc-' + idx"
-              class="perf-panel__bar-item"
+              v-for="(item, idx) in memberPerformance"
+              :key="'mem-' + idx"
+              class="perf-panel__member-item"
             >
-              <div class="perf-panel__bar-row">
-                <span class="perf-panel__bar-label">{{ item.name }}</span>
-                <span class="perf-panel__bar-value">{{ item.progress }}%</span>
+              <div class="perf-panel__member-row">
+                <div class="perf-panel__member-info">
+                  <span class="perf-panel__member-avatar">{{
+                    item.name.charAt(0).toUpperCase()
+                  }}</span>
+                  <span class="perf-panel__bar-label">{{ item.name }}</span>
+                </div>
+                <span class="perf-panel__member-stats">
+                  <span class="perf-panel__member-count"
+                    >{{ item.done }}/{{ item.total }}</span
+                  >
+                  <span class="perf-panel__bar-value"
+                    >{{ item.progress }}%</span
+                  >
+                </span>
               </div>
               <div class="perf-panel__bar-track">
                 <div
@@ -96,13 +157,32 @@
       <!-- BOTTOM ROW: Delay Donut + Completion Area -->
       <div class="perf-panel__bottom-grid">
         <!-- Project Tasks Delay Overview -->
-        <div class="perf-panel__card perf-panel__card--clickable" @click="openModal('delay')">
+        <div
+          class="perf-panel__card perf-panel__card--clickable"
+          @click="openModal('delay')"
+        >
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
               Project Tasks Delay<br />Overview
             </h3>
             <span class="perf-panel__card-drill" title="Click for details">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path
+                  d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"
+                />
+              </svg>
             </span>
           </div>
           <div class="perf-panel__card-title-underline"></div>
@@ -127,11 +207,32 @@
         </div>
 
         <!-- Task Completion Over Time -->
-        <div class="perf-panel__card perf-panel__card--clickable" @click="openModal('completion')">
+        <div
+          class="perf-panel__card perf-panel__card--clickable"
+          @click="openModal('completion')"
+        >
           <div class="perf-panel__card-header-row">
-            <h3 class="perf-panel__card-title">Task Completion<br />Over Time</h3>
+            <h3 class="perf-panel__card-title">
+              Task Completion<br />Over Time
+            </h3>
             <span class="perf-panel__card-drill" title="Click for details">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path
+                  d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"
+                />
+              </svg>
             </span>
           </div>
           <div class="perf-panel__card-title-underline"></div>
@@ -166,7 +267,6 @@
           <button class="perf-modal__close" @click="closeModal">&times;</button>
         </div>
         <div class="perf-modal__body">
-
           <!-- Progress Detail -->
           <template v-if="modal === 'progress'">
             <div
@@ -174,23 +274,44 @@
               :key="'mp-' + proj.name"
               class="perf-modal__project"
             >
-              <div class="perf-modal__project-header" @click="toggleProject('progress', proj.name)">
+              <div
+                class="perf-modal__project-header"
+                @click="toggleProject('progress', proj.name)"
+              >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.done }}/{{ proj.total }} done
                   </span>
-                  <span class="perf-modal__badge" :class="progressBadgeClass(proj.progress)">
+                  <span
+                    class="perf-modal__badge"
+                    :class="progressBadgeClass(proj.progress)"
+                  >
                     {{ proj.progress }}%
                   </span>
-                  <span class="perf-modal__chevron" :class="{ 'perf-modal__chevron--open': isProjectOpen('progress', proj.name) }">&#8250;</span>
+                  <span
+                    class="perf-modal__chevron"
+                    :class="{
+                      'perf-modal__chevron--open': isProjectOpen(
+                        'progress',
+                        proj.name,
+                      ),
+                    }"
+                    >&#8250;</span
+                  >
                 </div>
               </div>
               <div class="perf-modal__progress-bar">
-                <div class="perf-modal__progress-fill" :style="{ width: proj.progress + '%' }"></div>
+                <div
+                  class="perf-modal__progress-fill"
+                  :style="{ width: proj.progress + '%' }"
+                ></div>
               </div>
               <transition name="perf-modal-expand">
-                <div v-if="isProjectOpen('progress', proj.name)" class="perf-modal__task-table-wrap">
+                <div
+                  v-if="isProjectOpen('progress', proj.name)"
+                  class="perf-modal__task-table-wrap"
+                >
                   <table class="perf-modal__task-table">
                     <thead>
                       <tr>
@@ -203,42 +324,83 @@
                     <tbody>
                       <tr v-for="(task, ti) in proj.tasks" :key="'mpt-' + ti">
                         <td>{{ task.title }}</td>
-                        <td><span class="perf-modal__stack-badge">{{ task.stack }}</span></td>
-                        <td><span class="perf-modal__status" :class="'perf-modal__status--' + task.status">{{ task.status }}</span></td>
-                        <td>{{ task.due || '\u2014' }}</td>
+                        <td>
+                          <span class="perf-modal__stack-badge">{{
+                            task.stack
+                          }}</span>
+                        </td>
+                        <td>
+                          <span
+                            class="perf-modal__status"
+                            :class="'perf-modal__status--' + task.status"
+                            >{{ task.status }}</span
+                          >
+                        </td>
+                        <td>{{ task.due || "\u2014" }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </transition>
             </div>
-            <div v-if="details.progressDetails.length === 0" class="perf-modal__empty">No project data available</div>
+            <div
+              v-if="details.progressDetails.length === 0"
+              class="perf-modal__empty"
+            >
+              No project data available
+            </div>
           </template>
 
-          <!-- Discipline Detail -->
-          <template v-if="modal === 'discipline'">
+          <!-- Member Detail -->
+          <template v-if="modal === 'member'">
             <div
-              v-for="disc in details.disciplineDetails"
-              :key="'md-' + disc.name"
+              v-for="mem in details.memberDetails"
+              :key="'mm-' + mem.name"
               class="perf-modal__project"
             >
-              <div class="perf-modal__project-header" @click="toggleProject('discipline', disc.name)">
-                <span class="perf-modal__project-name">{{ disc.name }}</span>
+              <div
+                class="perf-modal__project-header"
+                @click="toggleProject('member', mem.name)"
+              >
+                <div class="perf-modal__member-header">
+                  <span class="perf-modal__member-avatar">{{
+                    mem.name.charAt(0).toUpperCase()
+                  }}</span>
+                  <span class="perf-modal__project-name">{{ mem.name }}</span>
+                </div>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
-                    {{ disc.done }}/{{ disc.total }} done
+                    {{ mem.done }}/{{ mem.total }} done
                   </span>
-                  <span class="perf-modal__badge" :class="progressBadgeClass(disc.progress)">
-                    {{ disc.progress }}%
+                  <span
+                    class="perf-modal__badge"
+                    :class="progressBadgeClass(mem.progress)"
+                  >
+                    {{ mem.progress }}%
                   </span>
-                  <span class="perf-modal__chevron" :class="{ 'perf-modal__chevron--open': isProjectOpen('discipline', disc.name) }">&#8250;</span>
+                  <span
+                    class="perf-modal__chevron"
+                    :class="{
+                      'perf-modal__chevron--open': isProjectOpen(
+                        'member',
+                        mem.name,
+                      ),
+                    }"
+                    >&#8250;</span
+                  >
                 </div>
               </div>
               <div class="perf-modal__progress-bar">
-                <div class="perf-modal__progress-fill" :style="{ width: disc.progress + '%' }"></div>
+                <div
+                  class="perf-modal__progress-fill"
+                  :style="{ width: mem.progress + '%' }"
+                ></div>
               </div>
               <transition name="perf-modal-expand">
-                <div v-if="isProjectOpen('discipline', disc.name)" class="perf-modal__task-table-wrap">
+                <div
+                  v-if="isProjectOpen('member', mem.name)"
+                  class="perf-modal__task-table-wrap"
+                >
                   <table class="perf-modal__task-table">
                     <thead>
                       <tr>
@@ -246,21 +408,38 @@
                         <th>Project</th>
                         <th>Stack</th>
                         <th>Status</th>
+                        <th>Due Date</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(task, ti) in disc.tasks" :key="'mdt-' + ti">
+                      <tr v-for="(task, ti) in mem.tasks" :key="'mmt-' + ti">
                         <td>{{ task.title }}</td>
                         <td>{{ task.project }}</td>
-                        <td><span class="perf-modal__stack-badge">{{ task.stack }}</span></td>
-                        <td><span class="perf-modal__status" :class="'perf-modal__status--' + task.status">{{ task.status }}</span></td>
+                        <td>
+                          <span class="perf-modal__stack-badge">{{
+                            task.stack
+                          }}</span>
+                        </td>
+                        <td>
+                          <span
+                            class="perf-modal__status"
+                            :class="'perf-modal__status--' + task.status"
+                            >{{ task.status }}</span
+                          >
+                        </td>
+                        <td>{{ task.due || "\u2014" }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </transition>
             </div>
-            <div v-if="details.disciplineDetails.length === 0" class="perf-modal__empty">No label/discipline data available</div>
+            <div
+              v-if="details.memberDetails.length === 0"
+              class="perf-modal__empty"
+            >
+              No member assignment data available
+            </div>
           </template>
 
           <!-- Delay Detail -->
@@ -270,23 +449,38 @@
               :key="'mdl-' + proj.name"
               class="perf-modal__project"
             >
-              <div class="perf-modal__project-header" @click="toggleProject('delay', proj.name)">
+              <div
+                class="perf-modal__project-header"
+                @click="toggleProject('delay', proj.name)"
+              >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--success">
-                    {{ countByCategory(proj.tasks, 'on-time') }} on-time
+                    {{ countByCategory(proj.tasks, "on-time") }} on-time
                   </span>
                   <span class="perf-modal__badge perf-modal__badge--warning">
-                    {{ countByCategory(proj.tasks, 'delayed') }} delayed
+                    {{ countByCategory(proj.tasks, "delayed") }} delayed
                   </span>
                   <span class="perf-modal__badge perf-modal__badge--danger">
-                    {{ countByCategory(proj.tasks, 'blocked') }} blocked
+                    {{ countByCategory(proj.tasks, "blocked") }} blocked
                   </span>
-                  <span class="perf-modal__chevron" :class="{ 'perf-modal__chevron--open': isProjectOpen('delay', proj.name) }">&#8250;</span>
+                  <span
+                    class="perf-modal__chevron"
+                    :class="{
+                      'perf-modal__chevron--open': isProjectOpen(
+                        'delay',
+                        proj.name,
+                      ),
+                    }"
+                    >&#8250;</span
+                  >
                 </div>
               </div>
               <transition name="perf-modal-expand">
-                <div v-if="isProjectOpen('delay', proj.name)" class="perf-modal__task-table-wrap">
+                <div
+                  v-if="isProjectOpen('delay', proj.name)"
+                  class="perf-modal__task-table-wrap"
+                >
                   <table class="perf-modal__task-table">
                     <thead>
                       <tr>
@@ -300,22 +494,42 @@
                     <tbody>
                       <tr v-for="(task, ti) in proj.tasks" :key="'mdlt-' + ti">
                         <td>{{ task.title }}</td>
-                        <td><span class="perf-modal__stack-badge">{{ task.stack }}</span></td>
-                        <td><span class="perf-modal__status" :class="'perf-modal__status--' + task.status">{{ task.status }}</span></td>
                         <td>
-                          <span class="perf-modal__category" :class="'perf-modal__category--' + task.category">
+                          <span class="perf-modal__stack-badge">{{
+                            task.stack
+                          }}</span>
+                        </td>
+                        <td>
+                          <span
+                            class="perf-modal__status"
+                            :class="'perf-modal__status--' + task.status"
+                            >{{ task.status }}</span
+                          >
+                        </td>
+                        <td>
+                          <span
+                            class="perf-modal__category"
+                            :class="'perf-modal__category--' + task.category"
+                          >
                             {{ task.category }}
-                            <template v-if="task.days_overdue"> ({{ task.days_overdue }}d)</template>
+                            <template v-if="task.days_overdue">
+                              ({{ task.days_overdue }}d)</template
+                            >
                           </span>
                         </td>
-                        <td>{{ task.due || '\u2014' }}</td>
+                        <td>{{ task.due || "\u2014" }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </transition>
             </div>
-            <div v-if="details.delayDetails.length === 0" class="perf-modal__empty">No delay data available</div>
+            <div
+              v-if="details.delayDetails.length === 0"
+              class="perf-modal__empty"
+            >
+              No delay data available
+            </div>
           </template>
 
           <!-- Completion Detail -->
@@ -325,18 +539,38 @@
               :key="'mc-' + proj.name"
               class="perf-modal__project"
             >
-              <div class="perf-modal__project-header" @click="toggleProject('completion', proj.name)">
+              <div
+                class="perf-modal__project-header"
+                @click="toggleProject('completion', proj.name)"
+              >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.completed }}/{{ proj.total_tasks }} completed
                   </span>
-                  <span class="perf-modal__chevron" :class="{ 'perf-modal__chevron--open': isProjectOpen('completion', proj.name) }">&#8250;</span>
+                  <span
+                    class="perf-modal__chevron"
+                    :class="{
+                      'perf-modal__chevron--open': isProjectOpen(
+                        'completion',
+                        proj.name,
+                      ),
+                    }"
+                    >&#8250;</span
+                  >
                 </div>
               </div>
               <transition name="perf-modal-expand">
-                <div v-if="isProjectOpen('completion', proj.name)" class="perf-modal__task-table-wrap">
-                  <div v-if="proj.tasks.length === 0" class="perf-modal__empty-inline">No completed tasks yet</div>
+                <div
+                  v-if="isProjectOpen('completion', proj.name)"
+                  class="perf-modal__task-table-wrap"
+                >
+                  <div
+                    v-if="proj.tasks.length === 0"
+                    class="perf-modal__empty-inline"
+                  >
+                    No completed tasks yet
+                  </div>
                   <table v-else class="perf-modal__task-table">
                     <thead>
                       <tr>
@@ -349,16 +583,20 @@
                       <tr v-for="(task, ti) in proj.tasks" :key="'mct-' + ti">
                         <td>{{ task.title }}</td>
                         <td>{{ task.completed_at }}</td>
-                        <td>{{ task.due || '\u2014' }}</td>
+                        <td>{{ task.due || "\u2014" }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </transition>
             </div>
-            <div v-if="details.completionDetails.length === 0" class="perf-modal__empty">No completion data available</div>
+            <div
+              v-if="details.completionDetails.length === 0"
+              class="perf-modal__empty"
+            >
+              No completion data available
+            </div>
           </template>
-
         </div>
       </div>
     </div>
@@ -380,7 +618,7 @@ export default {
       type: Array,
       required: true,
     },
-    productivityByDiscipline: {
+    memberPerformance: {
       type: Array,
       required: true,
     },
@@ -397,7 +635,7 @@ export default {
       default: function () {
         return {
           progressDetails: [],
-          disciplineDetails: [],
+          memberDetails: [],
           delayDetails: [],
           completionDetails: [],
         };
@@ -421,21 +659,23 @@ export default {
       return this.taskCompletionProjects[this.completionIndex];
     },
     details: function () {
-      return this.performanceDetails || {
-        progressDetails: [],
-        disciplineDetails: [],
-        delayDetails: [],
-        completionDetails: [],
-      };
+      return (
+        this.performanceDetails || {
+          progressDetails: [],
+          memberDetails: [],
+          delayDetails: [],
+          completionDetails: [],
+        }
+      );
     },
     modalTitle: function () {
       var titles = {
-        progress: 'Project Progress \u2014 Task Details',
-        discipline: 'Productivity by Discipline \u2014 Task Details',
-        delay: 'Task Delay Overview \u2014 Task Details',
-        completion: 'Task Completion \u2014 Completed Tasks',
+        progress: "Project Progress \u2014 Task Details",
+        member: "Member Performance \u2014 Task Details",
+        delay: "Task Delay Overview \u2014 Task Details",
+        completion: "Task Completion \u2014 Completed Tasks",
       };
-      return titles[this.modal] || '';
+      return titles[this.modal] || "";
     },
   },
   methods: {
@@ -459,27 +699,29 @@ export default {
     openModal: function (type) {
       this.modal = type;
       this.expandedProjects = {};
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     },
     closeModal: function () {
       this.modal = null;
       this.expandedProjects = {};
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     },
     toggleProject: function (section, name) {
-      var key = section + ':' + name;
+      var key = section + ":" + name;
       this.$set(this.expandedProjects, key, !this.expandedProjects[key]);
     },
     isProjectOpen: function (section, name) {
-      return !!this.expandedProjects[section + ':' + name];
+      return !!this.expandedProjects[section + ":" + name];
     },
     progressBadgeClass: function (pct) {
-      if (pct >= 75) return 'perf-modal__badge--success';
-      if (pct >= 40) return 'perf-modal__badge--warning';
-      return 'perf-modal__badge--danger';
+      if (pct >= 75) return "perf-modal__badge--success";
+      if (pct >= 40) return "perf-modal__badge--warning";
+      return "perf-modal__badge--danger";
     },
     countByCategory: function (tasks, cat) {
-      return tasks.filter(function (t) { return t.category === cat; }).length;
+      return tasks.filter(function (t) {
+        return t.category === cat;
+      }).length;
     },
   },
 };
@@ -487,59 +729,50 @@ export default {
 
 <style scoped>
 .perf-panel {
+  background: var(--bg-card, #fff);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
+  overflow: hidden;
 }
 
 /* Header */
 .perf-panel__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-lg, 24px);
-  background: #fcfdff;
-  border: 1px solid #eef1f5;
-  border-radius: var(--radius-card, 12px);
   padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
 }
 
-.perf-panel__header-text {
-  flex: 1;
+.perf-panel__header:hover {
+  background: #fafbfd;
 }
 
 .perf-panel__title {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
   margin: 0;
   padding: 0;
   border: none;
-}
-
-.perf-panel__collapse-btn {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--color-text-secondary, #6b7280);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-top: 4px;
+  gap: 8px;
 }
 
-.perf-panel__collapse-btn:hover {
-  background-color: var(--bg-page, #f5f6fa);
+.perf-panel__title svg {
+  color: #c878c8;
 }
 
-.perf-panel__collapse-icon {
-  transition: transform 0.3s ease;
+.perf-panel__chevron {
+  color: var(--color-text-muted, #9ca3af);
+  transition: transform 0.3s;
 }
 
-.perf-panel__collapse-icon--rotated {
+.perf-panel__chevron--rotated {
   transform: rotate(180deg);
 }
 
@@ -549,12 +782,14 @@ export default {
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md, 16px);
   margin-bottom: var(--spacing-md, 16px);
+  padding: 0 var(--spacing-lg, 24px);
 }
 
 .perf-panel__bottom-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md, 16px);
+  padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
 }
 
 /* Card */
@@ -669,6 +904,83 @@ export default {
   transition: width 0.4s ease;
 }
 
+/* Member Performance list */
+.perf-panel__member-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+}
+
+.perf-panel__member-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perf-panel__member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.perf-panel__member-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.perf-panel__member-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #c878c8, #d494d4);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.perf-panel__member-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.perf-panel__member-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+/* Modal member header */
+.perf-modal__member-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.perf-modal__member-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #c878c8, #d494d4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* Project Navigator */
 .perf-panel__navigator {
   display: flex;
@@ -724,8 +1036,12 @@ export default {
 }
 
 @keyframes perf-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .perf-modal {
@@ -741,8 +1057,14 @@ export default {
 }
 
 @keyframes perf-slide-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .perf-modal__header {

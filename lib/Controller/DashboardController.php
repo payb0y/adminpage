@@ -65,7 +65,7 @@ class DashboardController extends Controller {
                 'kpis' => [],
                 'alerts' => ['summary' => [], 'overdueTasks' => [], 'unassignedTasks' => [], 'noDueDateTasks' => [], 'stalledProjects' => [], 'zeroProgress' => []],
                 'projectProgress' => [],
-                'productivityByDiscipline' => [],
+                'memberPerformance' => [],
                 'taskDelayProjects' => [],
                 'taskCompletionProjects' => [],
                 'performanceDetails' => null,
@@ -88,7 +88,7 @@ class DashboardController extends Controller {
 
             // Project Performance Analytics (live from Deck DB)
             'projectProgress'          => $perfData['projectProgress'],
-            'productivityByDiscipline' => $perfData['productivityByDiscipline'],
+            'memberPerformance'        => $perfData['memberPerformance'],
             'taskDelayProjects'        => $perfData['taskDelayProjects'],
             'taskCompletionProjects'   => $perfData['taskCompletionProjects'],
 

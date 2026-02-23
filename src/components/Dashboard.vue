@@ -50,7 +50,7 @@
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
         :project-progress="data.projectProgress"
-        :productivity-by-discipline="data.productivityByDiscipline"
+        :member-performance="data.memberPerformance"
         :task-delay-projects="data.taskDelayProjects"
         :task-completion-projects="data.taskCompletionProjects"
         :performance-details="data.performanceDetails"

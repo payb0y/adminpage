@@ -137,13 +137,52 @@ class DeckService {
     }
 
     /**
+     * Fetch card assignees (user type = 0) for cards belonging to given board IDs.
+     *
+     * @param int[] $boardIds
+     * @return array  card_id => [participant_uid, ...]
+     */
+    private function fetchCardAssignees(array $boardIds): array {
+        if (empty($boardIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
+
+        $sql = "
+            SELECT
+                au.card_id,
+                au.participant
+            FROM *PREFIX*deck_assigned_users au
+            JOIN *PREFIX*deck_cards c ON c.id = au.card_id
+            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            WHERE s.board_id IN ({$placeholders})
+              AND au.type = 0
+        ";
+
+        $result = $this->db->prepare($sql);
+        $idx = 1;
+        foreach ($boardIds as $bid) {
+            $result->bindValue($idx++, $bid, \PDO::PARAM_INT);
+        }
+        $result->execute();
+        $rows = $result->fetchAll();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int)$row['card_id']][] = $row['participant'];
+        }
+        return $map;
+    }
+
+    /**
      * Build all Project Performance Analytics data from the Deck database.
      *
      * Approach: start from projects → get linked boards → fetch tasks & labels
      * only for those boards. Projects with 0 cards still appear in every widget.
      *
      * @param int $orgId
-     * @return array  with keys: projectProgress, productivityByDiscipline,
+     * @return array  with keys: projectProgress, memberPerformance,
      *                taskDelayProjects, taskCompletionProjects
      */
     public function getProjectPerformanceData(int $orgId): array {
@@ -168,9 +207,10 @@ class DeckService {
             ];
         }
 
-        // 2. Fetch tasks and labels scoped to those boards
-        $taskRows   = $this->fetchTaskRowsForBoards($boardIds);
-        $cardLabels = $this->fetchCardLabels($boardIds);
+        // 2. Fetch tasks, labels, and assignees scoped to those boards
+        $taskRows       = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels     = $this->fetchCardLabels($boardIds);
+        $cardAssignees  = $this->fetchCardAssignees($boardIds);
 
         // 3. Group tasks into their project by board_id
         foreach ($taskRows as $row) {
@@ -180,18 +220,21 @@ class DeckService {
             }
         }
 
-        // 4. Build discipline (label) stats across all tasks
-        $disciplines = [];   // label_title => { total, done }
+        // 4. Build member performance stats across all tasks
+        $members = [];   // participant => { total, done }
         foreach ($taskRows as $row) {
+            if ($row['task_status'] === 'deleted') {
+                continue;
+            }
             $taskId = (int)$row['task_id'];
-            $labels = $cardLabels[$taskId] ?? [];
-            foreach ($labels as $label) {
-                if (!isset($disciplines[$label])) {
-                    $disciplines[$label] = ['total' => 0, 'done' => 0];
+            $assignees = $cardAssignees[$taskId] ?? [];
+            foreach ($assignees as $uid) {
+                if (!isset($members[$uid])) {
+                    $members[$uid] = ['total' => 0, 'done' => 0];
                 }
-                $disciplines[$label]['total']++;
+                $members[$uid]['total']++;
                 if ($row['task_status'] === 'done') {
-                    $disciplines[$label]['done']++;
+                    $members[$uid]['done']++;
                 }
             }
         }
@@ -217,20 +260,28 @@ class DeckService {
             ];
         }
 
-        // ─── Widget 2: Productivity by Discipline (label) ───
-        $productivityByDiscipline = [];
-        foreach ($disciplines as $label => $stats) {
+        // ─── Widget 2: Member Performance ───
+        $memberPerformance = [];
+        foreach ($members as $uid => $stats) {
             $progress = $stats['total'] > 0
                 ? (int)round(($stats['done'] / $stats['total']) * 100)
                 : 0;
-            $productivityByDiscipline[] = [
-                'name'     => $label,
+            $memberPerformance[] = [
+                'name'     => $uid,
+                'total'    => $stats['total'],
+                'done'     => $stats['done'],
                 'progress' => $progress,
             ];
         }
-        if (empty($productivityByDiscipline)) {
-            $productivityByDiscipline[] = [
-                'name'     => 'All Tasks',
+        // Sort by total tasks descending
+        usort($memberPerformance, function ($a, $b) {
+            return $b['total'] - $a['total'];
+        });
+        if (empty($memberPerformance)) {
+            $memberPerformance[] = [
+                'name'     => 'No Assignments',
+                'total'    => 0,
+                'done'     => 0,
                 'progress' => 0,
             ];
         }
@@ -333,8 +384,8 @@ class DeckService {
         }
 
         return [
-            'projectProgress'         => $projectProgress,
-            'productivityByDiscipline' => $productivityByDiscipline,
+            'projectProgress'          => $projectProgress,
+            'memberPerformance'        => $memberPerformance,
             'taskDelayProjects'        => $taskDelayProjects,
             'taskCompletionProjects'   => $taskCompletionProjects,
         ];
@@ -346,8 +397,8 @@ class DeckService {
     private function emptyResponse(): array {
         return [
             'projectProgress' => [],
-            'productivityByDiscipline' => [
-                ['name' => 'All Tasks', 'progress' => 0],
+            'memberPerformance' => [
+                ['name' => 'No Assignments', 'total' => 0, 'done' => 0, 'progress' => 0],
             ],
             'taskDelayProjects' => [
                 [
@@ -403,8 +454,9 @@ class DeckService {
             ];
         }
 
-        $taskRows   = $this->fetchTaskRowsForBoards($boardIds);
-        $cardLabels = $this->fetchCardLabels($boardIds);
+        $taskRows       = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels     = $this->fetchCardLabels($boardIds);
+        $cardAssignees  = $this->fetchCardAssignees($boardIds);
 
         foreach ($taskRows as $row) {
             $bid = (int)$row['board_id'];
@@ -415,7 +467,7 @@ class DeckService {
 
         return [
             'progressDetails'   => $this->buildProgressDetails($projectMap),
-            'disciplineDetails' => $this->buildDisciplineDetails($taskRows, $cardLabels),
+            'memberDetails'     => $this->buildMemberDetails($taskRows, $cardAssignees, $projectMap),
             'delayDetails'      => $this->buildDelayDetails($projectMap),
             'completionDetails' => $this->buildCompletionDetails($projectMap),
         ];
@@ -457,43 +509,48 @@ class DeckService {
     }
 
     /**
-     * Discipline detail: per-label list of tasks.
+     * Member detail: per-member list of assigned tasks with status.
      */
-    private function buildDisciplineDetails(array $taskRows, array $cardLabels): array {
-        $disciplines = []; // label => { total, done, tasks[] }
+    private function buildMemberDetails(array $taskRows, array $cardAssignees, array $projectMap): array {
+        $members = []; // uid => { total, done, tasks[] }
         foreach ($taskRows as $row) {
-            $taskId = (int)$row['task_id'];
-            $labels = $cardLabels[$taskId] ?? [];
-            if (empty($labels)) {
-                $labels = ['Unlabelled'];
+            if ($row['task_status'] === 'deleted') {
+                continue;
             }
-            foreach ($labels as $label) {
-                if (!isset($disciplines[$label])) {
-                    $disciplines[$label] = ['total' => 0, 'done' => 0, 'tasks' => []];
+            $taskId = (int)$row['task_id'];
+            $assignees = $cardAssignees[$taskId] ?? [];
+            foreach ($assignees as $uid) {
+                if (!isset($members[$uid])) {
+                    $members[$uid] = ['total' => 0, 'done' => 0, 'tasks' => []];
                 }
-                $disciplines[$label]['total']++;
+                $members[$uid]['total']++;
                 if ($row['task_status'] === 'done') {
-                    $disciplines[$label]['done']++;
+                    $members[$uid]['done']++;
                 }
-                $disciplines[$label]['tasks'][] = [
+                $members[$uid]['tasks'][] = [
                     'title'   => $row['task_title'],
                     'status'  => $row['task_status'],
                     'project' => $row['board_title'],
                     'stack'   => $row['stack_title'],
+                    'due'     => $row['duedate'],
                 ];
             }
         }
 
         $result = [];
-        foreach ($disciplines as $label => $data) {
+        foreach ($members as $uid => $data) {
             $result[] = [
-                'name'     => $label,
+                'name'     => $uid,
                 'total'    => $data['total'],
                 'done'     => $data['done'],
                 'progress' => $data['total'] > 0 ? (int)round(($data['done'] / $data['total']) * 100) : 0,
                 'tasks'    => $data['tasks'],
             ];
         }
+        // Sort by total tasks descending
+        usort($result, function ($a, $b) {
+            return $b['total'] - $a['total'];
+        });
         return $result;
     }
 
