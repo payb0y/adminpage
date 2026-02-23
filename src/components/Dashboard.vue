@@ -33,6 +33,11 @@
       <!-- ── Alerts & Exceptions ── -->
       <AlertsPanel :alerts="data.alerts" />
 
+      <!-- ── Organization ── -->
+      <OrganizationPanel
+        :profile="data.orgOverview.profile || {}"
+      />
+
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
         :project-progress="data.projectProgress"
@@ -60,6 +65,7 @@
 import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import OrgHeaderBar from "./OrgHeaderBar.vue";
+import OrganizationPanel from "./OrganizationPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
@@ -70,6 +76,7 @@ export default {
     KpiCard,
     AlertsPanel,
     OrgHeaderBar,
+    OrganizationPanel,
     ProjectPerformancePanel,
     MembersPanel,
     SubscriptionPanel,

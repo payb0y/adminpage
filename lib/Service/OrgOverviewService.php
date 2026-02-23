@@ -76,20 +76,23 @@ class OrgOverviewService {
     // ─────────────────────────────────────────────────────────────────────
 
     private function getProfile(int $orgId): array {
-        $sql = "SELECT id, name, contact_email, admin_uid FROM *PREFIX*organizations WHERE id = ? LIMIT 1";
+        $sql = "SELECT id, name, contact_first_name, contact_last_name, contact_email, contact_phone, admin_uid FROM *PREFIX*organizations WHERE id = ? LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$orgId]);
         $row = $stmt->fetch();
 
         if (!$row) {
-            return ['id' => $orgId, 'name' => 'Unknown', 'contactEmail' => '—', 'adminUid' => '—'];
+            return ['id' => $orgId, 'name' => 'Unknown', 'contactFirstName' => '', 'contactLastName' => '', 'contactEmail' => '—', 'contactPhone' => '', 'adminUid' => '—'];
         }
 
         return [
-            'id'           => (int)$row['id'],
-            'name'         => $row['name'],
-            'contactEmail' => $row['contact_email'] ?? '—',
-            'adminUid'     => $row['admin_uid'] ?? '—',
+            'id'               => (int)$row['id'],
+            'name'             => $row['name'],
+            'contactFirstName' => $row['contact_first_name'] ?? '',
+            'contactLastName'  => $row['contact_last_name'] ?? '',
+            'contactEmail'     => $row['contact_email'] ?? '—',
+            'contactPhone'     => $row['contact_phone'] ?? '',
+            'adminUid'         => $row['admin_uid'] ?? '—',
         ];
     }
 
