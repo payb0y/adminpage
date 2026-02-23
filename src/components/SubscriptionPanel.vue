@@ -36,36 +36,9 @@
     </div>
 
     <div v-show="!collapsed" class="sub-panel__body">
-      <!-- ── Plan Hero Strip ── -->
-      <div class="sub-panel__hero">
-        <div class="sub-panel__hero-card sub-panel__hero-card--plan">
-          <span class="sub-panel__plan-badge" :class="planBadgeClass">{{
-            subscription.planName
-          }}</span>
-          <span class="sub-panel__hero-label">Current Plan</span>
-        </div>
-        <div class="sub-panel__hero-card">
-          <span class="sub-panel__hero-value">{{ priceDisplay }}</span>
-          <span class="sub-panel__hero-label">Monthly Price</span>
-        </div>
-        <div class="sub-panel__hero-card">
-          <span
-            class="sub-panel__status"
-            :class="'sub-panel__status--' + subscription.status"
-            >{{ subscription.status }}</span
-          >
-          <span class="sub-panel__hero-label">Status</span>
-        </div>
-        <div class="sub-panel__hero-card">
-          <span class="sub-panel__hero-value">{{
-            subscription.isPublic ? "Public" : "Private"
-          }}</span>
-          <span class="sub-panel__hero-label">Visibility</span>
-        </div>
-      </div>
-
       <!-- ── Usage Meters ── -->
       <div class="sub-panel__meters">
+        <!-- Projects -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Projects</span>
@@ -88,6 +61,8 @@
             ></div>
           </div>
         </div>
+
+        <!-- Members -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Members</span>
@@ -110,6 +85,8 @@
             ></div>
           </div>
         </div>
+
+        <!-- Tasks Done -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Tasks Done</span>
@@ -131,8 +108,32 @@
         </div>
       </div>
 
-      <!-- ── Plan Details ── -->
+      <!-- ── Plan Detail Grid ── -->
       <div class="sub-panel__details">
+        <div class="sub-panel__detail-row">
+          <span class="sub-panel__detail-label">Plan</span>
+          <span class="sub-panel__plan-badge" :class="planBadgeClass">{{
+            subscription.planName
+          }}</span>
+        </div>
+        <div class="sub-panel__detail-row">
+          <span class="sub-panel__detail-label">Price</span>
+          <span class="sub-panel__detail-value">{{ priceDisplay }}</span>
+        </div>
+        <div class="sub-panel__detail-row">
+          <span class="sub-panel__detail-label">Status</span>
+          <span
+            class="sub-panel__status"
+            :class="'sub-panel__status--' + subscription.status"
+            >{{ subscription.status }}</span
+          >
+        </div>
+        <div class="sub-panel__detail-row">
+          <span class="sub-panel__detail-label">Visibility</span>
+          <span class="sub-panel__detail-value">{{
+            subscription.isPublic ? "Public" : "Private"
+          }}</span>
+        </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Max Projects</span>
           <span class="sub-panel__detail-value">{{
@@ -301,38 +302,6 @@ export default {
   padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
 }
 
-/* ─── Plan Hero Strip ─── */
-.sub-panel__hero {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md, 16px);
-  margin-bottom: var(--spacing-lg, 24px);
-}
-
-.sub-panel__hero-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 12px;
-  background: #fafbfd;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.sub-panel__hero-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
-  line-height: 1.2;
-}
-
-.sub-panel__hero-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--color-text-secondary, #6b7280);
-}
-
 /* ─── Usage Meters ─── */
 .sub-panel__meters {
   display: grid;
@@ -431,11 +400,10 @@ export default {
 
 /* Plan badge */
 .sub-panel__plan-badge {
-  font-size: 14px;
-  font-weight: 700;
-  padding: 4px 14px;
-  border-radius: 10px;
-  line-height: 1.4;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
 }
 
 .sub-panel__plan-badge--free {
@@ -457,12 +425,11 @@ export default {
 
 /* Status */
 .sub-panel__status {
-  font-size: 14px;
-  font-weight: 700;
-  padding: 4px 14px;
-  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
   text-transform: capitalize;
-  line-height: 1.4;
 }
 
 .sub-panel__status--active {
@@ -483,9 +450,6 @@ export default {
 }
 
 @media (max-width: 700px) {
-  .sub-panel__hero {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .sub-panel__meters {
     grid-template-columns: 1fr;
   }
