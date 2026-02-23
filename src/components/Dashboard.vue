@@ -3,8 +3,19 @@
     <!-- ── No Organization State ── -->
     <div v-if="!data.orgOverview" class="adminpage-dashboard__empty">
       <div class="adminpage-dashboard__empty-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       </div>
       <h2 class="adminpage-dashboard__empty-title">No Organization Found</h2>
@@ -34,9 +45,7 @@
       <AlertsPanel :alerts="data.alerts" />
 
       <!-- ── Organization ── -->
-      <OrganizationPanel
-        :profile="data.orgOverview.profile || {}"
-      />
+      <OrganizationPanel :profile="data.orgOverview.profile || {}" />
 
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
@@ -48,9 +57,7 @@
       />
 
       <!-- ── Team Members ── -->
-      <MembersPanel
-        :members="data.orgOverview.members || []"
-      />
+      <MembersPanel :members="data.orgOverview.members || []" />
 
       <!-- ── Subscription & Plan ── -->
       <SubscriptionPanel
@@ -161,7 +168,7 @@ export default {
   height: 80px;
   border-radius: 20px;
   background: #e8f0fe;
-  color: #4A90D9;
+  color: #4a90d9;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -47,17 +47,24 @@
 
       <!-- ── Contact Details ── -->
       <div class="org-panel__details">
-        <div class="org-panel__detail-row" v-if="profile.contactFirstName || profile.contactLastName">
+        <div
+          class="org-panel__detail-row"
+          v-if="profile.contactFirstName || profile.contactLastName"
+        >
           <span class="org-panel__detail-label">Contact Name</span>
           <span class="org-panel__detail-value">{{ contactFullName }}</span>
         </div>
         <div class="org-panel__detail-row">
           <span class="org-panel__detail-label">Contact Email</span>
-          <span class="org-panel__detail-value">{{ profile.contactEmail }}</span>
+          <span class="org-panel__detail-value">{{
+            profile.contactEmail
+          }}</span>
         </div>
         <div class="org-panel__detail-row" v-if="profile.contactPhone">
           <span class="org-panel__detail-label">Contact Phone</span>
-          <span class="org-panel__detail-value">{{ profile.contactPhone }}</span>
+          <span class="org-panel__detail-value">{{
+            profile.contactPhone
+          }}</span>
         </div>
         <div class="org-panel__detail-row">
           <span class="org-panel__detail-label">Admin User</span>
