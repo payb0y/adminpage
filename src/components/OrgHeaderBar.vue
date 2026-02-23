@@ -15,7 +15,10 @@
       <span class="org-header__plan-badge" :class="planBadgeClass">
         {{ subscription.planName }}
       </span>
-      <span class="org-header__status" :class="'org-header__status--' + subscription.status">
+      <span
+        class="org-header__status"
+        :class="'org-header__status--' + subscription.status"
+      >
         {{ subscription.status }}
       </span>
     </div>
@@ -33,12 +36,22 @@ export default {
   },
   computed: {
     profile: function () {
-      return this.orgOverview.profile || { name: "—", contactEmail: "—", adminUid: "—" };
+      return (
+        this.orgOverview.profile || {
+          name: "—",
+          contactEmail: "—",
+          adminUid: "—",
+        }
+      );
     },
     subscription: function () {
-      return this.orgOverview.subscription || {
-        status: "none", planName: "No plan", price: 0,
-      };
+      return (
+        this.orgOverview.subscription || {
+          status: "none",
+          planName: "No plan",
+          price: 0,
+        }
+      );
     },
     initials: function () {
       var name = this.profile.name || "?";
@@ -46,8 +59,8 @@ export default {
     },
     planBadgeClass: function () {
       var p = (this.subscription.planName || "").toLowerCase();
-      if (p === "free")       return "org-header__plan-badge--free";
-      if (p === "pro")        return "org-header__plan-badge--pro";
+      if (p === "free") return "org-header__plan-badge--free";
+      if (p === "pro") return "org-header__plan-badge--pro";
       if (p === "enterprise") return "org-header__plan-badge--enterprise";
       return "org-header__plan-badge--custom";
     },
@@ -62,10 +75,10 @@ export default {
   justify-content: space-between;
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,.08));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
   margin-bottom: var(--spacing-xl, 32px);
-  border-left: 4px solid #4A90D9;
+  border-left: 4px solid #4a90d9;
 }
 
 .org-header__left {
@@ -78,7 +91,7 @@ export default {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #4A90D9, #6cb0f0);
+  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
   color: #fff;
   font-size: 22px;
   font-weight: 700;
@@ -129,10 +142,22 @@ export default {
   padding: 4px 12px;
   border-radius: 10px;
 }
-.org-header__plan-badge--free       { background: #f0f1f5; color: #6b7280; }
-.org-header__plan-badge--pro        { background: #e8f0fe; color: #1e4a8a; }
-.org-header__plan-badge--enterprise { background: #f3e8ff; color: #6b21a8; }
-.org-header__plan-badge--custom     { background: #fef3cd; color: #92400e; }
+.org-header__plan-badge--free {
+  background: #f0f1f5;
+  color: #6b7280;
+}
+.org-header__plan-badge--pro {
+  background: #e8f0fe;
+  color: #1e4a8a;
+}
+.org-header__plan-badge--enterprise {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.org-header__plan-badge--custom {
+  background: #fef3cd;
+  color: #92400e;
+}
 
 /* Sub status */
 .org-header__status {
@@ -142,10 +167,22 @@ export default {
   border-radius: 10px;
   text-transform: capitalize;
 }
-.org-header__status--active    { background: #d4edda; color: #166534; }
-.org-header__status--paused    { background: #fef3cd; color: #92400e; }
-.org-header__status--cancelled { background: #fde8e8; color: #b91c1c; }
-.org-header__status--none      { background: #f0f1f5; color: #6b7280; }
+.org-header__status--active {
+  background: #d4edda;
+  color: #166534;
+}
+.org-header__status--paused {
+  background: #fef3cd;
+  color: #92400e;
+}
+.org-header__status--cancelled {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+.org-header__status--none {
+  background: #f0f1f5;
+  color: #6b7280;
+}
 
 @media (max-width: 700px) {
   .org-header {

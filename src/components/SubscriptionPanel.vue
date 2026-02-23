@@ -2,18 +2,36 @@
   <section class="sub-panel">
     <div class="sub-panel__header" @click="collapsed = !collapsed">
       <h3 class="sub-panel__title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+          <line x1="1" y1="10" x2="23" y2="10" />
         </svg>
         Subscription &amp; Plan
       </h3>
       <svg
-        xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="sub-panel__chevron" :class="{ 'sub-panel__chevron--rotated': collapsed }"
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="sub-panel__chevron"
+        :class="{ 'sub-panel__chevron--rotated': collapsed }"
       >
-        <polyline points="18 15 12 9 6 15"/>
+        <polyline points="18 15 12 9 6 15" />
       </svg>
     </div>
 
@@ -24,10 +42,23 @@
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Projects</span>
-            <span class="sub-panel__meter-value">{{ usageSummary.projectCount }}<span class="sub-panel__meter-max">/{{ subscription.maxProjects }}</span></span>
+            <span class="sub-panel__meter-value"
+              >{{ usageSummary.projectCount
+              }}<span class="sub-panel__meter-max"
+                >/{{ subscription.maxProjects }}</span
+              ></span
+            >
           </div>
           <div class="sub-panel__bar">
-            <div class="sub-panel__bar-fill" :style="fillStyle(usageSummary.projectCount, subscription.maxProjects)" :class="fillClass(usageSummary.projectCount, subscription.maxProjects)"></div>
+            <div
+              class="sub-panel__bar-fill"
+              :style="
+                fillStyle(usageSummary.projectCount, subscription.maxProjects)
+              "
+              :class="
+                fillClass(usageSummary.projectCount, subscription.maxProjects)
+              "
+            ></div>
           </div>
         </div>
 
@@ -35,10 +66,23 @@
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Members</span>
-            <span class="sub-panel__meter-value">{{ usageSummary.memberCount }}<span class="sub-panel__meter-max">/{{ subscription.maxMembers }}</span></span>
+            <span class="sub-panel__meter-value"
+              >{{ usageSummary.memberCount
+              }}<span class="sub-panel__meter-max"
+                >/{{ subscription.maxMembers }}</span
+              ></span
+            >
           </div>
           <div class="sub-panel__bar">
-            <div class="sub-panel__bar-fill" :style="fillStyle(usageSummary.memberCount, subscription.maxMembers)" :class="fillClass(usageSummary.memberCount, subscription.maxMembers)"></div>
+            <div
+              class="sub-panel__bar-fill"
+              :style="
+                fillStyle(usageSummary.memberCount, subscription.maxMembers)
+              "
+              :class="
+                fillClass(usageSummary.memberCount, subscription.maxMembers)
+              "
+            ></div>
           </div>
         </div>
 
@@ -46,10 +90,20 @@
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
             <span class="sub-panel__meter-label">Tasks Done</span>
-            <span class="sub-panel__meter-value">{{ usageSummary.doneTasks }}<span class="sub-panel__meter-max">/{{ usageSummary.totalTasks }}</span></span>
+            <span class="sub-panel__meter-value"
+              >{{ usageSummary.doneTasks
+              }}<span class="sub-panel__meter-max"
+                >/{{ usageSummary.totalTasks }}</span
+              ></span
+            >
           </div>
           <div class="sub-panel__bar">
-            <div class="sub-panel__bar-fill sub-panel__bar-fill--ok" :style="fillStyle(usageSummary.doneTasks, usageSummary.totalTasks)"></div>
+            <div
+              class="sub-panel__bar-fill sub-panel__bar-fill--ok"
+              :style="
+                fillStyle(usageSummary.doneTasks, usageSummary.totalTasks)
+              "
+            ></div>
           </div>
         </div>
       </div>
@@ -58,7 +112,9 @@
       <div class="sub-panel__details">
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Plan</span>
-          <span class="sub-panel__plan-badge" :class="planBadgeClass">{{ subscription.planName }}</span>
+          <span class="sub-panel__plan-badge" :class="planBadgeClass">{{
+            subscription.planName
+          }}</span>
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Price</span>
@@ -66,35 +122,55 @@
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Status</span>
-          <span class="sub-panel__status" :class="'sub-panel__status--' + subscription.status">{{ subscription.status }}</span>
+          <span
+            class="sub-panel__status"
+            :class="'sub-panel__status--' + subscription.status"
+            >{{ subscription.status }}</span
+          >
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Visibility</span>
-          <span class="sub-panel__detail-value">{{ subscription.isPublic ? 'Public' : 'Private' }}</span>
+          <span class="sub-panel__detail-value">{{
+            subscription.isPublic ? "Public" : "Private"
+          }}</span>
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Max Projects</span>
-          <span class="sub-panel__detail-value">{{ subscription.maxProjects }}</span>
+          <span class="sub-panel__detail-value">{{
+            subscription.maxProjects
+          }}</span>
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Max Members</span>
-          <span class="sub-panel__detail-value">{{ subscription.maxMembers }}</span>
+          <span class="sub-panel__detail-value">{{
+            subscription.maxMembers
+          }}</span>
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Shared Storage</span>
-          <span class="sub-panel__detail-value">{{ subscription.sharedStorageGb }} GB / project</span>
+          <span class="sub-panel__detail-value"
+            >{{ subscription.sharedStorageGb }} GB / project</span
+          >
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Private Storage</span>
-          <span class="sub-panel__detail-value">{{ subscription.privateStorageGb }} GB / user</span>
+          <span class="sub-panel__detail-value"
+            >{{ subscription.privateStorageGb }} GB / user</span
+          >
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Started</span>
-          <span class="sub-panel__detail-value">{{ formatDate(subscription.startedAt) }}</span>
+          <span class="sub-panel__detail-value">{{
+            formatDate(subscription.startedAt)
+          }}</span>
         </div>
         <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Expires</span>
-          <span class="sub-panel__detail-value">{{ subscription.endedAt ? formatDate(subscription.endedAt) : 'No expiry' }}</span>
+          <span class="sub-panel__detail-value">{{
+            subscription.endedAt
+              ? formatDate(subscription.endedAt)
+              : "No expiry"
+          }}</span>
         </div>
       </div>
     </div>
@@ -109,10 +185,16 @@ export default {
       type: Object,
       default: function () {
         return {
-          status: "none", planName: "No plan", price: 0,
-          maxProjects: 0, maxMembers: 0,
-          sharedStorageGb: 0, privateStorageGb: 0,
-          startedAt: null, endedAt: null, isPublic: false,
+          status: "none",
+          planName: "No plan",
+          price: 0,
+          maxProjects: 0,
+          maxMembers: 0,
+          sharedStorageGb: 0,
+          privateStorageGb: 0,
+          startedAt: null,
+          endedAt: null,
+          isPublic: false,
         };
       },
     },
@@ -136,8 +218,8 @@ export default {
     },
     planBadgeClass: function () {
       var p = (this.subscription.planName || "").toLowerCase();
-      if (p === "free")       return "sub-panel__plan-badge--free";
-      if (p === "pro")        return "sub-panel__plan-badge--pro";
+      if (p === "free") return "sub-panel__plan-badge--free";
+      if (p === "pro") return "sub-panel__plan-badge--pro";
       if (p === "enterprise") return "sub-panel__plan-badge--enterprise";
       return "sub-panel__plan-badge--custom";
     },
@@ -147,7 +229,11 @@ export default {
       if (!dateStr) return "—";
       var d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      return d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
     fillStyle: function (used, max) {
       if (!max || max === 0) return { width: "0%" };
@@ -168,7 +254,7 @@ export default {
 .sub-panel {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,.08));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
 }
@@ -183,7 +269,9 @@ export default {
   transition: background 0.15s;
 }
 
-.sub-panel__header:hover { background: #fafbfd; }
+.sub-panel__header:hover {
+  background: #fafbfd;
+}
 
 .sub-panel__title {
   font-size: 15px;
@@ -197,14 +285,18 @@ export default {
   gap: 8px;
 }
 
-.sub-panel__title svg { color: #d97706; }
+.sub-panel__title svg {
+  color: #d97706;
+}
 
 .sub-panel__chevron {
   color: var(--color-text-muted, #9ca3af);
   transition: transform 0.3s;
 }
 
-.sub-panel__chevron--rotated { transform: rotate(180deg); }
+.sub-panel__chevron--rotated {
+  transform: rotate(180deg);
+}
 
 .sub-panel__body {
   padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
@@ -263,9 +355,15 @@ export default {
   transition: width 0.4s ease;
 }
 
-.sub-panel__bar-fill--ok      { background: #2E9E5A; }
-.sub-panel__bar-fill--warning { background: #f4a261; }
-.sub-panel__bar-fill--danger  { background: #e63946; }
+.sub-panel__bar-fill--ok {
+  background: #2e9e5a;
+}
+.sub-panel__bar-fill--warning {
+  background: #f4a261;
+}
+.sub-panel__bar-fill--danger {
+  background: #e63946;
+}
 
 /* ─── Plan Details ─── */
 .sub-panel__details {
@@ -283,7 +381,9 @@ export default {
   font-size: 13px;
 }
 
-.sub-panel__detail-row:last-child { border-bottom: none; }
+.sub-panel__detail-row:last-child {
+  border-bottom: none;
+}
 
 .sub-panel__detail-label {
   font-size: 11px;
@@ -306,10 +406,22 @@ export default {
   border-radius: 8px;
 }
 
-.sub-panel__plan-badge--free       { background: #f0f1f5; color: #6b7280; }
-.sub-panel__plan-badge--pro        { background: #e8f0fe; color: #1e4a8a; }
-.sub-panel__plan-badge--enterprise { background: #f3e8ff; color: #6b21a8; }
-.sub-panel__plan-badge--custom     { background: #fef3cd; color: #92400e; }
+.sub-panel__plan-badge--free {
+  background: #f0f1f5;
+  color: #6b7280;
+}
+.sub-panel__plan-badge--pro {
+  background: #e8f0fe;
+  color: #1e4a8a;
+}
+.sub-panel__plan-badge--enterprise {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.sub-panel__plan-badge--custom {
+  background: #fef3cd;
+  color: #92400e;
+}
 
 /* Status */
 .sub-panel__status {
@@ -320,10 +432,22 @@ export default {
   text-transform: capitalize;
 }
 
-.sub-panel__status--active    { background: #d4edda; color: #166534; }
-.sub-panel__status--paused    { background: #fef3cd; color: #92400e; }
-.sub-panel__status--cancelled { background: #fde8e8; color: #b91c1c; }
-.sub-panel__status--none      { background: #f0f1f5; color: #6b7280; }
+.sub-panel__status--active {
+  background: #d4edda;
+  color: #166534;
+}
+.sub-panel__status--paused {
+  background: #fef3cd;
+  color: #92400e;
+}
+.sub-panel__status--cancelled {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+.sub-panel__status--none {
+  background: #f0f1f5;
+  color: #6b7280;
+}
 
 @media (max-width: 700px) {
   .sub-panel__meters {

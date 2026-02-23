@@ -2,19 +2,39 @@
   <section class="members-panel">
     <div class="members-panel__header" @click="collapsed = !collapsed">
       <h3 class="members-panel__title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
         Team Members
         <span class="members-panel__count">{{ members.length }}</span>
       </h3>
       <svg
-        xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="members-panel__chevron" :class="{ 'members-panel__chevron--rotated': collapsed }"
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="members-panel__chevron"
+        :class="{ 'members-panel__chevron--rotated': collapsed }"
       >
-        <polyline points="18 15 12 9 6 15"/>
+        <polyline points="18 15 12 9 6 15" />
       </svg>
     </div>
 
@@ -28,14 +48,19 @@
         :key="'mem-' + member.userId"
         class="members-panel__row"
       >
-        <span class="members-panel__avatar">{{ member.userId.charAt(0).toUpperCase() }}</span>
+        <span class="members-panel__avatar">{{
+          member.userId.charAt(0).toUpperCase()
+        }}</span>
         <div class="members-panel__info">
           <span class="members-panel__name">{{ member.userId }}</span>
           <span class="members-panel__joined" v-if="member.joinedAt">
             Joined {{ formatDate(member.joinedAt) }}
           </span>
         </div>
-        <span class="members-panel__role" :class="'members-panel__role--' + member.role">
+        <span
+          class="members-panel__role"
+          :class="'members-panel__role--' + member.role"
+        >
           {{ member.role }}
         </span>
       </div>
@@ -49,7 +74,9 @@ export default {
   props: {
     members: {
       type: Array,
-      default: function () { return []; },
+      default: function () {
+        return [];
+      },
     },
   },
   data: function () {
@@ -62,7 +89,11 @@ export default {
       if (!dateStr) return "—";
       var d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      return d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
   },
 };
@@ -72,7 +103,7 @@ export default {
 .members-panel {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0,0,0,.08));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
 }
@@ -104,7 +135,7 @@ export default {
 }
 
 .members-panel__title svg {
-  color: #4A90D9;
+  color: #4a90d9;
 }
 
 .members-panel__count {
@@ -152,7 +183,7 @@ export default {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4A90D9, #6cb0f0);
+  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
   color: #fff;
   font-size: 15px;
   font-weight: 700;
@@ -190,7 +221,16 @@ export default {
   flex-shrink: 0;
 }
 
-.members-panel__role--admin  { background: #e8f0fe; color: #1e4a8a; }
-.members-panel__role--owner  { background: #f3e8ff; color: #6b21a8; }
-.members-panel__role--member { background: #f0f1f5; color: #6b7280; }
+.members-panel__role--admin {
+  background: #e8f0fe;
+  color: #1e4a8a;
+}
+.members-panel__role--owner {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.members-panel__role--member {
+  background: #f0f1f5;
+  color: #6b7280;
+}
 </style>
