@@ -162,22 +162,114 @@ class OrgOverviewService {
     // ─────────────────────────────────────────────────────────────────────
 
     private function getMembers(int $orgId): array {
+        // 1. Fetch members with user profile + account data
         $sql = "
-            SELECT om.user_uid, om.role
+            SELECT
+                om.user_uid,
+                om.role,
+                om.created_at   AS joined_at,
+                u.displayname,
+                a.data          AS account_data
             FROM *PREFIX*organization_members om
+            LEFT JOIN *PREFIX*users u    ON u.uid = om.user_uid
+            LEFT JOIN *PREFIX*accounts a ON a.uid = om.user_uid
             WHERE om.organization_id = ?
             ORDER BY om.role DESC, om.user_uid ASC
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$orgId]);
-        $rows = $stmt->fetchAll();
+        $memberRows = $stmt->fetchAll();
 
-        return array_map(function ($row) {
-            return [
-                'userId' => $row['user_uid'],
-                'role'   => $row['role'] ?? 'member',
+        if (empty($memberRows)) {
+            return [];
+        }
+
+        // 2. Fetch task assignment stats per member from Deck (scoped to org projects)
+        $taskSql = "
+            SELECT
+                au.participant                      AS user_uid,
+                COUNT(DISTINCT c.id)                AS assigned_tasks,
+                SUM(CASE WHEN s.title = 'Approved/Done' AND c.deleted_at = 0 THEN 1 ELSE 0 END) AS done_tasks,
+                SUM(CASE
+                    WHEN c.duedate IS NOT NULL
+                     AND c.duedate < NOW()
+                     AND c.deleted_at = 0
+                     AND s.title <> 'Approved/Done'
+                    THEN 1 ELSE 0
+                END) AS overdue_tasks
+            FROM *PREFIX*deck_assigned_users au
+            JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id AND c.deleted_at = 0
+            JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
+            JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+                AND cp.organization_id = ?
+            WHERE au.type = 0
+            GROUP BY au.participant
+        ";
+        $stmt2 = $this->db->prepare($taskSql);
+        $stmt2->execute([$orgId]);
+        $taskStats = [];
+        foreach ($stmt2->fetchAll() as $r) {
+            $taskStats[$r['user_uid']] = [
+                'assignedTasks' => (int)$r['assigned_tasks'],
+                'doneTasks'     => (int)$r['done_tasks'],
+                'overdueTasks'  => (int)$r['overdue_tasks'],
             ];
-        }, $rows);
+        }
+
+        // 3. Fetch last activity (most recent card modification) per member
+        $actSql = "
+            SELECT
+                au.participant AS user_uid,
+                MAX(c.last_modified) AS last_active_ts
+            FROM *PREFIX*deck_assigned_users au
+            JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id
+            JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
+            JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+                AND cp.organization_id = ?
+            WHERE au.type = 0
+            GROUP BY au.participant
+        ";
+        $stmt3 = $this->db->prepare($actSql);
+        $stmt3->execute([$orgId]);
+        $lastActive = [];
+        foreach ($stmt3->fetchAll() as $r) {
+            if ($r['last_active_ts']) {
+                $lastActive[$r['user_uid']] = (new \DateTime())
+                    ->setTimestamp((int)$r['last_active_ts'])
+                    ->format('Y-m-d H:i');
+            }
+        }
+
+        // 4. Build enriched member array
+        return array_map(function ($row) use ($taskStats, $lastActive) {
+            $uid = $row['user_uid'];
+            $account = [];
+            if (!empty($row['account_data'])) {
+                $decoded = json_decode($row['account_data'], true);
+                if (is_array($decoded)) {
+                    $account = $decoded;
+                }
+            }
+
+            $stats = $taskStats[$uid] ?? ['assignedTasks' => 0, 'doneTasks' => 0, 'overdueTasks' => 0];
+
+            return [
+                'userId'        => $uid,
+                'displayName'   => $account['displayname']['value'] ?? $row['displayname'] ?? $uid,
+                'email'         => $account['email']['value'] ?? '',
+                'phone'         => $account['phone']['value'] ?? '',
+                'organisation'  => $account['organisation']['value'] ?? '',
+                'title'         => $account['role']['value'] ?? '',
+                'role'          => $row['role'] ?? 'member',
+                'joinedAt'      => $row['joined_at'],
+                'lastActive'    => $lastActive[$uid] ?? null,
+                'assignedTasks' => $stats['assignedTasks'],
+                'doneTasks'     => $stats['doneTasks'],
+                'overdueTasks'  => $stats['overdueTasks'],
+            ];
+        }, $memberRows);
     }
 
     // ─────────────────────────────────────────────────────────────────────
