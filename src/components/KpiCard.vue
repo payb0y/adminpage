@@ -63,7 +63,7 @@
 				class="kpi-card__metric"
 				:class="{ 'kpi-card__metric--bordered': index > 0 }"
 			>
-				<span class="kpi-card__metric-value">{{ metric.value }}</span>
+				<span class="kpi-card__metric-value" :class="{ 'kpi-card__metric-value--long': isLongValue(metric.value) }">{{ metric.value }}</span>
 				<span class="kpi-card__metric-label">{{ metric.label }}</span>
 			</div>
 		</div>
@@ -99,6 +99,11 @@ export default {
 			const g = parseInt(hex.substr(2, 2), 16)
 			const b = parseInt(hex.substr(4, 2), 16)
 			return `rgba(${r}, ${g}, ${b}, 0.1)`
+		},
+	},
+	methods: {
+		isLongValue(val) {
+			return typeof val === 'string' && val.length > 8 && isNaN(Number(val))
 		},
 	},
 }
@@ -175,6 +180,13 @@ export default {
 	font-weight: 700;
 	color: var(--color-text-primary, #1a1a2e);
 	line-height: 1.2;
+	word-break: break-word;
+}
+
+.kpi-card__metric-value--long {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.35;
 }
 
 .kpi-card__metric-label {
