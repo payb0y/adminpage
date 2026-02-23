@@ -241,7 +241,7 @@ class OrgOverviewService {
             $doneByBoard[(int)$r['board_id']] = (int)$r['done'];
         }
 
-        // Overdue cards (due_date < now, not in done stack)
+        // Overdue cards (duedate < now, not in done stack)
         $now = time();
         $overdueSql = "
             SELECT s.board_id, COUNT(c.id) AS overdue
@@ -249,9 +249,8 @@ class OrgOverviewService {
             INNER JOIN *PREFIX*deck_cards c ON c.stack_id = s.id
             WHERE s.board_id IN ($placeholders)
               AND s.title != 'Approved/Done'
-              AND c.due_date IS NOT NULL
-              AND c.due_date != ''
-              AND UNIX_TIMESTAMP(c.due_date) < ?
+              AND c.duedate IS NOT NULL
+              AND UNIX_TIMESTAMP(c.duedate) < ?
               AND c.deleted_at = 0 AND c.archived = 0
             GROUP BY s.board_id
         ";
