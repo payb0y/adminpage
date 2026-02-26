@@ -117,7 +117,6 @@ class KpiService {
             'iconColor' => '#2E9E5A',
             'metrics'   => [
                 ['value' => $sub['planName'],    'label' => 'Current Plan'],
-                ['value' => $sub['price'],       'label' => 'Monthly Price'],
                 ['value' => $sub['status'],      'label' => 'Status'],
             ],
         ];
