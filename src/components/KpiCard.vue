@@ -69,7 +69,6 @@
       >
         <span
           class="kpi-card__metric-value"
-          :class="{ 'kpi-card__metric-value--long': isLongValue(metric.value) }"
           >{{ metric.value }}</span
         >
         <span class="kpi-card__metric-label">{{ metric.label }}</span>
