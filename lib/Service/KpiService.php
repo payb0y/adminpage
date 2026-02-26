@@ -23,6 +23,7 @@ class KpiService {
     public function getKpis(int $orgId): array {
         return [
             $this->getOperationalKpi($orgId),
+            $this->getResourcesKpi($orgId),
             $this->getSubscriptionKpi($orgId),
             $this->getTeamKpi($orgId),
         ];
@@ -103,6 +104,119 @@ class KpiService {
         $result->execute([$orgId]);
         $row = $result->fetch();
         return (int)($row['cnt'] ?? 0);
+    }
+
+    // ─── RESOURCES ───────────────────────────────────────────────────────
+
+    private function getResourcesKpi(int $orgId): array {
+        $whiteboards    = $this->countWhiteboards($orgId);
+        $scrumbanBoards = $this->countScrumbanBoards($orgId);
+        $files          = $this->countFiles($orgId);
+        $notes          = $this->countNotes($orgId);
+
+        return [
+            'id'        => 'resources',
+            'title'     => 'Resources',
+            'icon'      => 'icon-files',
+            'iconColor' => '#8B5CF6',
+            'metrics'   => [
+                ['value' => (string)$whiteboards,    'label' => 'Whiteboards'],
+                ['value' => (string)$scrumbanBoards, 'label' => 'Scrumban Boards'],
+                ['value' => (string)$files,          'label' => 'Files'],
+                ['value' => (string)$notes,          'label' => 'Notes'],
+            ],
+        ];
+    }
+
+    private function countWhiteboards(int $orgId): int {
+        $sql = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*custom_projects
+            WHERE organization_id = ?
+              AND white_board_id IS NOT NULL
+              AND white_board_id != ''
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    private function countScrumbanBoards(int $orgId): int {
+        $sql = "
+            SELECT COUNT(DISTINCT f.fileid) AS cnt
+            FROM *PREFIX*filecache f
+            INNER JOIN *PREFIX*custom_projects cp
+                ON f.parent = cp.folder_id
+               AND cp.organization_id = ?
+            WHERE f.name = 'Scrumban'
+              AND f.mimetype = (
+                  SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory'
+              )
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    private function countFiles(int $orgId): int {
+        $sql = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*filecache f
+            INNER JOIN *PREFIX*custom_projects cp
+                ON f.parent = cp.folder_id
+               AND cp.organization_id = ?
+            WHERE f.mimetype NOT IN (
+                SELECT id FROM *PREFIX*mimetypes WHERE mimetype IN ('httpd/unix-directory', 'application/vnd.excalidraw+json')
+            )
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
+    private function countNotes(int $orgId): int {
+        /* Public notes: files inside 'Public Notes' folders under project dirs */
+        $sqlPublic = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*filecache f
+            INNER JOIN *PREFIX*filecache pnf
+                ON f.parent = pnf.fileid
+            INNER JOIN *PREFIX*custom_projects cp
+                ON pnf.parent = cp.folder_id
+               AND cp.organization_id = ?
+            WHERE pnf.name = 'Public Notes'
+              AND pnf.mimetype = (
+                  SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory'
+              )
+              AND f.mimetype != (
+                  SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory'
+              )
+        ";
+        $result = $this->db->prepare($sqlPublic);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        $publicNotes = (int)($row['cnt'] ?? 0);
+
+        /* Private card notes: entries linked to org's deck boards */
+        $sqlPrivate = "
+            SELECT COUNT(*) AS cnt
+            FROM *PREFIX*private_card_notes pcn
+            INNER JOIN *PREFIX*deck_cards c  ON c.id = pcn.card_id
+            INNER JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            INNER JOIN *PREFIX*deck_boards b ON b.id = s.board_id
+            INNER JOIN *PREFIX*custom_projects cp
+                ON CAST(cp.board_id AS UNSIGNED) = b.id
+               AND cp.organization_id = ?
+        ";
+        $result = $this->db->prepare($sqlPrivate);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        $privateNotes = (int)($row['cnt'] ?? 0);
+
+        return $publicNotes + $privateNotes;
     }
 
     // ─── SUBSCRIPTION ────────────────────────────────────────────────────

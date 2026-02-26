@@ -90,7 +90,7 @@ export default {
   computed: {
     operationalKpis: function () {
       return (this.data.kpis || []).filter(function (k) {
-        return k.id === "operational";
+        return k.id === "operational" || k.id === "resources";
       });
     },
     insightKpis: function () {
@@ -152,7 +152,7 @@ export default {
 
 .adminpage-dashboard__kpi-strip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
 }
