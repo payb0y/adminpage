@@ -40,7 +40,7 @@
     </div>
 
     <div v-show="!collapsed" class="insights-panel__body">
-      <!-- ── Sub-section: Project Performance ── -->
+      <!-- ── Sub-section: Organization ── -->
       <div class="insights-panel__section">
         <div class="insights-panel__section-title">
           <svg
@@ -54,20 +54,12 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          Project Performance Analytics
+          Organization
         </div>
-        <ProjectPerformancePanel
-          :embedded="true"
-          :project-progress="projectProgress"
-          :member-performance="memberPerformance"
-          :task-delay-projects="taskDelayProjects"
-          :task-completion-projects="taskCompletionProjects"
-          :performance-details="performanceDetails"
-        />
+        <OrganizationPanel :embedded="true" :profile="profile" />
       </div>
 
       <!-- ── Divider ── -->
@@ -131,51 +123,22 @@
 </template>
 
 <script>
-import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
+import OrganizationPanel from "./OrganizationPanel.vue";
 import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 
 export default {
   name: "OrgInsightsPanel",
   components: {
-    ProjectPerformancePanel,
+    OrganizationPanel,
     MembersPanel,
     SubscriptionPanel,
   },
   props: {
-    projectProgress: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    memberPerformance: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    taskDelayProjects: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    taskCompletionProjects: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    performanceDetails: {
+    profile: {
       type: Object,
       default: function () {
-        return {
-          progressDetails: [],
-          memberDetails: [],
-          delayDetails: [],
-          completionDetails: [],
-        };
+        return {};
       },
     },
     members: {

@@ -44,16 +44,18 @@
       <!-- ── Alerts & Exceptions ── -->
       <AlertsPanel :alerts="data.alerts" />
 
-      <!-- ── Organization ── -->
-      <OrganizationPanel :profile="data.orgOverview.profile || {}" />
-
-      <!-- ── Organization Insights (Performance + Members + Subscription) ── -->
-      <OrgInsightsPanel
+      <!-- ── Project Performance Analytics ── -->
+      <ProjectPerformancePanel
         :project-progress="data.projectProgress"
         :member-performance="data.memberPerformance"
         :task-delay-projects="data.taskDelayProjects"
         :task-completion-projects="data.taskCompletionProjects"
         :performance-details="data.performanceDetails"
+      />
+
+      <!-- ── Organization Insights (Org + Members + Subscription) ── -->
+      <OrgInsightsPanel
+        :profile="data.orgOverview.profile || {}"
         :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
@@ -66,7 +68,7 @@
 import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import OrgHeaderBar from "./OrgHeaderBar.vue";
-import OrganizationPanel from "./OrganizationPanel.vue";
+import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 
 export default {
@@ -75,7 +77,7 @@ export default {
     KpiCard,
     AlertsPanel,
     OrgHeaderBar,
-    OrganizationPanel,
+    ProjectPerformancePanel,
     OrgInsightsPanel,
   },
   props: {

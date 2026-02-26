@@ -1,6 +1,13 @@
 <template>
-  <section class="org-panel">
-    <div class="org-panel__header" @click="collapsed = !collapsed">
+  <component
+    :is="embedded ? 'div' : 'section'"
+    :class="['org-panel', { 'org-panel--embedded': embedded }]"
+  >
+    <div
+      v-if="!embedded"
+      class="org-panel__header"
+      @click="collapsed = !collapsed"
+    >
       <h3 class="org-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +42,7 @@
       </svg>
     </div>
 
-    <div v-show="!collapsed" class="org-panel__body">
+    <div v-show="embedded || !collapsed" class="org-panel__body">
       <!-- ── Profile Header ── -->
       <div class="org-panel__profile">
         <span class="org-panel__avatar">{{ initials }}</span>
@@ -72,13 +79,17 @@
         </div>
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script>
 export default {
   name: "OrganizationPanel",
   props: {
+    embedded: {
+      type: Boolean,
+      default: false,
+    },
     profile: {
       type: Object,
       default: function () {
@@ -120,6 +131,14 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
+}
+
+.org-panel--embedded {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
 }
 
 .org-panel__header {
