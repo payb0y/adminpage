@@ -29,10 +29,10 @@
       <!-- ── Org Header ── -->
       <OrgHeaderBar :org-overview="data.orgOverview" />
 
-      <!-- ── KPI Strip ── -->
+      <!-- ── KPI Strip (Operational only) ── -->
       <section class="adminpage-dashboard__kpi-strip">
         <KpiCard
-          v-for="kpi in data.kpis"
+          v-for="kpi in operationalKpis"
           :key="kpi.id"
           :title="kpi.title"
           :icon="kpi.icon"
@@ -53,9 +53,10 @@
         :performance-details="data.performanceDetails"
       />
 
-      <!-- ── Organization Insights (Org + Members + Subscription) ── -->
+      <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->
       <OrgInsightsPanel
         :profile="data.orgOverview.profile || {}"
+        :kpis="insightKpis"
         :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
@@ -84,6 +85,18 @@ export default {
     data: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    operationalKpis: function () {
+      return (this.data.kpis || []).filter(function (k) {
+        return k.id === "operational";
+      });
+    },
+    insightKpis: function () {
+      return (this.data.kpis || []).filter(function (k) {
+        return k.id === "subscription" || k.id === "team";
+      });
     },
   },
 };

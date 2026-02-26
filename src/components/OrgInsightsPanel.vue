@@ -65,6 +65,23 @@
       <!-- ── Divider ── -->
       <div class="insights-panel__divider"></div>
 
+      <!-- ── Sub-section: KPI Cards (Subscription + Team) ── -->
+      <div v-if="kpis.length > 0" class="insights-panel__section">
+        <div class="insights-panel__kpi-strip">
+          <KpiCard
+            v-for="kpi in kpis"
+            :key="kpi.id"
+            :title="kpi.title"
+            :icon="kpi.icon"
+            :icon-color="kpi.iconColor"
+            :metrics="kpi.metrics"
+          />
+        </div>
+      </div>
+
+      <!-- ── Divider ── -->
+      <div class="insights-panel__divider"></div>
+
       <!-- ── Sub-section: Team Members ── -->
       <div class="insights-panel__section">
         <div class="insights-panel__section-title">
@@ -124,6 +141,7 @@
 
 <script>
 import OrganizationPanel from "./OrganizationPanel.vue";
+import KpiCard from "./KpiCard.vue";
 import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 
@@ -131,6 +149,7 @@ export default {
   name: "OrgInsightsPanel",
   components: {
     OrganizationPanel,
+    KpiCard,
     MembersPanel,
     SubscriptionPanel,
   },
@@ -139,6 +158,12 @@ export default {
       type: Object,
       default: function () {
         return {};
+      },
+    },
+    kpis: {
+      type: Array,
+      default: function () {
+        return [];
       },
     },
     members: {
@@ -258,5 +283,18 @@ export default {
 /* ─── Section spacing ─── */
 .insights-panel__section {
   /* no extra styles needed, just a grouping element */
+}
+
+/* ─── Embedded KPI Strip ─── */
+.insights-panel__kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md, 16px);
+}
+
+@media (max-width: 700px) {
+  .insights-panel__kpi-strip {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
