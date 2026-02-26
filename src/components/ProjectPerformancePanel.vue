@@ -1,7 +1,14 @@
 <template>
-  <section class="perf-panel">
-    <!-- HEADER -->
-    <div class="perf-panel__header" @click="collapsed = !collapsed">
+  <component
+    :is="embedded ? 'div' : 'section'"
+    :class="['perf-panel', { 'perf-panel--embedded': embedded }]"
+  >
+    <!-- HEADER (standalone only) -->
+    <div
+      v-if="!embedded"
+      class="perf-panel__header"
+      @click="collapsed = !collapsed"
+    >
       <h3 class="perf-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +44,7 @@
       </svg>
     </div>
 
-    <div v-show="!collapsed">
+    <div v-show="embedded || !collapsed">
       <!-- TOP ROW: Progress + Productivity -->
       <div class="perf-panel__top-grid">
         <!-- Project Progress Comparison -->
@@ -600,7 +607,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script>
@@ -614,6 +621,10 @@ export default {
     AreaChart,
   },
   props: {
+    embedded: {
+      type: Boolean,
+      default: false,
+    },
     projectProgress: {
       type: Array,
       required: true,
@@ -734,6 +745,14 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
+}
+
+.perf-panel--embedded {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
 }
 
 /* Header */

@@ -1,6 +1,13 @@
 <template>
-  <section class="sub-panel">
-    <div class="sub-panel__header" @click="collapsed = !collapsed">
+  <component
+    :is="embedded ? 'div' : 'section'"
+    :class="['sub-panel', { 'sub-panel--embedded': embedded }]"
+  >
+    <div
+      v-if="!embedded"
+      class="sub-panel__header"
+      @click="collapsed = !collapsed"
+    >
       <h3 class="sub-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +42,7 @@
       </svg>
     </div>
 
-    <div v-show="!collapsed" class="sub-panel__body">
+    <div v-show="embedded || !collapsed" class="sub-panel__body">
       <!-- ── Usage Meters ── -->
       <div class="sub-panel__meters">
         <!-- Projects -->
@@ -117,10 +124,6 @@
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Price</span>
-          <span class="sub-panel__detail-value">{{ priceDisplay }}</span>
-        </div>
-        <div class="sub-panel__detail-row">
           <span class="sub-panel__detail-label">Status</span>
           <span
             class="sub-panel__status"
@@ -174,13 +177,17 @@
         </div>
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script>
 export default {
   name: "SubscriptionPanel",
   props: {
+    embedded: {
+      type: Boolean,
+      default: false,
+    },
     subscription: {
       type: Object,
       default: function () {
@@ -257,6 +264,14 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
+}
+
+.sub-panel--embedded {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
 }
 
 .sub-panel__header {

@@ -47,20 +47,14 @@
       <!-- ── Organization ── -->
       <OrganizationPanel :profile="data.orgOverview.profile || {}" />
 
-      <!-- ── Project Performance Analytics ── -->
-      <ProjectPerformancePanel
+      <!-- ── Organization Insights (Performance + Members + Subscription) ── -->
+      <OrgInsightsPanel
         :project-progress="data.projectProgress"
         :member-performance="data.memberPerformance"
         :task-delay-projects="data.taskDelayProjects"
         :task-completion-projects="data.taskCompletionProjects"
         :performance-details="data.performanceDetails"
-      />
-
-      <!-- ── Team Members ── -->
-      <MembersPanel :members="data.orgOverview.members || []" />
-
-      <!-- ── Subscription & Plan ── -->
-      <SubscriptionPanel
+        :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
       />
@@ -73,9 +67,7 @@ import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
 import OrgHeaderBar from "./OrgHeaderBar.vue";
 import OrganizationPanel from "./OrganizationPanel.vue";
-import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
-import MembersPanel from "./MembersPanel.vue";
-import SubscriptionPanel from "./SubscriptionPanel.vue";
+import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 
 export default {
   name: "Dashboard",
@@ -84,9 +76,7 @@ export default {
     AlertsPanel,
     OrgHeaderBar,
     OrganizationPanel,
-    ProjectPerformancePanel,
-    MembersPanel,
-    SubscriptionPanel,
+    OrgInsightsPanel,
   },
   props: {
     data: {

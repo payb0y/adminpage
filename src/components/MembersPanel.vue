@@ -1,6 +1,13 @@
 <template>
-  <section class="members-panel">
-    <div class="members-panel__header" @click="collapsed = !collapsed">
+  <component
+    :is="embedded ? 'div' : 'section'"
+    :class="['members-panel', { 'members-panel--embedded': embedded }]"
+  >
+    <div
+      v-if="!embedded"
+      class="members-panel__header"
+      @click="collapsed = !collapsed"
+    >
       <h3 class="members-panel__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +45,7 @@
       </svg>
     </div>
 
-    <div v-show="!collapsed" class="members-panel__body">
+    <div v-show="embedded || !collapsed" class="members-panel__body">
       <div v-if="members.length === 0" class="members-panel__empty">
         No members yet.
       </div>
@@ -209,13 +216,17 @@
         </div>
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script>
 export default {
   name: "MembersPanel",
   props: {
+    embedded: {
+      type: Boolean,
+      default: false,
+    },
     members: {
       type: Array,
       default: function () {
@@ -264,6 +275,14 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
+}
+
+.members-panel--embedded {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: visible;
 }
 
 .members-panel__header {
