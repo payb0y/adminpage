@@ -26,10 +26,7 @@
     </div>
 
     <template v-else>
-      <!-- ── Org Header ── -->
-      <OrgHeaderBar :org-overview="data.orgOverview" />
-
-      <!-- ── KPI Strip (Operational only) ── -->
+      <!-- ── KPI Strip ── -->
       <section class="adminpage-dashboard__kpi-strip">
         <KpiCard
           v-for="kpi in operationalKpis"
@@ -68,7 +65,6 @@
 <script>
 import KpiCard from "./KpiCard.vue";
 import AlertsPanel from "./AlertsPanel.vue";
-import OrgHeaderBar from "./OrgHeaderBar.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 
@@ -77,7 +73,6 @@ export default {
   components: {
     KpiCard,
     AlertsPanel,
-    OrgHeaderBar,
     ProjectPerformancePanel,
     OrgInsightsPanel,
   },
