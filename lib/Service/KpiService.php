@@ -22,88 +22,59 @@ class KpiService {
      */
     public function getKpis(int $orgId): array {
         return [
-            $this->getOperationalKpi($orgId),
+            $this->getProjectsKpi($orgId),
             $this->getResourcesKpi($orgId),
             $this->getSubscriptionKpi($orgId),
             $this->getTeamKpi($orgId),
         ];
     }
 
-    // ─── OPERATIONAL ─────────────────────────────────────────────────────
+    // ─── PROJECTS ────────────────────────────────────────────────────────
 
-    private function getOperationalKpi(int $orgId): array {
-        $activeProjects = $this->countActiveProjects($orgId);
-        $behindSchedule = $this->countProjectsBehindSchedule($orgId);
-        $delayedTasks   = $this->countDelayedTasks($orgId);
+    private function getProjectsKpi(int $orgId): array {
+        $counts = $this->countProjectsByStatus($orgId);
 
         return [
-            'id'        => 'operational',
-            'title'     => 'Operational',
+            'id'        => 'projects',
+            'title'     => 'Projects',
             'icon'      => 'icon-folder',
             'iconColor' => '#4A90D9',
             'metrics'   => [
-                ['value' => (string)$activeProjects, 'label' => 'Active Projects'],
-                ['value' => (string)$behindSchedule, 'label' => 'Behind Schedule'],
-                ['value' => (string)$delayedTasks,   'label' => 'Delayed Tasks'],
+                ['value' => (string)$counts['active'],   'label' => 'Active'],
+                ['value' => (string)$counts['waiting'],  'label' => 'Waiting on Customer'],
+                ['value' => (string)$counts['on_hold'],  'label' => 'On Hold'],
+                ['value' => (string)$counts['done'],     'label' => 'Done'],
             ],
         ];
     }
 
-    private function countActiveProjects(int $orgId): int {
+    /**
+     * Count projects grouped by status.
+     * Status mapping: 0 = Active, 1 = Waiting on Customer, 2 = On Hold, 3 = Done
+     */
+    private function countProjectsByStatus(int $orgId): array {
         $sql = "
-            SELECT COUNT(*) AS cnt
+            SELECT cp.status, COUNT(*) AS cnt
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
                 ON b.id = CAST(cp.board_id AS UNSIGNED)
                 AND b.deleted_at = 0
             WHERE cp.organization_id = ?
+            GROUP BY cp.status
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId]);
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
 
-    private function countProjectsBehindSchedule(int $orgId): int {
-        $sql = "
-            SELECT COUNT(DISTINCT cp.id) AS cnt
-            FROM *PREFIX*custom_projects cp
-            INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
-                AND b.deleted_at = 0
-            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
-            JOIN *PREFIX*deck_cards c ON c.stack_id = s.id
-            WHERE cp.organization_id = ?
-              AND c.duedate IS NOT NULL
-              AND c.duedate < NOW()
-              AND c.deleted_at = 0
-              AND s.title <> 'Approved/Done'
-        ";
-        $result = $this->db->prepare($sql);
-        $result->execute([$orgId]);
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
-    }
-
-    private function countDelayedTasks(int $orgId): int {
-        $sql = "
-            SELECT COUNT(*) AS cnt
-            FROM *PREFIX*deck_cards c
-            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
-            JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
-            WHERE cp.organization_id = ?
-              AND c.duedate IS NOT NULL
-              AND c.duedate < NOW()
-              AND c.deleted_at = 0
-              AND b.deleted_at = 0
-              AND s.title <> 'Approved/Done'
-        ";
-        $result = $this->db->prepare($sql);
-        $result->execute([$orgId]);
-        $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        $map = ['active' => 0, 'waiting' => 0, 'on_hold' => 0, 'done' => 0];
+        while ($row = $result->fetch()) {
+            switch ((int)$row['status']) {
+                case 0: $map['active']  = (int)$row['cnt']; break;
+                case 1: $map['waiting'] = (int)$row['cnt']; break;
+                case 2: $map['on_hold'] = (int)$row['cnt']; break;
+                case 3: $map['done']    = (int)$row['cnt']; break;
+            }
+        }
+        return $map;
     }
 
     // ─── RESOURCES ───────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
     <div class="kpi-card__header">
       <div class="kpi-card__icon" :style="{ backgroundColor: iconBgColor }">
         <svg
-          v-if="title === 'Operational'"
+          v-if="title === 'Projects'"
           class="kpi-card__icon-svg"
           :style="{ color: iconColor }"
           xmlns="http://www.w3.org/2000/svg"
