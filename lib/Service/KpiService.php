@@ -23,6 +23,7 @@ class KpiService {
     public function getKpis(int $orgId): array {
         return [
             $this->getProjectsKpi($orgId),
+            $this->getTasksKpi($orgId),
             $this->getResourcesKpi($orgId),
             $this->getSubscriptionKpi($orgId),
             $this->getTeamKpi($orgId),
@@ -75,6 +76,61 @@ class KpiService {
             }
         }
         return $map;
+    }
+
+    // ─── TASKS ─────────────────────────────────────────────────────────
+
+    private function getTasksKpi(int $orgId): array {
+        $counts = $this->countTasksByStatus($orgId);
+
+        return [
+            'id'        => 'tasks',
+            'title'     => 'Tasks',
+            'icon'      => 'icon-checkmark',
+            'iconColor' => '#E67E5A',
+            'metrics'   => [
+                ['value' => (string)$counts['overdue'],     'label' => 'Overdue'],
+                ['value' => (string)$counts['today'],       'label' => 'Today'],
+                ['value' => (string)$counts['upcoming'],    'label' => 'Upcoming'],
+                ['value' => (string)$counts['in_progress'], 'label' => 'In Progress'],
+            ],
+        ];
+    }
+
+    /**
+     * Count tasks (deck cards) grouped by temporal status.
+     * Overdue  = duedate < NOW, not done, not in Done stack
+     * Today    = duedate = today, not done, not in Done stack
+     * Upcoming = duedate > NOW, not done, not in Done stack
+     * In Progress = all open cards (not done, not in Done stack)
+     */
+    private function countTasksByStatus(int $orgId): array {
+        $sql = "
+            SELECT
+                SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate < NOW() THEN 1 ELSE 0 END) AS overdue,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate > NOW() THEN 1 ELSE 0 END) AS upcoming,
+                COUNT(*) AS in_progress
+            FROM *PREFIX*deck_cards c
+            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
+            JOIN *PREFIX*custom_projects cp
+                ON CAST(cp.board_id AS UNSIGNED) = b.id
+               AND cp.organization_id = ?
+            WHERE c.deleted_at = 0
+              AND c.done IS NULL
+              AND s.title <> 'Approved/Done'
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+
+        return [
+            'overdue'     => (int)($row['overdue'] ?? 0),
+            'today'       => (int)($row['today'] ?? 0),
+            'upcoming'    => (int)($row['upcoming'] ?? 0),
+            'in_progress' => (int)($row['in_progress'] ?? 0),
+        ];
     }
 
     // ─── RESOURCES ───────────────────────────────────────────────────────
