@@ -67,10 +67,7 @@
         class="kpi-card__metric"
         :class="{ 'kpi-card__metric--bordered': index > 0 }"
       >
-        <span
-          class="kpi-card__metric-value"
-          >{{ metric.value }}</span
-        >
+        <span class="kpi-card__metric-value">{{ metric.value }}</span>
         <span class="kpi-card__metric-label">{{ metric.label }}</span>
       </div>
     </div>
