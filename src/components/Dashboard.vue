@@ -38,9 +38,6 @@
         />
       </section>
 
-      <!-- ── Alerts & Exceptions ── -->
-      <AlertsPanel :alerts="data.alerts" />
-
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
         :project-progress="data.projectProgress"
@@ -72,7 +69,6 @@
 
 <script>
 import KpiCard from "./KpiCard.vue";
-import AlertsPanel from "./AlertsPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 
@@ -80,7 +76,6 @@ export default {
   name: "Dashboard",
   components: {
     KpiCard,
-    AlertsPanel,
     ProjectPerformancePanel,
     OrgInsightsPanel,
   },
