@@ -26,8 +26,6 @@ class KpiService {
             $this->getTasksKpi($orgId),
             $this->getResourcesKpi($orgId),
             $this->getTimelineKpi($orgId),
-            $this->getSubscriptionKpi($orgId),
-            $this->getTeamKpi($orgId),
         ];
     }
 

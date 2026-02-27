@@ -47,7 +47,6 @@
       <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->
       <OrgInsightsPanel
         :profile="data.orgOverview.profile || {}"
-        :kpis="insightKpis"
         :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
@@ -108,11 +107,6 @@ export default {
           return k.id === "timeline";
         }) || null
       );
-    },
-    insightKpis: function () {
-      return (this.data.kpis || []).filter(function (k) {
-        return k.id === "subscription" || k.id === "team";
-      });
     },
   },
 };
