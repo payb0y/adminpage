@@ -427,6 +427,15 @@
           </div>
         </div>
       </div>
+
+      <!-- ── PER PROJECT DETAILS ── -->
+      <div class="perf-panel__project-details">
+        <div class="perf-panel__card">
+          <h3 class="perf-panel__card-title">Per Project Details</h3>
+          <div class="perf-panel__card-title-underline"></div>
+          <ProjectDetailsPanel :projects="projectDetails" />
+        </div>
+      </div>
     </div>
 
     <!-- DRILL-DOWN MODAL -->
@@ -776,12 +785,14 @@
 <script>
 import DonutChart from "./DonutChart.vue";
 import AreaChart from "./AreaChart.vue";
+import ProjectDetailsPanel from "./ProjectDetailsPanel.vue";
 
 export default {
   name: "ProjectPerformancePanel",
   components: {
     DonutChart,
     AreaChart,
+    ProjectDetailsPanel,
   },
   props: {
     embedded: {
@@ -819,6 +830,12 @@ export default {
       type: Object,
       default: function () {
         return { tasks: [], projects: [], stacks: [], labels: [] };
+      },
+    },
+    projectDetails: {
+      type: Array,
+      default: function () {
+        return [];
       },
     },
   },

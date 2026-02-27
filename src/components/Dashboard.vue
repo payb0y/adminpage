@@ -53,6 +53,7 @@
             labels: [],
           }
         "
+        :project-details="data.projectDetails || []"
       />
 
       <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->

@@ -716,4 +716,287 @@ class DeckService {
             'labels'   => array_keys($labelSet),
         ];
     }
+
+    // ─── PER-PROJECT DETAILS ─────────────────────────────────────────────
+
+    /**
+     * Return rich detail data for every project in the org.
+     * The frontend picks which project to display via a dropdown.
+     */
+    public function getProjectDetailsList(int $orgId): array {
+        $projects = $this->fetchProjectsWithMeta($orgId);
+        if (empty($projects)) {
+            return [];
+        }
+
+        $projectIds = array_column($projects, 'id');
+        $boardIds   = array_map('intval', array_column($projects, 'board_id'));
+
+        $tasksByStack   = $this->fetchTasksByStack($boardIds);
+        $dueStats       = $this->fetchDueStats($boardIds);
+        $assignees      = $this->fetchAssigneesByBoard($boardIds);
+        $timeline       = $this->fetchTimeline($projectIds);
+        $resources      = $this->fetchResourceCounts($orgId, $projectIds);
+        $completionData = $this->fetchCompletionData($boardIds);
+
+        $result = [];
+        foreach ($projects as $p) {
+            $bid = (int)$p['board_id'];
+            $pid = (int)$p['id'];
+
+            $stacks = $tasksByStack[$bid] ?? [];
+            $totalTasks = 0;
+            $doneTasks  = 0;
+            foreach ($stacks as $s) {
+                $totalTasks += $s['total'];
+                if ($s['stack'] === 'Approved/Done') {
+                    $doneTasks += $s['total'];
+                }
+            }
+            $doneTasks += $completionData[$bid] ?? 0;
+
+            $result[] = [
+                'id'              => $pid,
+                'name'            => $p['name'],
+                'number'          => $p['number'] ?? '',
+                'status'          => (int)$p['status'],
+                'statusLabel'     => $this->statusLabel((int)$p['status']),
+                'description'     => $p['description'] ?? '',
+                'clientName'      => $p['client_name'] ?? '',
+                'clientEmail'     => $p['client_email'] ?? '',
+                'clientPhone'     => $p['client_phone'] ?? '',
+                'location'        => trim(($p['loc_street'] ?? '') . ', ' . ($p['loc_city'] ?? '') . ' ' . ($p['loc_zip'] ?? ''), ', '),
+                'createdAt'       => $p['created_at'] ?? '',
+                'updatedAt'       => $p['updated_at'] ?? '',
+                'totalTasks'      => $totalTasks,
+                'doneTasks'       => $doneTasks,
+                'completionPct'   => $totalTasks > 0 ? round($doneTasks / $totalTasks * 100) : 0,
+                'tasksByStack'    => $stacks,
+                'dueStats'        => $dueStats[$bid] ?? ['overdue' => 0, 'today' => 0, 'upcoming' => 0, 'no_due' => 0],
+                'assignees'       => $assignees[$bid] ?? [],
+                'timeline'        => $timeline[$pid] ?? [],
+                'resources'       => $resources[$pid] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0],
+            ];
+        }
+
+        return $result;
+    }
+
+    private function statusLabel(int $status): string {
+        switch ($status) {
+            case 0: return 'Active';
+            case 1: return 'Waiting on Customer';
+            case 2: return 'On Hold';
+            case 3: return 'Done';
+            default: return 'Unknown';
+        }
+    }
+
+    private function fetchProjectsWithMeta(int $orgId): array {
+        $sql = "
+            SELECT cp.id, cp.name, cp.number, cp.type, cp.status, cp.description,
+                   cp.client_name, cp.client_email, cp.client_phone,
+                   cp.loc_street, cp.loc_city, cp.loc_zip,
+                   cp.board_id, cp.folder_id, cp.white_board_id,
+                   cp.created_at, cp.updated_at
+            FROM *PREFIX*custom_projects cp
+            INNER JOIN *PREFIX*deck_boards b
+                ON b.id = CAST(cp.board_id AS UNSIGNED)
+               AND b.deleted_at = 0
+            WHERE cp.organization_id = ?
+            ORDER BY cp.name
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        return $result->fetchAll();
+    }
+
+    private function fetchTasksByStack(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $ph = implode(',', array_fill(0, count($boardIds), '?'));
+
+        $sql = "
+            SELECT b.id AS board_id, s.title AS stack, COUNT(c.id) AS total
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
+            WHERE b.id IN ($ph)
+            GROUP BY b.id, s.title
+            ORDER BY b.id, s.title
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute($boardIds);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['board_id']][] = [
+                'stack' => $row['stack'],
+                'total' => (int)$row['total'],
+            ];
+        }
+        return $map;
+    }
+
+    private function fetchDueStats(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $ph = implode(',', array_fill(0, count($boardIds), '?'));
+
+        $sql = "
+            SELECT b.id AS board_id,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate < NOW() THEN 1 ELSE 0 END) AS overdue,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate > NOW() THEN 1 ELSE 0 END) AS upcoming,
+                   SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS no_due
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
+            WHERE b.id IN ($ph)
+            GROUP BY b.id
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute($boardIds);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['board_id']] = [
+                'overdue'  => (int)$row['overdue'],
+                'today'    => (int)$row['today'],
+                'upcoming' => (int)$row['upcoming'],
+                'no_due'   => (int)$row['no_due'],
+            ];
+        }
+        return $map;
+    }
+
+    private function fetchAssigneesByBoard(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $ph = implode(',', array_fill(0, count($boardIds), '?'));
+
+        $sql = "
+            SELECT b.id AS board_id, dau.participant AS user_id,
+                   COUNT(dau.card_id) AS tasks_assigned
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
+            JOIN *PREFIX*deck_assigned_users dau ON dau.card_id = c.id
+            WHERE b.id IN ($ph)
+            GROUP BY b.id, dau.participant
+            ORDER BY tasks_assigned DESC
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute($boardIds);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['board_id']][] = [
+                'userId'   => $row['user_id'],
+                'tasks'    => (int)$row['tasks_assigned'],
+            ];
+        }
+        return $map;
+    }
+
+    private function fetchTimeline(array $projectIds): array {
+        if (empty($projectIds)) return [];
+        $ph = implode(',', array_fill(0, count($projectIds), '?'));
+
+        $sql = "
+            SELECT pti.project_id, pti.label, pti.system_key,
+                   pti.start_date, pti.end_date, pti.color
+            FROM *PREFIX*project_timeline_items pti
+            WHERE pti.project_id IN ($ph)
+            ORDER BY pti.project_id, pti.order_index
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute($projectIds);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['project_id']][] = [
+                'label'     => $row['label'],
+                'systemKey' => $row['system_key'],
+                'startDate' => $row['start_date'],
+                'endDate'   => $row['end_date'],
+                'color'     => $row['color'],
+            ];
+        }
+        return $map;
+    }
+
+    private function fetchResourceCounts(int $orgId, array $projectIds): array {
+        // Fetch per-project resource counts in bulk
+        $sql = "
+            SELECT cp.id AS project_id,
+                SUM(CASE
+                    WHEN mt.mimetype NOT IN ('httpd/unix-directory', 'application/vnd.excalidraw+json')
+                    THEN 1 ELSE 0
+                END) AS files,
+                SUM(CASE
+                    WHEN mt.mimetype = 'application/vnd.excalidraw+json'
+                    THEN 1 ELSE 0
+                END) AS whiteboards
+            FROM *PREFIX*custom_projects cp
+            LEFT JOIN *PREFIX*filecache f ON f.parent = cp.folder_id
+            LEFT JOIN *PREFIX*mimetypes mt ON mt.id = f.mimetype
+            WHERE cp.organization_id = ? AND cp.id IN (" . implode(',', array_fill(0, count($projectIds), '?')) . ")
+            GROUP BY cp.id
+        ";
+        $params = array_merge([$orgId], $projectIds);
+        $result = $this->db->prepare($sql);
+        $result->execute($params);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['project_id']] = [
+                'files'       => (int)$row['files'],
+                'whiteboards' => (int)$row['whiteboards'],
+                'notes'       => 0,
+            ];
+        }
+
+        // Notes
+        $sqlNotes = "
+            SELECT cp.id AS project_id, COUNT(f.fileid) AS cnt
+            FROM *PREFIX*custom_projects cp
+            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name = 'Public Notes'
+            LEFT JOIN *PREFIX*filecache f ON f.parent = pnf.fileid
+                AND f.mimetype != (SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory')
+            WHERE cp.organization_id = ? AND cp.id IN (" . implode(',', array_fill(0, count($projectIds), '?')) . ")
+            GROUP BY cp.id
+        ";
+        $result = $this->db->prepare($sqlNotes);
+        $result->execute($params);
+        while ($row = $result->fetch()) {
+            $pid = (int)$row['project_id'];
+            if (isset($map[$pid])) {
+                $map[$pid]['notes'] = (int)$row['cnt'];
+            }
+        }
+
+        return $map;
+    }
+
+    private function fetchCompletionData(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $ph = implode(',', array_fill(0, count($boardIds), '?'));
+
+        // Count cards marked done (c.done IS NOT NULL) that are NOT in the Approved/Done stack
+        $sql = "
+            SELECT b.id AS board_id,
+                   SUM(CASE WHEN c.done IS NOT NULL AND s.title <> 'Approved/Done' THEN 1 ELSE 0 END) AS done_outside
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
+            WHERE b.id IN ($ph)
+            GROUP BY b.id
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute($boardIds);
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $map[(int)$row['board_id']] = (int)$row['done_outside'];
+        }
+        return $map;
+    }
 }

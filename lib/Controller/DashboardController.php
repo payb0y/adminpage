@@ -70,6 +70,7 @@ class DashboardController extends Controller {
                 'taskCompletionProjects' => [],
                 'performanceDetails' => null,
                 'taskBrowser' => ['tasks' => [], 'projects' => [], 'stacks' => [], 'labels' => []],
+                'projectDetails' => [],
             ]);
         }
 
@@ -98,6 +99,9 @@ class DashboardController extends Controller {
 
             // Task browser (flat list + filter options)
             'taskBrowser' => $this->deckService->getTaskBrowser($orgId),
+
+            // Per-project detail data
+            'projectDetails' => $this->deckService->getProjectDetailsList($orgId),
         ];
 
         return new JSONResponse($data);
