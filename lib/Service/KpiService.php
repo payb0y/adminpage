@@ -35,6 +35,7 @@ class KpiService {
 
     private function getProjectsKpi(int $orgId): array {
         $counts = $this->countProjectsByStatus($orgId);
+        $withIssue = $this->countProjectsWithIssue($orgId);
 
         return [
             'id'        => 'projects',
@@ -43,9 +44,10 @@ class KpiService {
             'iconColor' => '#4A90D9',
             'metrics'   => [
                 ['value' => (string)$counts['active'],   'label' => 'Active'],
-                ['value' => (string)$counts['waiting'],  'label' => 'Waiting on Customer'],
+                ['value' => (string)$counts['waiting'],  'label' => 'W.o.c.'],
                 ['value' => (string)$counts['on_hold'],  'label' => 'On Hold'],
                 ['value' => (string)$counts['done'],     'label' => 'Done'],
+                ['value' => (string)$withIssue,          'label' => 'With Issue'],
             ],
         ];
     }
@@ -79,6 +81,32 @@ class KpiService {
         return $map;
     }
 
+    /**
+     * Count projects that have at least one overdue task.
+     */
+    private function countProjectsWithIssue(int $orgId): int {
+        $sql = "
+            SELECT COUNT(DISTINCT cp.id) AS cnt
+            FROM *PREFIX*custom_projects cp
+            INNER JOIN *PREFIX*deck_boards b
+                ON b.id = CAST(cp.board_id AS UNSIGNED)
+               AND b.deleted_at = 0
+            INNER JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            INNER JOIN *PREFIX*deck_cards c
+                ON c.stack_id = s.id
+               AND c.deleted_at = 0
+               AND c.done IS NULL
+            WHERE cp.organization_id = ?
+              AND s.title <> 'Approved/Done'
+              AND c.duedate IS NOT NULL
+              AND c.duedate < NOW()
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        return (int)($row['cnt'] ?? 0);
+    }
+
     // ─── TASKS ─────────────────────────────────────────────────────────
 
     private function getTasksKpi(int $orgId): array {
@@ -94,6 +122,8 @@ class KpiService {
                 ['value' => (string)$counts['today'],       'label' => 'Today'],
                 ['value' => (string)$counts['upcoming'],    'label' => 'Upcoming'],
                 ['value' => (string)$counts['in_progress'], 'label' => 'In Progress'],
+                ['value' => (string)$counts['non_due'],     'label' => 'Non Due'],
+                ['value' => $counts['avg_days'] . 'd',      'label' => 'Avg Days Active'],
             ],
         ];
     }
@@ -111,7 +141,9 @@ class KpiService {
                 SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate < NOW() THEN 1 ELSE 0 END) AS overdue,
                 SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
                 SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate > NOW() THEN 1 ELSE 0 END) AS upcoming,
-                COUNT(*) AS in_progress
+                COUNT(*) AS in_progress,
+                SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS non_due,
+                COALESCE(ROUND(AVG(DATEDIFF(NOW(), FROM_UNIXTIME(c.created_at)))), 0) AS avg_days
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
@@ -131,6 +163,8 @@ class KpiService {
             'today'       => (int)($row['today'] ?? 0),
             'upcoming'    => (int)($row['upcoming'] ?? 0),
             'in_progress' => (int)($row['in_progress'] ?? 0),
+            'non_due'     => (int)($row['non_due'] ?? 0),
+            'avg_days'    => (int)($row['avg_days'] ?? 0),
         ];
     }
 
@@ -139,8 +173,8 @@ class KpiService {
     private function getResourcesKpi(int $orgId): array {
         $whiteboards    = $this->countWhiteboards($orgId);
         $scrumbanBoards = $this->countScrumbanBoards($orgId);
-        $files          = $this->countFiles($orgId);
-        $notes          = $this->countNotes($orgId);
+        $files          = $this->countFilesSplit($orgId);
+        $notes          = $this->countNotesSplit($orgId);
 
         return [
             'id'        => 'resources',
@@ -148,10 +182,10 @@ class KpiService {
             'icon'      => 'icon-files',
             'iconColor' => '#8B5CF6',
             'metrics'   => [
-                ['value' => (string)$whiteboards,    'label' => 'Whiteboards'],
-                ['value' => (string)$scrumbanBoards, 'label' => 'Scrumban Boards'],
-                ['value' => (string)$files,          'label' => 'Files'],
-                ['value' => (string)$notes,          'label' => 'Notes'],
+                ['value' => (string)$whiteboards,                                         'label' => 'Whiteboards'],
+                ['value' => (string)$scrumbanBoards,                                      'label' => 'Scrumban Boards'],
+                ['value' => $files['public'] . ' pub / ' . $files['private'] . ' priv',   'label' => 'Files'],
+                ['value' => $notes['public'] . ' pub / ' . $notes['private'] . ' priv',   'label' => 'Notes'],
             ],
         ];
     }
@@ -188,8 +222,12 @@ class KpiService {
         return (int)($row['cnt'] ?? 0);
     }
 
-    private function countFiles(int $orgId): int {
-        $sql = "
+    /**
+     * Count files split into public (in project folder) and private (shared to specific users).
+     */
+    private function countFilesSplit(int $orgId): array {
+        /* Public files: non-directory, non-whiteboard files directly in project folder */
+        $sqlPublic = "
             SELECT COUNT(*) AS cnt
             FROM *PREFIX*filecache f
             INNER JOIN *PREFIX*custom_projects cp
@@ -199,13 +237,33 @@ class KpiService {
                 SELECT id FROM *PREFIX*mimetypes WHERE mimetype IN ('httpd/unix-directory', 'application/vnd.excalidraw+json')
             )
         ";
-        $result = $this->db->prepare($sql);
+        $result = $this->db->prepare($sqlPublic);
         $result->execute([$orgId]);
         $row = $result->fetch();
-        return (int)($row['cnt'] ?? 0);
+        $publicFiles = (int)($row['cnt'] ?? 0);
+
+        /* Private files: files shared from project folders to individual users */
+        $sqlPrivate = "
+            SELECT COUNT(DISTINCT sh.id) AS cnt
+            FROM *PREFIX*share sh
+            INNER JOIN *PREFIX*filecache f ON f.fileid = sh.file_source
+            INNER JOIN *PREFIX*custom_projects cp
+                ON f.parent = cp.folder_id
+               AND cp.organization_id = ?
+            WHERE sh.share_type = 0
+        ";
+        $result = $this->db->prepare($sqlPrivate);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        $privateFiles = (int)($row['cnt'] ?? 0);
+
+        return ['public' => $publicFiles, 'private' => $privateFiles];
     }
 
-    private function countNotes(int $orgId): int {
+    /**
+     * Count notes split into public ('Public Notes' folder) and private (card notes).
+     */
+    private function countNotesSplit(int $orgId): array {
         /* Public notes: files inside 'Public Notes' folders under project dirs */
         $sqlPublic = "
             SELECT COUNT(*) AS cnt
@@ -244,7 +302,7 @@ class KpiService {
         $row = $result->fetch();
         $privateNotes = (int)($row['cnt'] ?? 0);
 
-        return $publicNotes + $privateNotes;
+        return ['public' => $publicNotes, 'private' => $privateNotes];
     }
 
     // ─── TIMELINE ──────────────────────────────────────────────────────

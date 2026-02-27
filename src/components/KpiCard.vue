@@ -208,8 +208,8 @@ export default {
 }
 
 .kpi-card__metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0;
 }
 
@@ -217,24 +217,18 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   position: relative;
+  border-left: 1px solid var(--color-border, #e5e7eb);
 }
 
 .kpi-card__metric:first-child {
   padding-left: 0;
-}
-
-.kpi-card__metric:last-child {
-  padding-right: 0;
-}
-
-.kpi-card__metric + .kpi-card__metric {
-  border-left: 1px solid var(--color-border, #e5e7eb);
+  border-left: none;
 }
 
 .kpi-card__metric-value {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
   line-height: 1.1;
