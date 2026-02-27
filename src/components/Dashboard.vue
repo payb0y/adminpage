@@ -26,16 +26,38 @@
     </div>
 
     <template v-else>
-      <!-- ── KPI Strip ── -->
-      <section class="adminpage-dashboard__kpi-strip">
-        <KpiCard
+      <!-- ── KPI Section ── -->
+      <section class="adminpage-dashboard__kpi-section">
+        <div
           v-for="kpi in operationalKpis"
           :key="kpi.id"
-          :title="kpi.title"
-          :icon="kpi.icon"
-          :icon-color="kpi.iconColor"
-          :metrics="kpi.metrics"
-        />
+          class="adminpage-dashboard__kpi-group"
+        >
+          <div class="adminpage-dashboard__kpi-group-header">
+            <KpiCard
+              :title="kpi.title"
+              :icon="kpi.icon"
+              :icon-color="kpi.iconColor"
+              :metrics="[]"
+              header-only
+            />
+          </div>
+          <div class="adminpage-dashboard__kpi-widgets">
+            <div
+              v-for="(metric, idx) in kpi.metrics"
+              :key="idx"
+              class="adminpage-dashboard__kpi-widget"
+              :class="'adminpage-dashboard__kpi-widget--' + kpi.id"
+            >
+              <span class="adminpage-dashboard__kpi-widget-value">{{
+                metric.value
+              }}</span>
+              <span class="adminpage-dashboard__kpi-widget-label">{{
+                metric.label
+              }}</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ── Project Performance Analytics ── -->
@@ -153,11 +175,83 @@ export default {
   color: var(--color-text-primary);
 }
 
-.adminpage-dashboard__kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
+.adminpage-dashboard__kpi-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
   margin-bottom: var(--spacing-xl);
+}
+
+.adminpage-dashboard__kpi-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.adminpage-dashboard__kpi-group-header {
+  /* Strip card styling from the KpiCard used as header */
+}
+
+.adminpage-dashboard__kpi-group-header ::v-deep .kpi-card {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.adminpage-dashboard__kpi-group-header ::v-deep .kpi-card:hover {
+  box-shadow: none;
+}
+
+.adminpage-dashboard__kpi-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.adminpage-dashboard__kpi-widget {
+  background: var(--bg-card);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.adminpage-dashboard__kpi-widget:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+/* Color accents per group */
+.adminpage-dashboard__kpi-widget--projects {
+  border-left-color: #4a90d9;
+}
+.adminpage-dashboard__kpi-widget--tasks {
+  border-left-color: #e67e5a;
+}
+.adminpage-dashboard__kpi-widget--resources {
+  border-left-color: #8b5cf6;
+}
+.adminpage-dashboard__kpi-widget--timeline {
+  border-left-color: #0ea5e9;
+}
+
+.adminpage-dashboard__kpi-widget-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.adminpage-dashboard__kpi-widget-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 /* ─── Empty State ─── */
@@ -200,7 +294,13 @@ export default {
 }
 
 @media (max-width: 1024px) {
-  .adminpage-dashboard__kpi-strip {
+  .adminpage-dashboard__kpi-widgets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .adminpage-dashboard__kpi-widgets {
     grid-template-columns: 1fr;
   }
 }

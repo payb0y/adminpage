@@ -112,7 +112,7 @@
       </div>
       <span class="kpi-card__title">{{ title }}</span>
     </div>
-    <div class="kpi-card__metrics">
+    <div v-if="!headerOnly && metrics.length" class="kpi-card__metrics">
       <div
         v-for="(metric, index) in metrics"
         :key="index"
@@ -144,6 +144,10 @@ export default {
     metrics: {
       type: Array,
       required: true,
+    },
+    headerOnly: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -182,6 +186,10 @@ export default {
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+}
+
+.kpi-card__header:last-child {
+  margin-bottom: 0;
 }
 
 .kpi-card__icon {
