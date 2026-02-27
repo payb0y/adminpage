@@ -28,14 +28,10 @@
     <template v-else>
       <!-- ── KPI Strip ── -->
       <section class="adminpage-dashboard__kpi-strip">
-        <KpiCard
-          v-for="kpi in operationalKpis"
-          :key="kpi.id"
-          :title="kpi.title"
-          :icon="kpi.icon"
-          :icon-color="kpi.iconColor"
-          :metrics="kpi.metrics"
-        />
+        <ProjectsKpiCard v-if="projectsKpi" :kpi="projectsKpi" />
+        <TasksKpiCard v-if="tasksKpi" :kpi="tasksKpi" />
+        <ResourcesKpiCard v-if="resourcesKpi" :kpi="resourcesKpi" />
+        <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
       <!-- ── Project Performance Analytics ── -->
@@ -61,14 +57,20 @@
 </template>
 
 <script>
-import KpiCard from "./KpiCard.vue";
+import ProjectsKpiCard from "./ProjectsKpiCard.vue";
+import TasksKpiCard from "./TasksKpiCard.vue";
+import ResourcesKpiCard from "./ResourcesKpiCard.vue";
+import TimelineKpiCard from "./TimelineKpiCard.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 
 export default {
   name: "Dashboard",
   components: {
-    KpiCard,
+    ProjectsKpiCard,
+    TasksKpiCard,
+    ResourcesKpiCard,
+    TimelineKpiCard,
     ProjectPerformancePanel,
     OrgInsightsPanel,
   },
@@ -79,15 +81,17 @@ export default {
     },
   },
   computed: {
-    operationalKpis: function () {
-      return (this.data.kpis || []).filter(function (k) {
-        return (
-          k.id === "projects" ||
-          k.id === "tasks" ||
-          k.id === "resources" ||
-          k.id === "timeline"
-        );
-      });
+    projectsKpi: function () {
+      return (this.data.kpis || []).find(function (k) { return k.id === "projects"; }) || null;
+    },
+    tasksKpi: function () {
+      return (this.data.kpis || []).find(function (k) { return k.id === "tasks"; }) || null;
+    },
+    resourcesKpi: function () {
+      return (this.data.kpis || []).find(function (k) { return k.id === "resources"; }) || null;
+    },
+    timelineKpi: function () {
+      return (this.data.kpis || []).find(function (k) { return k.id === "timeline"; }) || null;
     },
     insightKpis: function () {
       return (this.data.kpis || []).filter(function (k) {
@@ -148,7 +152,7 @@ export default {
 
 .adminpage-dashboard__kpi-strip {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
 }
@@ -192,7 +196,13 @@ export default {
   margin: 0;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+  .adminpage-dashboard__kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
   .adminpage-dashboard__kpi-strip {
     grid-template-columns: 1fr;
   }
