@@ -45,14 +45,6 @@
         :task-delay-projects="data.taskDelayProjects"
         :task-completion-projects="data.taskCompletionProjects"
         :performance-details="data.performanceDetails"
-        :task-browser="
-          data.taskBrowser || {
-            tasks: [],
-            projects: [],
-            stacks: [],
-            labels: [],
-          }
-        "
         :project-details="data.projectDetails || []"
       />
 

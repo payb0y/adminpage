@@ -739,6 +739,41 @@ class DeckService {
         $resources      = $this->fetchResourceCounts($orgId, $projectIds);
         $completionData = $this->fetchCompletionData($boardIds);
 
+        // Fetch full task list for embedded task browser
+        $taskRows      = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels    = $this->fetchCardLabels($boardIds);
+        $cardAssignees = $this->fetchCardAssignees($boardIds);
+
+        // Group tasks by board_id
+        $tasksByBoard = [];
+        $stackSetByBoard = [];
+        $labelSetByBoard = [];
+        foreach ($taskRows as $row) {
+            if ($row['task_status'] === 'deleted') {
+                continue;
+            }
+            $bid    = (int)$row['board_id'];
+            $taskId = (int)$row['task_id'];
+            $labels = $cardLabels[$taskId] ?? [];
+            $assigneeList = $cardAssignees[$taskId] ?? [];
+
+            foreach ($labels as $l) {
+                $labelSetByBoard[$bid][$l] = true;
+            }
+            $stackSetByBoard[$bid][$row['stack_title']] = true;
+
+            $tasksByBoard[$bid][] = [
+                'id'        => $taskId,
+                'title'     => $row['task_title'],
+                'stack'     => $row['stack_title'],
+                'status'    => $row['task_status'],
+                'dueBucket' => $row['due_bucket'],
+                'due'       => $row['duedate'],
+                'labels'    => $labels,
+                'assignees' => $assigneeList,
+            ];
+        }
+
         $result = [];
         foreach ($projects as $p) {
             $bid = (int)$p['board_id'];
@@ -776,6 +811,9 @@ class DeckService {
                 'assignees'       => $assignees[$bid] ?? [],
                 'timeline'        => $timeline[$pid] ?? [],
                 'resources'       => $resources[$pid] ?? ['files' => 0, 'whiteboards' => 0, 'notes' => 0],
+                'tasks'           => $tasksByBoard[$bid] ?? [],
+                'taskStacks'      => array_keys($stackSetByBoard[$bid] ?? []),
+                'taskLabels'      => array_keys($labelSetByBoard[$bid] ?? []),
             ];
         }
 

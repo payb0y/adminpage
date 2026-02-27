@@ -329,6 +329,157 @@
           </table>
         </div>
       </div>
+
+      <!-- ── Row 4: Task Browser ── -->
+      <div class="proj-details__row">
+        <div class="proj-details__card proj-details__card--full">
+          <h4 class="proj-details__card-title">Task Browser</h4>
+
+          <!-- Filters -->
+          <div class="proj-details__tb-filters">
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Task Name</label>
+              <input
+                v-model="tbFilterName"
+                type="text"
+                class="proj-details__tb-input"
+                placeholder="Search tasks…"
+              />
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Status</label>
+              <select v-model="tbFilterStatus" class="proj-details__tb-select">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="done">Done</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Stack</label>
+              <select v-model="tbFilterStack" class="proj-details__tb-select">
+                <option value="">All Stacks</option>
+                <option v-for="s in projectStacks" :key="s" :value="s">
+                  {{ s }}
+                </option>
+              </select>
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Label</label>
+              <select v-model="tbFilterLabel" class="proj-details__tb-select">
+                <option value="">All Labels</option>
+                <option v-for="l in projectLabels" :key="l" :value="l">
+                  {{ l }}
+                </option>
+              </select>
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Due</label>
+              <select v-model="tbFilterDue" class="proj-details__tb-select">
+                <option value="">All</option>
+                <option value="overdue">Overdue</option>
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="nextSevenDays">Next 7 Days</option>
+                <option value="later">Later</option>
+                <option value="nodue">No Due Date</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Count -->
+          <div class="proj-details__tb-count">
+            {{ filteredTasks.length }} of {{ projectTasks.length }} tasks
+          </div>
+
+          <!-- Table -->
+          <div class="proj-details__tb-table-wrap">
+            <table class="proj-details__table proj-details__tb-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Stack</th>
+                  <th>Status</th>
+                  <th>Labels</th>
+                  <th>Assignees</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="filteredTasks.length === 0">
+                  <td colspan="6" class="proj-details__tb-empty">
+                    No tasks match the current filters
+                  </td>
+                </tr>
+                <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
+                  <td class="proj-details__tb-cell-title">{{ task.title }}</td>
+                  <td>
+                    <span class="proj-details__tb-stack-badge">{{
+                      task.stack
+                    }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="proj-details__tb-status"
+                      :class="'proj-details__tb-status--' + task.status"
+                      >{{ task.status }}</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      v-for="lbl in task.labels"
+                      :key="lbl"
+                      class="proj-details__tb-label-badge"
+                      >{{ lbl }}</span
+                    >
+                    <span
+                      v-if="task.labels.length === 0"
+                      class="proj-details__tb-muted"
+                      >&mdash;</span
+                    >
+                  </td>
+                  <td>
+                    <span v-if="task.assignees.length">{{
+                      task.assignees.join(", ")
+                    }}</span>
+                    <span v-else class="proj-details__tb-muted">&mdash;</span>
+                  </td>
+                  <td>
+                    <span
+                      v-if="task.due"
+                      class="proj-details__tb-due"
+                      :class="'proj-details__tb-due--' + task.dueBucket"
+                      >{{ formatDate(task.due) }}</span
+                    >
+                    <span v-else class="proj-details__tb-muted">&mdash;</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="proj-details__tb-pagination">
+            <button
+              class="proj-details__tb-page-btn"
+              :disabled="tbPage <= 1"
+              @click="tbPage--"
+            >
+              &lsaquo; Prev
+            </button>
+            <span class="proj-details__tb-page-info"
+              >Page {{ tbPage }} of {{ totalPages }}</span
+            >
+            <button
+              class="proj-details__tb-page-btn"
+              :disabled="tbPage >= totalPages"
+              @click="tbPage++"
+            >
+              Next &rsaquo;
+            </button>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 </template>
@@ -362,7 +513,35 @@ export default {
         "#10B981",
         "#EF4444",
       ],
+      // Task browser filters
+      tbFilterName: "",
+      tbFilterStatus: "",
+      tbFilterStack: "",
+      tbFilterLabel: "",
+      tbFilterDue: "",
+      tbPage: 1,
+      tbPageSize: 15,
     };
+  },
+  watch: {
+    selectedProjectId: function () {
+      this.resetFilters();
+    },
+    tbFilterName: function () {
+      this.tbPage = 1;
+    },
+    tbFilterStatus: function () {
+      this.tbPage = 1;
+    },
+    tbFilterStack: function () {
+      this.tbPage = 1;
+    },
+    tbFilterLabel: function () {
+      this.tbPage = 1;
+    },
+    tbFilterDue: function () {
+      this.tbPage = 1;
+    },
   },
   computed: {
     selectedProject: function () {
@@ -404,8 +583,56 @@ export default {
         return self.stackColors[i % self.stackColors.length];
       });
     },
+    // Task browser computeds
+    projectTasks: function () {
+      if (!this.selectedProject) return [];
+      return this.selectedProject.tasks || [];
+    },
+    projectStacks: function () {
+      if (!this.selectedProject) return [];
+      return this.selectedProject.taskStacks || [];
+    },
+    projectLabels: function () {
+      if (!this.selectedProject) return [];
+      return this.selectedProject.taskLabels || [];
+    },
+    filteredTasks: function () {
+      var self = this;
+      return this.projectTasks.filter(function (t) {
+        if (
+          self.tbFilterName &&
+          t.title.toLowerCase().indexOf(self.tbFilterName.toLowerCase()) === -1
+        )
+          return false;
+        if (self.tbFilterStatus && t.status !== self.tbFilterStatus)
+          return false;
+        if (self.tbFilterStack && t.stack !== self.tbFilterStack) return false;
+        if (self.tbFilterLabel && t.labels.indexOf(self.tbFilterLabel) === -1)
+          return false;
+        if (self.tbFilterDue && t.dueBucket !== self.tbFilterDue) return false;
+        return true;
+      });
+    },
+    totalPages: function () {
+      return Math.max(
+        1,
+        Math.ceil(this.filteredTasks.length / this.tbPageSize),
+      );
+    },
+    paginatedTasks: function () {
+      var start = (this.tbPage - 1) * this.tbPageSize;
+      return this.filteredTasks.slice(start, start + this.tbPageSize);
+    },
   },
   methods: {
+    resetFilters: function () {
+      this.tbFilterName = "";
+      this.tbFilterStatus = "";
+      this.tbFilterStack = "";
+      this.tbFilterLabel = "";
+      this.tbFilterDue = "";
+      this.tbPage = 1;
+    },
     formatDate: function (d) {
       if (!d) return "—";
       var date = new Date(d);
@@ -827,6 +1054,196 @@ export default {
   }
 
   .proj-details__info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proj-details__tb-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Task Browser ── */
+.proj-details__tb-filters {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.proj-details__tb-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proj-details__tb-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.proj-details__tb-input,
+.proj-details__tb-select {
+  padding: 7px 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.proj-details__tb-input:focus,
+.proj-details__tb-select:focus {
+  border-color: #4A90D9;
+}
+
+.proj-details__tb-count {
+  font-size: 12px;
+  color: var(--color-text-muted, #9ca3af);
+  margin-bottom: 8px;
+}
+
+.proj-details__tb-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+}
+
+.proj-details__tb-table th {
+  background: #fafbfd;
+  white-space: nowrap;
+}
+
+.proj-details__tb-table tbody tr:hover {
+  background: #fafbfd;
+}
+
+.proj-details__tb-cell-title {
+  font-weight: 500;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-details__tb-stack-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f0f4ff;
+  color: #4A90D9;
+  white-space: nowrap;
+}
+
+.proj-details__tb-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+.proj-details__tb-status--open {
+  background: #d4edda;
+  color: #166534;
+}
+
+.proj-details__tb-status--done {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.proj-details__tb-status--archived {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.proj-details__tb-label-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #ede9fe;
+  color: #6d28d9;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.proj-details__tb-muted {
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.proj-details__tb-due--overdue {
+  color: #d94040;
+  font-weight: 600;
+}
+
+.proj-details__tb-due--today {
+  color: #b8860b;
+  font-weight: 600;
+}
+
+.proj-details__tb-due--tomorrow {
+  color: #e67e5a;
+}
+
+.proj-details__tb-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.proj-details__tb-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 14px;
+}
+
+.proj-details__tb-page-btn {
+  padding: 5px 14px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.proj-details__tb-page-btn:hover:not(:disabled) {
+  background: #fafbfd;
+  border-color: #4A90D9;
+}
+
+.proj-details__tb-page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.proj-details__tb-page-info {
+  font-size: 12px;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+@media (max-width: 1024px) {
+  .proj-details__tb-filters {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .proj-details__tb-filters {
     grid-template-columns: 1fr;
   }
 }
