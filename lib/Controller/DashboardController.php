@@ -69,6 +69,7 @@ class DashboardController extends Controller {
                 'taskDelayProjects' => [],
                 'taskCompletionProjects' => [],
                 'performanceDetails' => null,
+                'taskBrowser' => ['tasks' => [], 'projects' => [], 'stacks' => [], 'labels' => []],
             ]);
         }
 
@@ -94,6 +95,9 @@ class DashboardController extends Controller {
 
             // Drill-down detail for perf tiles
             'performanceDetails' => $this->deckService->getPerformanceDetails($orgId),
+
+            // Task browser (flat list + filter options)
+            'taskBrowser' => $this->deckService->getTaskBrowser($orgId),
         ];
 
         return new JSONResponse($data);

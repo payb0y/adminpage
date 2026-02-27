@@ -643,4 +643,77 @@ class DeckService {
         }
         return $result;
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Task Browser – flat list of all tasks with filter metadata
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Return a flat list of every task across all org projects, plus the
+     * distinct values for each filterable dimension.
+     *
+     * @param int $orgId
+     * @return array{tasks: array, projects: string[], stacks: string[], labels: string[]}
+     */
+    public function getTaskBrowser(int $orgId): array {
+        $projectRows = $this->fetchProjects($orgId);
+        if (empty($projectRows)) {
+            return ['tasks' => [], 'projects' => [], 'stacks' => [], 'labels' => []];
+        }
+
+        $boardIds   = [];
+        $boardToProject = [];  // board_id => project_name
+        foreach ($projectRows as $p) {
+            $bid = (int)$p['board_id'];
+            $boardIds[] = $bid;
+            $boardToProject[$bid] = $p['project_name'];
+        }
+
+        $taskRows      = $this->fetchTaskRowsForBoards($boardIds);
+        $cardLabels    = $this->fetchCardLabels($boardIds);
+        $cardAssignees = $this->fetchCardAssignees($boardIds);
+
+        $tasks        = [];
+        $projectSet   = [];
+        $stackSet     = [];
+        $labelSet     = [];
+
+        foreach ($taskRows as $row) {
+            if ($row['task_status'] === 'deleted') {
+                continue;
+            }
+
+            $taskId     = (int)$row['task_id'];
+            $bid        = (int)$row['board_id'];
+            $project    = $boardToProject[$bid] ?? $row['board_title'];
+            $stack      = $row['stack_title'];
+            $labels     = $cardLabels[$taskId] ?? [];
+            $assignees  = $cardAssignees[$taskId] ?? [];
+
+            $projectSet[$project] = true;
+            $stackSet[$stack]     = true;
+            foreach ($labels as $l) {
+                $labelSet[$l] = true;
+            }
+
+            $tasks[] = [
+                'id'        => $taskId,
+                'title'     => $row['task_title'],
+                'project'   => $project,
+                'stack'     => $stack,
+                'status'    => $row['task_status'],
+                'dueBucket' => $row['due_bucket'],
+                'due'       => $row['duedate'],
+                'labels'    => $labels,
+                'assignees' => $assignees,
+            ];
+        }
+
+        return [
+            'tasks'    => $tasks,
+            'projects' => array_keys($projectSet),
+            'stacks'   => array_keys($stackSet),
+            'labels'   => array_keys($labelSet),
+        ];
+    }
 }
