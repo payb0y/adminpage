@@ -435,7 +435,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .proj-details__selector-label {
@@ -467,7 +467,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px;
+  padding: 24px 16px;
   color: var(--color-text-muted, #9ca3af);
 }
 
@@ -483,20 +483,19 @@ export default {
 
 /* ── Layout ── */
 .proj-details__row {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .proj-details__row--two {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 .proj-details__card {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
-  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .proj-details__card--full {
@@ -511,10 +510,10 @@ export default {
 }
 
 .proj-details__card-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text-primary, #1a1a2e);
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   padding: 0;
   border: none;
 }
@@ -614,7 +613,7 @@ export default {
 }
 
 .proj-details__progress-pct {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
 }
@@ -662,9 +661,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px;
-  border-radius: 8px;
-  background: #f8fafc;
+  padding: 10px 6px;
+  border-radius: 6px;
+  background: #fff;
 }
 
 .proj-details__resource-item + .proj-details__resource-item {
@@ -672,7 +671,7 @@ export default {
 }
 
 .proj-details__resource-value {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
 }
@@ -685,8 +684,8 @@ export default {
 
 /* ── Chart ── */
 .proj-details__chart-wrap {
-  max-width: 200px;
-  margin: 0 auto 16px;
+  max-width: 160px;
+  margin: 0 auto 12px;
 }
 
 .proj-details__no-data {
@@ -750,8 +749,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 10px;
-  border-radius: 8px;
+  padding: 10px 8px;
+  border-radius: 6px;
 }
 
 .proj-details__due-item--danger {
@@ -771,7 +770,7 @@ export default {
 }
 
 .proj-details__due-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
 }
