@@ -45,6 +45,7 @@ class AlertService {
             'noDueDateTasks'   => $noDueDateTasks,
             'stalledProjects'  => $stalledProjects,
             'zeroProgress'     => $zeroProgressProjs,
+            'pendingUpdates'   => [],
         ];
     }
 

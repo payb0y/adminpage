@@ -63,7 +63,7 @@ class DashboardController extends Controller {
             return new JSONResponse([
                 'orgOverview' => null,
                 'kpis' => [],
-                'alerts' => ['summary' => [], 'overdueTasks' => [], 'unassignedTasks' => [], 'noDueDateTasks' => [], 'stalledProjects' => [], 'zeroProgress' => []],
+                'alerts' => ['summary' => [], 'overdueTasks' => [], 'unassignedTasks' => [], 'noDueDateTasks' => [], 'stalledProjects' => [], 'zeroProgress' => [], 'pendingUpdates' => []],
                 'projectProgress' => [],
                 'memberPerformance' => [],
                 'taskDelayProjects' => [],
