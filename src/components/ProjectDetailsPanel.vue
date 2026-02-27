@@ -1098,7 +1098,7 @@ export default {
 
 .proj-details__tb-input:focus,
 .proj-details__tb-select:focus {
-  border-color: #4A90D9;
+  border-color: #4a90d9;
 }
 
 .proj-details__tb-count {
@@ -1137,7 +1137,7 @@ export default {
   padding: 2px 8px;
   border-radius: 4px;
   background: #f0f4ff;
-  color: #4A90D9;
+  color: #4a90d9;
   white-space: nowrap;
 }
 
@@ -1223,7 +1223,7 @@ export default {
 
 .proj-details__tb-page-btn:hover:not(:disabled) {
   background: #fafbfd;
-  border-color: #4A90D9;
+  border-color: #4a90d9;
 }
 
 .proj-details__tb-page-btn:disabled {
