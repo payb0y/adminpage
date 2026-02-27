@@ -25,6 +25,7 @@ class KpiService {
             $this->getProjectsKpi($orgId),
             $this->getTasksKpi($orgId),
             $this->getResourcesKpi($orgId),
+            $this->getTimelineKpi($orgId),
             $this->getSubscriptionKpi($orgId),
             $this->getTeamKpi($orgId),
         ];
@@ -244,6 +245,112 @@ class KpiService {
         $privateNotes = (int)($row['cnt'] ?? 0);
 
         return $publicNotes + $privateNotes;
+    }
+
+    // ─── TIMELINE ──────────────────────────────────────────────────────
+
+    private function getTimelineKpi(int $orgId): array {
+        $completionRate     = $this->avgCompletionRate($orgId);
+        $coordinationWeeks  = $this->avgCoordinationPending($orgId);
+        $prepWeeks          = $this->avgRequiredPrepTime($orgId);
+
+        return [
+            'id'        => 'timeline',
+            'title'     => 'Timeline',
+            'icon'      => 'icon-calendar',
+            'iconColor' => '#0EA5E9',
+            'metrics'   => [
+                ['value' => $completionRate . '%', 'label' => 'Avg Completion Rate'],
+                ['value' => $coordinationWeeks,    'label' => 'Avg Coordination Pending'],
+                ['value' => $prepWeeks,            'label' => 'Avg Required Prep Time'],
+            ],
+        ];
+    }
+
+    /**
+     * Average completion rate across all projects.
+     * Completion = done tasks / total tasks * 100 per project, then averaged.
+     */
+    private function avgCompletionRate(int $orgId): string {
+        $sql = "
+            SELECT
+                cp.id AS project_id,
+                COUNT(*) AS total,
+                SUM(CASE
+                    WHEN c.done IS NOT NULL OR s.title = 'Approved/Done'
+                    THEN 1 ELSE 0
+                END) AS done_cnt
+            FROM *PREFIX*deck_cards c
+            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
+            JOIN *PREFIX*custom_projects cp
+                ON CAST(cp.board_id AS UNSIGNED) = b.id
+               AND cp.organization_id = ?
+            WHERE c.deleted_at = 0
+            GROUP BY cp.id
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+
+        $rates = [];
+        while ($row = $result->fetch()) {
+            $total = (int)$row['total'];
+            if ($total > 0) {
+                $rates[] = ((int)$row['done_cnt'] / $total) * 100;
+            }
+        }
+
+        if (empty($rates)) {
+            return '0';
+        }
+        return (string)round(array_sum($rates) / count($rates));
+    }
+
+    /**
+     * Average coordination pending time in weeks.
+     * Measures weeks from each project's request_date start_date until NOW.
+     */
+    private function avgCoordinationPending(int $orgId): string {
+        $sql = "
+            SELECT
+                ROUND(AVG(DATEDIFF(NOW(), pti.start_date) / 7)) AS avg_weeks
+            FROM *PREFIX*project_timeline_items pti
+            INNER JOIN *PREFIX*custom_projects cp
+                ON cp.id = pti.project_id
+               AND cp.organization_id = ?
+            WHERE pti.system_key = 'request_date'
+              AND pti.start_date IS NOT NULL
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+
+        $weeks = (int)($row['avg_weeks'] ?? 0);
+        return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
+    }
+
+    /**
+     * Average required preparation time in weeks.
+     * Measures weeks between start_date and end_date of required_preparation items.
+     */
+    private function avgRequiredPrepTime(int $orgId): string {
+        $sql = "
+            SELECT
+                ROUND(AVG(DATEDIFF(pti.end_date, pti.start_date) / 7)) AS avg_weeks
+            FROM *PREFIX*project_timeline_items pti
+            INNER JOIN *PREFIX*custom_projects cp
+                ON cp.id = pti.project_id
+               AND cp.organization_id = ?
+            WHERE pti.system_key = 'required_preparation'
+              AND pti.start_date IS NOT NULL
+              AND pti.end_date IS NOT NULL
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+
+        $weeks = (int)($row['avg_weeks'] ?? 0);
+        return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
     }
 
     // ─── SUBSCRIPTION ────────────────────────────────────────────────────
