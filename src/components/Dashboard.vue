@@ -93,7 +93,12 @@ export default {
   computed: {
     operationalKpis: function () {
       return (this.data.kpis || []).filter(function (k) {
-        return k.id === "projects" || k.id === "tasks" || k.id === "resources" || k.id === "timeline";
+        return (
+          k.id === "projects" ||
+          k.id === "tasks" ||
+          k.id === "resources" ||
+          k.id === "timeline"
+        );
       });
     },
     insightKpis: function () {
