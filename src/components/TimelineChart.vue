@@ -78,10 +78,7 @@
               ')'
             "
           >
-            <span
-              v-if="item.widthPct > 12"
-              class="timeline-chart__bar-text"
-            >
+            <span v-if="item.widthPct > 12" class="timeline-chart__bar-text">
               {{ item.duration }}
             </span>
           </div>
@@ -182,8 +179,7 @@ export default {
           (monthStart.getTime() - this.rangeStart.getTime()) /
           (1000 * 60 * 60 * 24);
         var dur =
-          (monthEnd.getTime() - monthStart.getTime()) /
-          (1000 * 60 * 60 * 24);
+          (monthEnd.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24);
 
         var monthNames = [
           "Jan",
@@ -202,9 +198,7 @@ export default {
 
         result.push({
           label:
-            monthNames[monthStart.getMonth()] +
-            " " +
-            monthStart.getFullYear(),
+            monthNames[monthStart.getMonth()] + " " + monthStart.getFullYear(),
           leftPct: (startOff / this.totalDays) * 100,
           widthPct: (dur / this.totalDays) * 100,
         });
