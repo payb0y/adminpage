@@ -912,7 +912,11 @@ class DeckService {
 
         $sql = "
             SELECT b.id AS board_id, dau.participant AS user_id,
-                   COUNT(dau.card_id) AS tasks_assigned
+                   COUNT(dau.card_id) AS tasks_assigned,
+                   SUM(CASE
+                       WHEN s.title = 'Approved/Done' OR c.done IS NOT NULL
+                       THEN 1 ELSE 0
+                   END) AS tasks_done
             FROM *PREFIX*deck_boards b
             JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
@@ -927,8 +931,9 @@ class DeckService {
         $map = [];
         while ($row = $result->fetch()) {
             $map[(int)$row['board_id']][] = [
-                'userId'   => $row['user_id'],
-                'tasks'    => (int)$row['tasks_assigned'],
+                'userId'    => $row['user_id'],
+                'tasks'     => (int)$row['tasks_assigned'],
+                'doneTasks' => (int)$row['tasks_done'],
             ];
         }
         return $map;
