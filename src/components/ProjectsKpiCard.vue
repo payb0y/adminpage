@@ -34,11 +34,13 @@
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
           <line x1="12" y1="9" x2="12" y2="13" />
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        {{ withIssue }} {{ withIssue === 1 ? 'issue' : 'issues' }}
+        {{ withIssue }} {{ withIssue === 1 ? "issue" : "issues" }}
       </span>
     </div>
 
@@ -97,21 +99,55 @@ export default {
       });
       return map;
     },
-    active: function () { return this.metricsMap["Active"] || 0; },
-    waiting: function () { return this.metricsMap["W.o.c."] || 0; },
-    onHold: function () { return this.metricsMap["On Hold"] || 0; },
-    done: function () { return this.metricsMap["Done"] || 0; },
-    withIssue: function () { return this.metricsMap["With Issue"] || 0; },
+    active: function () {
+      return this.metricsMap["Active"] || 0;
+    },
+    waiting: function () {
+      return this.metricsMap["W.o.c."] || 0;
+    },
+    onHold: function () {
+      return this.metricsMap["On Hold"] || 0;
+    },
+    done: function () {
+      return this.metricsMap["Done"] || 0;
+    },
+    withIssue: function () {
+      return this.metricsMap["With Issue"] || 0;
+    },
     total: function () {
       return this.active + this.waiting + this.onHold + this.done;
     },
     segments: function () {
       var t = this.total || 1;
       return [
-        { key: "active",  label: "Active",  value: this.active,  color: "#22C55E", pct: (this.active / t) * 100 },
-        { key: "waiting", label: "W.o.c.",   value: this.waiting, color: "#F59E0B", pct: (this.waiting / t) * 100 },
-        { key: "on_hold", label: "On Hold", value: this.onHold,  color: "#94A3B8", pct: (this.onHold / t) * 100 },
-        { key: "done",    label: "Done",    value: this.done,    color: "#4A90D9", pct: (this.done / t) * 100 },
+        {
+          key: "active",
+          label: "Active",
+          value: this.active,
+          color: "#22C55E",
+          pct: (this.active / t) * 100,
+        },
+        {
+          key: "waiting",
+          label: "W.o.c.",
+          value: this.waiting,
+          color: "#F59E0B",
+          pct: (this.waiting / t) * 100,
+        },
+        {
+          key: "on_hold",
+          label: "On Hold",
+          value: this.onHold,
+          color: "#94A3B8",
+          pct: (this.onHold / t) * 100,
+        },
+        {
+          key: "done",
+          label: "Done",
+          value: this.done,
+          color: "#4A90D9",
+          pct: (this.done / t) * 100,
+        },
       ];
     },
   },
@@ -145,7 +181,7 @@ export default {
   height: 32px;
   border-radius: 8px;
   background-color: rgba(74, 144, 217, 0.1);
-  color: #4A90D9;
+  color: #4a90d9;
   display: flex;
   align-items: center;
   justify-content: center;

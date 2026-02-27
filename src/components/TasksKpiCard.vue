@@ -79,12 +79,7 @@
 </template>
 
 <script>
-import {
-  Chart,
-  DoughnutController,
-  ArcElement,
-  Tooltip,
-} from "chart.js";
+import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
@@ -109,21 +104,46 @@ export default {
       });
       return map;
     },
-    overdue: function () { return parseInt(this.metricsMap["Overdue"], 10) || 0; },
-    today: function () { return parseInt(this.metricsMap["Today"], 10) || 0; },
-    upcoming: function () { return parseInt(this.metricsMap["Upcoming"], 10) || 0; },
-    inProgress: function () { return parseInt(this.metricsMap["In Progress"], 10) || 0; },
-    nonDue: function () { return parseInt(this.metricsMap["Non Due"], 10) || 0; },
+    overdue: function () {
+      return parseInt(this.metricsMap["Overdue"], 10) || 0;
+    },
+    today: function () {
+      return parseInt(this.metricsMap["Today"], 10) || 0;
+    },
+    upcoming: function () {
+      return parseInt(this.metricsMap["Upcoming"], 10) || 0;
+    },
+    inProgress: function () {
+      return parseInt(this.metricsMap["In Progress"], 10) || 0;
+    },
+    nonDue: function () {
+      return parseInt(this.metricsMap["Non Due"], 10) || 0;
+    },
     avgDays: function () {
       var val = this.metricsMap["Avg Days Active"] || "0d";
       return val.replace("d", "");
     },
     segments: function () {
       return [
-        { key: "overdue",  label: "Overdue",  value: this.overdue,  color: "#EF4444" },
-        { key: "today",    label: "Today",     value: this.today,    color: "#F59E0B" },
-        { key: "upcoming", label: "Upcoming",  value: this.upcoming, color: "#4A90D9" },
-        { key: "nondue",   label: "Non Due",   value: this.nonDue,   color: "#94A3B8" },
+        {
+          key: "overdue",
+          label: "Overdue",
+          value: this.overdue,
+          color: "#EF4444",
+        },
+        { key: "today", label: "Today", value: this.today, color: "#F59E0B" },
+        {
+          key: "upcoming",
+          label: "Upcoming",
+          value: this.upcoming,
+          color: "#4A90D9",
+        },
+        {
+          key: "nondue",
+          label: "Non Due",
+          value: this.nonDue,
+          color: "#94A3B8",
+        },
       ];
     },
     hasData: function () {
@@ -156,21 +176,29 @@ export default {
   methods: {
     renderChart: function () {
       var ctx = this.$refs.chartCanvas.getContext("2d");
-      var colors = this.segments.map(function (s) { return s.color; });
-      var values = this.segments.map(function (s) { return s.value; });
-      var labels = this.segments.map(function (s) { return s.label; });
+      var colors = this.segments.map(function (s) {
+        return s.color;
+      });
+      var values = this.segments.map(function (s) {
+        return s.value;
+      });
+      var labels = this.segments.map(function (s) {
+        return s.label;
+      });
 
       this.chart = new Chart(ctx, {
         type: "doughnut",
         data: {
           labels: labels,
-          datasets: [{
-            data: values,
-            backgroundColor: colors,
-            borderColor: "#ffffff",
-            borderWidth: 3,
-            hoverOffset: 4,
-          }],
+          datasets: [
+            {
+              data: values,
+              backgroundColor: colors,
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 4,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -221,7 +249,7 @@ export default {
   height: 32px;
   border-radius: 8px;
   background-color: rgba(230, 126, 90, 0.1);
-  color: #E67E5A;
+  color: #e67e5a;
   display: flex;
   align-items: center;
   justify-content: center;

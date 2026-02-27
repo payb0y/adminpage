@@ -24,9 +24,22 @@
     <div class="resources-kpi__grid">
       <!-- Whiteboards -->
       <div class="resources-kpi__block">
-        <div class="resources-kpi__block-icon resources-kpi__block-icon--purple">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        <div
+          class="resources-kpi__block-icon resources-kpi__block-icon--purple"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         </div>
         <div class="resources-kpi__block-data">
@@ -38,8 +51,20 @@
       <!-- Scrumban Boards -->
       <div class="resources-kpi__block">
         <div class="resources-kpi__block-icon resources-kpi__block-icon--blue">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="21" x2="9" y2="9" />
           </svg>
         </div>
         <div class="resources-kpi__block-data">
@@ -51,8 +76,21 @@
       <!-- Files -->
       <div class="resources-kpi__block">
         <div class="resources-kpi__block-icon resources-kpi__block-icon--green">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+            />
+            <polyline points="13 2 13 9 20 9" />
           </svg>
         </div>
         <div class="resources-kpi__block-data">
@@ -67,8 +105,24 @@
       <!-- Notes -->
       <div class="resources-kpi__block">
         <div class="resources-kpi__block-icon resources-kpi__block-icon--amber">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
           </svg>
         </div>
         <div class="resources-kpi__block-data">
@@ -109,15 +163,27 @@ export default {
     filesParts: function () {
       return this.parsePubPriv(this.metricsMap["Files"] || "0 pub / 0 priv");
     },
-    filesPublic: function () { return this.filesParts.pub; },
-    filesPrivate: function () { return this.filesParts.priv; },
-    filesTotal: function () { return this.filesPublic + this.filesPrivate; },
+    filesPublic: function () {
+      return this.filesParts.pub;
+    },
+    filesPrivate: function () {
+      return this.filesParts.priv;
+    },
+    filesTotal: function () {
+      return this.filesPublic + this.filesPrivate;
+    },
     notesParts: function () {
       return this.parsePubPriv(this.metricsMap["Notes"] || "0 pub / 0 priv");
     },
-    notesPublic: function () { return this.notesParts.pub; },
-    notesPrivate: function () { return this.notesParts.priv; },
-    notesTotal: function () { return this.notesPublic + this.notesPrivate; },
+    notesPublic: function () {
+      return this.notesParts.pub;
+    },
+    notesPrivate: function () {
+      return this.notesParts.priv;
+    },
+    notesTotal: function () {
+      return this.notesPublic + this.notesPrivate;
+    },
   },
   methods: {
     parsePubPriv: function (val) {
@@ -158,7 +224,7 @@ export default {
   height: 32px;
   border-radius: 8px;
   background-color: rgba(139, 92, 246, 0.1);
-  color: #8B5CF6;
+  color: #8b5cf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -201,22 +267,22 @@ export default {
 
 .resources-kpi__block-icon--purple {
   background: rgba(139, 92, 246, 0.12);
-  color: #8B5CF6;
+  color: #8b5cf6;
 }
 
 .resources-kpi__block-icon--blue {
   background: rgba(74, 144, 217, 0.12);
-  color: #4A90D9;
+  color: #4a90d9;
 }
 
 .resources-kpi__block-icon--green {
   background: rgba(34, 197, 94, 0.12);
-  color: #16A34A;
+  color: #16a34a;
 }
 
 .resources-kpi__block-icon--amber {
   background: rgba(245, 158, 11, 0.12);
-  color: #D97706;
+  color: #d97706;
 }
 
 .resources-kpi__block-data {

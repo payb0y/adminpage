@@ -82,16 +82,32 @@ export default {
   },
   computed: {
     projectsKpi: function () {
-      return (this.data.kpis || []).find(function (k) { return k.id === "projects"; }) || null;
+      return (
+        (this.data.kpis || []).find(function (k) {
+          return k.id === "projects";
+        }) || null
+      );
     },
     tasksKpi: function () {
-      return (this.data.kpis || []).find(function (k) { return k.id === "tasks"; }) || null;
+      return (
+        (this.data.kpis || []).find(function (k) {
+          return k.id === "tasks";
+        }) || null
+      );
     },
     resourcesKpi: function () {
-      return (this.data.kpis || []).find(function (k) { return k.id === "resources"; }) || null;
+      return (
+        (this.data.kpis || []).find(function (k) {
+          return k.id === "resources";
+        }) || null
+      );
     },
     timelineKpi: function () {
-      return (this.data.kpis || []).find(function (k) { return k.id === "timeline"; }) || null;
+      return (
+        (this.data.kpis || []).find(function (k) {
+          return k.id === "timeline";
+        }) || null
+      );
     },
     insightKpis: function () {
       return (this.data.kpis || []).filter(function (k) {
