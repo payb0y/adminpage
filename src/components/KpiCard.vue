@@ -117,7 +117,6 @@
         v-for="(metric, index) in metrics"
         :key="index"
         class="kpi-card__metric"
-        :class="{ 'kpi-card__metric--bordered': index > 0 }"
       >
         <span class="kpi-card__metric-value">{{ metric.value }}</span>
         <span class="kpi-card__metric-label">{{ metric.label }}</span>
@@ -170,7 +169,7 @@ export default {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: var(--spacing-lg, 24px);
+  padding: 20px 24px;
   transition: box-shadow 0.2s ease;
 }
 
@@ -181,13 +180,13 @@ export default {
 .kpi-card__header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm, 8px);
-  margin-bottom: var(--spacing-lg, 24px);
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .kpi-card__icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -196,27 +195,30 @@ export default {
 }
 
 .kpi-card__icon-svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .kpi-card__title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .kpi-card__metrics {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 0;
 }
 
 .kpi-card__metric {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 var(--spacing-md, 16px);
+  padding: 8px 12px;
+  position: relative;
 }
 
 .kpi-card__metric:first-child {
@@ -227,22 +229,16 @@ export default {
   padding-right: 0;
 }
 
-.kpi-card__metric--bordered {
+.kpi-card__metric + .kpi-card__metric {
   border-left: 1px solid var(--color-border, #e5e7eb);
 }
 
 .kpi-card__metric-value {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-.kpi-card__metric-value--long {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .kpi-card__metric-label {
@@ -250,5 +246,6 @@ export default {
   color: var(--color-text-muted, #9ca3af);
   line-height: 1.3;
   font-weight: 400;
+  white-space: nowrap;
 }
 </style>
