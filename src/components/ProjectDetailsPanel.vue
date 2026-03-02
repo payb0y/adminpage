@@ -20,10 +20,15 @@
         >
           <span
             class="proj-details__tab-dot"
-            :class="'proj-details__tab-dot--' + p.statusLabel.toLowerCase().replace(/ /g, '-')"
+            :class="
+              'proj-details__tab-dot--' +
+              p.statusLabel.toLowerCase().replace(/ /g, '-')
+            "
           ></span>
           <span class="proj-details__tab-name">{{ p.name }}</span>
-          <span v-if="p.number" class="proj-details__tab-num">{{ p.number }}</span>
+          <span v-if="p.number" class="proj-details__tab-num">{{
+            p.number
+          }}</span>
         </button>
         <span v-if="projects.length === 0" class="proj-details__tabs-empty">
           No projects
@@ -33,10 +38,25 @@
 
     <!-- Empty state -->
     <div v-if="!selectedProject" class="proj-details__empty">
-      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="proj-details__empty-icon">
-        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="proj-details__empty-icon"
+      >
+        <path
+          d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+        />
       </svg>
-      <p class="proj-details__empty-text">Select a project above to view detailed analytics</p>
+      <p class="proj-details__empty-text">
+        Select a project above to view detailed analytics
+      </p>
     </div>
 
     <!-- Detail content -->
@@ -49,46 +69,68 @@
             <h4 class="proj-details__card-title">Project Overview</h4>
             <span
               class="proj-details__badge"
-              :class="'proj-details__badge--' + selectedProject.statusLabel.toLowerCase().replace(/ /g, '-')"
-            >{{ selectedProject.statusLabel }}</span>
+              :class="
+                'proj-details__badge--' +
+                selectedProject.statusLabel.toLowerCase().replace(/ /g, '-')
+              "
+              >{{ selectedProject.statusLabel }}</span
+            >
           </div>
           <div class="proj-details__info-grid">
             <div class="proj-details__info-item" v-if="selectedProject.number">
               <span class="proj-details__info-label">Project Number</span>
-              <span class="proj-details__info-value">{{ selectedProject.number }}</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.number
+              }}</span>
             </div>
-            <div class="proj-details__info-item" v-if="selectedProject.description">
+            <div
+              class="proj-details__info-item"
+              v-if="selectedProject.description"
+            >
               <span class="proj-details__info-label">Description</span>
-              <span class="proj-details__info-value">{{ selectedProject.description }}</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.description
+              }}</span>
             </div>
             <div class="proj-details__info-item">
               <span class="proj-details__info-label">Created</span>
-              <span class="proj-details__info-value">{{ formatDate(selectedProject.createdAt) }}</span>
+              <span class="proj-details__info-value">{{
+                formatDate(selectedProject.createdAt)
+              }}</span>
             </div>
             <div class="proj-details__info-item">
               <span class="proj-details__info-label">Last Updated</span>
-              <span class="proj-details__info-value">{{ formatDate(selectedProject.updatedAt) }}</span>
+              <span class="proj-details__info-value">{{
+                formatDate(selectedProject.updatedAt)
+              }}</span>
             </div>
           </div>
           <!-- Compact Completion bar inside overview card -->
           <div class="proj-details__progress">
             <div class="proj-details__progress-header">
               <span class="proj-details__progress-label">Task Completion</span>
-              <span class="proj-details__progress-pct">{{ selectedProject.completionPct }}%</span>
+              <span class="proj-details__progress-pct"
+                >{{ selectedProject.completionPct }}%</span
+              >
             </div>
             <div class="proj-details__progress-bar">
               <div
                 class="proj-details__progress-fill"
                 :style="{ width: selectedProject.completionPct + '%' }"
                 :class="{
-                  'proj-details__progress-fill--low': selectedProject.completionPct < 25,
-                  'proj-details__progress-fill--mid': selectedProject.completionPct >= 25 && selectedProject.completionPct < 75,
-                  'proj-details__progress-fill--high': selectedProject.completionPct >= 75,
+                  'proj-details__progress-fill--low':
+                    selectedProject.completionPct < 25,
+                  'proj-details__progress-fill--mid':
+                    selectedProject.completionPct >= 25 &&
+                    selectedProject.completionPct < 75,
+                  'proj-details__progress-fill--high':
+                    selectedProject.completionPct >= 75,
                 }"
               ></div>
             </div>
             <span class="proj-details__progress-detail">
-              {{ selectedProject.doneTasks }} of {{ selectedProject.totalTasks }} tasks completed
+              {{ selectedProject.doneTasks }} of
+              {{ selectedProject.totalTasks }} tasks completed
             </span>
           </div>
         </div>
@@ -97,37 +139,73 @@
         <div class="proj-details__card">
           <h4 class="proj-details__card-title">Client &amp; Resources</h4>
           <div class="proj-details__info-grid" v-if="hasClientInfo">
-            <div class="proj-details__info-item" v-if="selectedProject.clientName">
+            <div
+              class="proj-details__info-item"
+              v-if="selectedProject.clientName"
+            >
               <span class="proj-details__info-label">Client</span>
-              <span class="proj-details__info-value">{{ selectedProject.clientName }}</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.clientName
+              }}</span>
             </div>
-            <div class="proj-details__info-item" v-if="selectedProject.clientEmail">
+            <div
+              class="proj-details__info-item"
+              v-if="selectedProject.clientEmail"
+            >
               <span class="proj-details__info-label">Email</span>
-              <a :href="'mailto:' + selectedProject.clientEmail" class="proj-details__info-link">{{ selectedProject.clientEmail }}</a>
+              <a
+                :href="'mailto:' + selectedProject.clientEmail"
+                class="proj-details__info-link"
+                >{{ selectedProject.clientEmail }}</a
+              >
             </div>
-            <div class="proj-details__info-item" v-if="selectedProject.clientPhone">
+            <div
+              class="proj-details__info-item"
+              v-if="selectedProject.clientPhone"
+            >
               <span class="proj-details__info-label">Phone</span>
-              <a :href="'tel:' + selectedProject.clientPhone" class="proj-details__info-link">{{ selectedProject.clientPhone }}</a>
+              <a
+                :href="'tel:' + selectedProject.clientPhone"
+                class="proj-details__info-link"
+                >{{ selectedProject.clientPhone }}</a
+              >
             </div>
-            <div class="proj-details__info-item" v-if="selectedProject.location && selectedProject.location !== ','">
+            <div
+              class="proj-details__info-item"
+              v-if="
+                selectedProject.location && selectedProject.location !== ','
+              "
+            >
               <span class="proj-details__info-label">Location</span>
-              <span class="proj-details__info-value">{{ selectedProject.location }}</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.location
+              }}</span>
             </div>
           </div>
-          <div v-else class="proj-details__no-client">No client information</div>
+          <div v-else class="proj-details__no-client">
+            No client information
+          </div>
           <!-- Resource summary -->
-          <h4 class="proj-details__card-title proj-details__card-title--sub">Resources</h4>
+          <h4 class="proj-details__card-title proj-details__card-title--sub">
+            Resources
+          </h4>
           <div class="proj-details__resources">
             <div class="proj-details__resource-item">
-              <span class="proj-details__resource-value">{{ selectedProject.resources.files }}</span>
+              <span class="proj-details__resource-value">{{
+                selectedProject.resources.files
+              }}</span>
               <span class="proj-details__resource-label">Files</span>
             </div>
             <div class="proj-details__resource-item">
-              <span class="proj-details__resource-value">{{ selectedProject.resources.whiteboards }}</span>
+              <span class="proj-details__resource-value">{{
+                selectedProject.resources.whiteboards
+              }}</span>
               <span class="proj-details__resource-label">Whiteboards</span>
             </div>
             <div class="proj-details__resource-item">
-              <span class="proj-details__resource-value">{{ selectedProject.resources.notes }}</span>
+              <span class="proj-details__resource-value">{{
+                selectedProject.resources.notes
+              }}</span>
               <span class="proj-details__resource-label">Notes</span>
             </div>
           </div>
@@ -139,7 +217,10 @@
         <!-- Task Distribution by Stack (donut only, no table) -->
         <div class="proj-details__card">
           <h4 class="proj-details__card-title">Task Distribution</h4>
-          <div v-if="stackChartData.data.length > 0" class="proj-details__chart-wrap">
+          <div
+            v-if="stackChartData.data.length > 0"
+            class="proj-details__chart-wrap"
+          >
             <DonutChart :chart-data="stackChartData" />
           </div>
           <div v-else class="proj-details__no-data">No tasks found</div>
@@ -153,22 +234,31 @@
               class="proj-details__due-item"
               :class="{
                 'proj-details__due-item--danger': true,
-                'proj-details__due-item--pulse': selectedProject.dueStats.overdue > 0
+                'proj-details__due-item--pulse':
+                  selectedProject.dueStats.overdue > 0,
               }"
             >
-              <span class="proj-details__due-value">{{ selectedProject.dueStats.overdue }}</span>
+              <span class="proj-details__due-value">{{
+                selectedProject.dueStats.overdue
+              }}</span>
               <span class="proj-details__due-label">Overdue</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--warning">
-              <span class="proj-details__due-value">{{ selectedProject.dueStats.today }}</span>
+              <span class="proj-details__due-value">{{
+                selectedProject.dueStats.today
+              }}</span>
               <span class="proj-details__due-label">Due Today</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--info">
-              <span class="proj-details__due-value">{{ selectedProject.dueStats.upcoming }}</span>
+              <span class="proj-details__due-value">{{
+                selectedProject.dueStats.upcoming
+              }}</span>
               <span class="proj-details__due-label">Upcoming</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--muted">
-              <span class="proj-details__due-value">{{ selectedProject.dueStats.no_due }}</span>
+              <span class="proj-details__due-value">{{
+                selectedProject.dueStats.no_due
+              }}</span>
               <span class="proj-details__due-label">No Due Date</span>
             </div>
           </div>
@@ -177,7 +267,10 @@
         <!-- #2: Team Workload (separated assignees with progress bars) -->
         <div class="proj-details__card">
           <h4 class="proj-details__card-title">Team Workload</h4>
-          <div v-if="selectedProject.assignees.length > 0" class="proj-details__team-list">
+          <div
+            v-if="selectedProject.assignees.length > 0"
+            class="proj-details__team-list"
+          >
             <div
               v-for="(a, i) in selectedProject.assignees"
               :key="i"
@@ -185,12 +278,18 @@
             >
               <div class="proj-details__team-row">
                 <div class="proj-details__team-info">
-                  <span class="proj-details__team-avatar">{{ a.userId.charAt(0).toUpperCase() }}</span>
+                  <span class="proj-details__team-avatar">{{
+                    a.userId.charAt(0).toUpperCase()
+                  }}</span>
                   <span class="proj-details__team-name">{{ a.userId }}</span>
                 </div>
                 <span class="proj-details__team-stats">
-                  <span class="proj-details__team-count">{{ a.doneTasks || 0 }}/{{ a.tasks }}</span>
-                  <span class="proj-details__team-pct">{{ assigneePct(a) }}%</span>
+                  <span class="proj-details__team-count"
+                    >{{ a.doneTasks || 0 }}/{{ a.tasks }}</span
+                  >
+                  <span class="proj-details__team-pct"
+                    >{{ assigneePct(a) }}%</span
+                  >
                 </span>
               </div>
               <div class="proj-details__team-bar">
@@ -202,6 +301,57 @@
             </div>
           </div>
           <div v-else class="proj-details__no-data">No team assignments</div>
+        </div>
+      </div>
+
+      <!-- ── Row 2b — Per-project Timeline KPI ── -->
+      <div
+        class="proj-details__row proj-details__row--three proj-details__row--kpi"
+      >
+        <div class="proj-details__kpi-stat">
+          <span class="proj-details__kpi-stat-value"
+            >{{ selectedProject.completionPct }}%</span
+          >
+          <span class="proj-details__kpi-stat-label">Completion Rate</span>
+          <div class="proj-details__kpi-bar">
+            <div
+              class="proj-details__kpi-bar-fill"
+              :style="{ width: selectedProject.completionPct + '%' }"
+              :class="{
+                'proj-details__kpi-bar-fill--low':
+                  selectedProject.completionPct < 25,
+                'proj-details__kpi-bar-fill--mid':
+                  selectedProject.completionPct >= 25 &&
+                  selectedProject.completionPct < 75,
+                'proj-details__kpi-bar-fill--high':
+                  selectedProject.completionPct >= 75,
+              }"
+            ></div>
+          </div>
+          <span class="proj-details__kpi-stat-sub"
+            >{{ selectedProject.doneTasks }}/{{
+              selectedProject.totalTasks
+            }}
+            tasks</span
+          >
+        </div>
+        <div class="proj-details__kpi-stat">
+          <span class="proj-details__kpi-stat-value">{{
+            coordinationPending
+          }}</span>
+          <span class="proj-details__kpi-stat-label">Coordination Pending</span>
+          <span class="proj-details__kpi-stat-sub"
+            >Weeks since Request Date</span
+          >
+        </div>
+        <div class="proj-details__kpi-stat">
+          <span class="proj-details__kpi-stat-value">{{
+            requiredPrepTime
+          }}</span>
+          <span class="proj-details__kpi-stat-label">Required Prep Time</span>
+          <span class="proj-details__kpi-stat-sub"
+            >Planned preparation period</span
+          >
         </div>
       </div>
 
@@ -222,34 +372,54 @@
           <div class="proj-details__tb-summary">
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--danger"
-              :class="{ 'proj-details__tb-summary-pill--active': tbFilterDue === 'overdue' }"
+              :class="{
+                'proj-details__tb-summary-pill--active':
+                  tbFilterDue === 'overdue',
+              }"
               @click="toggleDueFilter('overdue')"
             >
-              <span class="proj-details__tb-summary-dot proj-details__tb-summary-dot--danger"></span>
+              <span
+                class="proj-details__tb-summary-dot proj-details__tb-summary-dot--danger"
+              ></span>
               {{ dueCounts.overdue }} Overdue
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--warning"
-              :class="{ 'proj-details__tb-summary-pill--active': tbFilterDue === 'today' }"
+              :class="{
+                'proj-details__tb-summary-pill--active':
+                  tbFilterDue === 'today',
+              }"
               @click="toggleDueFilter('today')"
             >
-              <span class="proj-details__tb-summary-dot proj-details__tb-summary-dot--warning"></span>
+              <span
+                class="proj-details__tb-summary-dot proj-details__tb-summary-dot--warning"
+              ></span>
               {{ dueCounts.today }} Due Today
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--success"
-              :class="{ 'proj-details__tb-summary-pill--active': tbFilterStatus === 'done' }"
+              :class="{
+                'proj-details__tb-summary-pill--active':
+                  tbFilterStatus === 'done',
+              }"
               @click="toggleStatusFilter('done')"
             >
-              <span class="proj-details__tb-summary-dot proj-details__tb-summary-dot--success"></span>
+              <span
+                class="proj-details__tb-summary-dot proj-details__tb-summary-dot--success"
+              ></span>
               {{ statusCounts.done }} Done
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--info"
-              :class="{ 'proj-details__tb-summary-pill--active': tbFilterStatus === 'open' }"
+              :class="{
+                'proj-details__tb-summary-pill--active':
+                  tbFilterStatus === 'open',
+              }"
               @click="toggleStatusFilter('open')"
             >
-              <span class="proj-details__tb-summary-dot proj-details__tb-summary-dot--info"></span>
+              <span
+                class="proj-details__tb-summary-dot proj-details__tb-summary-dot--info"
+              ></span>
               {{ statusCounts.open }} Open
             </button>
           </div>
@@ -278,14 +448,30 @@
               <label class="proj-details__tb-label">Stack</label>
               <select v-model="tbFilterStack" class="proj-details__tb-select">
                 <option value="">All</option>
-                <option v-for="s in projectStacks" :key="s" :value="s">{{ s }}</option>
+                <option v-for="s in projectStacks" :key="s" :value="s">
+                  {{ s }}
+                </option>
               </select>
             </div>
             <div class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Label</label>
               <select v-model="tbFilterLabel" class="proj-details__tb-select">
                 <option value="">All</option>
-                <option v-for="l in projectLabels" :key="l" :value="l">{{ l }}</option>
+                <option v-for="l in projectLabels" :key="l" :value="l">
+                  {{ l }}
+                </option>
+              </select>
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Assignee</label>
+              <select
+                v-model="tbFilterAssignee"
+                class="proj-details__tb-select"
+              >
+                <option value="">All</option>
+                <option v-for="a in projectAssigneeNames" :key="a" :value="a">
+                  {{ a }}
+                </option>
               </select>
             </div>
             <div class="proj-details__tb-filter">
@@ -314,53 +500,91 @@
                 <tr>
                   <th
                     class="proj-details__th-sort"
-                    :class="{ 'proj-details__th-sort--active': tbSortKey === 'title' }"
+                    :class="{
+                      'proj-details__th-sort--active': tbSortKey === 'title',
+                    }"
                     @click="toggleSort('title')"
                   >
                     Task
-                    <span class="proj-details__sort-arrow">{{ sortArrow('title') }}</span>
+                    <span class="proj-details__sort-arrow">{{
+                      sortArrow("title")
+                    }}</span>
                   </th>
                   <th>Stack</th>
                   <th
                     class="proj-details__th-sort"
-                    :class="{ 'proj-details__th-sort--active': tbSortKey === 'status' }"
+                    :class="{
+                      'proj-details__th-sort--active': tbSortKey === 'status',
+                    }"
                     @click="toggleSort('status')"
                   >
                     Status
-                    <span class="proj-details__sort-arrow">{{ sortArrow('status') }}</span>
+                    <span class="proj-details__sort-arrow">{{
+                      sortArrow("status")
+                    }}</span>
                   </th>
                   <th>Labels</th>
                   <th>Assignees</th>
                   <th
                     class="proj-details__th-sort"
-                    :class="{ 'proj-details__th-sort--active': tbSortKey === 'due' }"
+                    :class="{
+                      'proj-details__th-sort--active': tbSortKey === 'due',
+                    }"
                     @click="toggleSort('due')"
                   >
                     Due Date
-                    <span class="proj-details__sort-arrow">{{ sortArrow('due') }}</span>
+                    <span class="proj-details__sort-arrow">{{
+                      sortArrow("due")
+                    }}</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="filteredTasks.length === 0">
-                  <td colspan="6" class="proj-details__tb-empty">No tasks match the current filters</td>
+                  <td colspan="6" class="proj-details__tb-empty">
+                    No tasks match the current filters
+                  </td>
                 </tr>
                 <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
                   <td class="proj-details__tb-cell-title">{{ task.title }}</td>
-                  <td><span class="proj-details__tb-stack-badge">{{ task.stack }}</span></td>
                   <td>
-                    <span class="proj-details__tb-status" :class="'proj-details__tb-status--' + task.status">{{ task.status }}</span>
+                    <span class="proj-details__tb-stack-badge">{{
+                      task.stack
+                    }}</span>
                   </td>
                   <td>
-                    <span v-for="lbl in task.labels" :key="lbl" class="proj-details__tb-label-badge">{{ lbl }}</span>
-                    <span v-if="task.labels.length === 0" class="proj-details__tb-muted">&mdash;</span>
+                    <span
+                      class="proj-details__tb-status"
+                      :class="'proj-details__tb-status--' + task.status"
+                      >{{ task.status }}</span
+                    >
                   </td>
                   <td>
-                    <span v-if="task.assignees.length">{{ task.assignees.join(', ') }}</span>
+                    <span
+                      v-for="lbl in task.labels"
+                      :key="lbl"
+                      class="proj-details__tb-label-badge"
+                      >{{ lbl }}</span
+                    >
+                    <span
+                      v-if="task.labels.length === 0"
+                      class="proj-details__tb-muted"
+                      >&mdash;</span
+                    >
+                  </td>
+                  <td>
+                    <span v-if="task.assignees.length">{{
+                      task.assignees.join(", ")
+                    }}</span>
                     <span v-else class="proj-details__tb-muted">&mdash;</span>
                   </td>
                   <td>
-                    <span v-if="task.due" class="proj-details__tb-due" :class="'proj-details__tb-due--' + task.dueBucket">{{ formatDate(task.due) }}</span>
+                    <span
+                      v-if="task.due"
+                      class="proj-details__tb-due"
+                      :class="'proj-details__tb-due--' + task.dueBucket"
+                      >{{ formatDate(task.due) }}</span
+                    >
                     <span v-else class="proj-details__tb-muted">&mdash;</span>
                   </td>
                 </tr>
@@ -370,9 +594,23 @@
 
           <!-- Pagination -->
           <div v-if="totalPages > 1" class="proj-details__tb-pagination">
-            <button class="proj-details__tb-page-btn" :disabled="tbPage <= 1" @click="tbPage--">&lsaquo; Prev</button>
-            <span class="proj-details__tb-page-info">Page {{ tbPage }} of {{ totalPages }}</span>
-            <button class="proj-details__tb-page-btn" :disabled="tbPage >= totalPages" @click="tbPage++">Next &rsaquo;</button>
+            <button
+              class="proj-details__tb-page-btn"
+              :disabled="tbPage <= 1"
+              @click="tbPage--"
+            >
+              &lsaquo; Prev
+            </button>
+            <span class="proj-details__tb-page-info"
+              >Page {{ tbPage }} of {{ totalPages }}</span
+            >
+            <button
+              class="proj-details__tb-page-btn"
+              :disabled="tbPage >= totalPages"
+              @click="tbPage++"
+            >
+              Next &rsaquo;
+            </button>
           </div>
         </div>
       </div>
@@ -381,45 +619,71 @@
 </template>
 
 <script>
-import DonutChart from './DonutChart.vue';
-import TimelineChart from './TimelineChart.vue';
+import DonutChart from "./DonutChart.vue";
+import TimelineChart from "./TimelineChart.vue";
 
 export default {
-  name: 'ProjectDetailsPanel',
+  name: "ProjectDetailsPanel",
   components: { DonutChart, TimelineChart },
   props: {
     projects: {
       type: Array,
-      default: function () { return []; },
+      default: function () {
+        return [];
+      },
     },
   },
   data: function () {
     return {
-      selectedProjectId: '',
-      tabSearch: '',
+      selectedProjectId: "",
+      tabSearch: "",
       stackColors: [
-        '#4A90D9', '#E67E5A', '#2E9E5A', '#8B5CF6', '#0EA5E9',
-        '#F59E0B', '#EC4899', '#6B7280', '#10B981', '#EF4444',
+        "#4A90D9",
+        "#E67E5A",
+        "#2E9E5A",
+        "#8B5CF6",
+        "#0EA5E9",
+        "#F59E0B",
+        "#EC4899",
+        "#6B7280",
+        "#10B981",
+        "#EF4444",
       ],
       // Task browser
-      tbFilterName: '',
-      tbFilterStatus: '',
-      tbFilterStack: '',
-      tbFilterLabel: '',
-      tbFilterDue: '',
+      tbFilterName: "",
+      tbFilterStatus: "",
+      tbFilterStack: "",
+      tbFilterLabel: "",
+      tbFilterAssignee: "",
+      tbFilterDue: "",
       tbPage: 1,
       tbPageSize: 15,
-      tbSortKey: '',
-      tbSortDir: 'asc',
+      tbSortKey: "",
+      tbSortDir: "asc",
     };
   },
   watch: {
-    selectedProjectId: function () { this.resetFilters(); },
-    tbFilterName: function () { this.tbPage = 1; },
-    tbFilterStatus: function () { this.tbPage = 1; },
-    tbFilterStack: function () { this.tbPage = 1; },
-    tbFilterLabel: function () { this.tbPage = 1; },
-    tbFilterDue: function () { this.tbPage = 1; },
+    selectedProjectId: function () {
+      this.resetFilters();
+    },
+    tbFilterName: function () {
+      this.tbPage = 1;
+    },
+    tbFilterStatus: function () {
+      this.tbPage = 1;
+    },
+    tbFilterStack: function () {
+      this.tbPage = 1;
+    },
+    tbFilterLabel: function () {
+      this.tbPage = 1;
+    },
+    tbFilterAssignee: function () {
+      this.tbPage = 1;
+    },
+    tbFilterDue: function () {
+      this.tbPage = 1;
+    },
   },
   computed: {
     // Tab strip
@@ -427,30 +691,48 @@ export default {
       if (!this.tabSearch) return this.projects;
       var q = this.tabSearch.toLowerCase();
       return this.projects.filter(function (p) {
-        return p.name.toLowerCase().indexOf(q) !== -1 ||
-          (p.number && p.number.toLowerCase().indexOf(q) !== -1);
+        return (
+          p.name.toLowerCase().indexOf(q) !== -1 ||
+          (p.number && p.number.toLowerCase().indexOf(q) !== -1)
+        );
       });
     },
     selectedProject: function () {
       if (!this.selectedProjectId) return null;
       var id = Number(this.selectedProjectId);
-      return this.projects.find(function (p) { return p.id === id; }) || null;
+      return (
+        this.projects.find(function (p) {
+          return p.id === id;
+        }) || null
+      );
     },
     hasClientInfo: function () {
       if (!this.selectedProject) return false;
       var p = this.selectedProject;
-      return !!(p.clientName || p.clientEmail || p.clientPhone ||
-        (p.location && p.location !== ','));
+      return !!(
+        p.clientName ||
+        p.clientEmail ||
+        p.clientPhone ||
+        (p.location && p.location !== ",")
+      );
     },
     // Stack donut — build single chartData object
     stackChartData: function () {
       if (!this.selectedProject) return { labels: [], data: [], colors: [] };
       var self = this;
-      var filtered = this.selectedProject.tasksByStack.filter(function (s) { return s.total > 0; });
+      var filtered = this.selectedProject.tasksByStack.filter(function (s) {
+        return s.total > 0;
+      });
       return {
-        labels: filtered.map(function (s) { return s.stack; }),
-        data: filtered.map(function (s) { return s.total; }),
-        colors: filtered.map(function (_, i) { return self.stackColors[i % self.stackColors.length]; }),
+        labels: filtered.map(function (s) {
+          return s.stack;
+        }),
+        data: filtered.map(function (s) {
+          return s.total;
+        }),
+        colors: filtered.map(function (_, i) {
+          return self.stackColors[i % self.stackColors.length];
+        }),
       };
     },
     // Task browser
@@ -466,30 +748,92 @@ export default {
       if (!this.selectedProject) return [];
       return this.selectedProject.taskLabels || [];
     },
+    // Unique assignee names for the filter dropdown
+    projectAssigneeNames: function () {
+      var names = {};
+      this.projectTasks.forEach(function (t) {
+        (t.assignees || []).forEach(function (a) {
+          names[a] = true;
+        });
+      });
+      return Object.keys(names).sort();
+    },
+    // Per-project Timeline KPIs
+    coordinationPending: function () {
+      if (!this.selectedProject) return "—";
+      var tl = this.selectedProject.timeline || [];
+      var item = null;
+      for (var i = 0; i < tl.length; i++) {
+        if (tl[i].systemKey === "request_date") {
+          item = tl[i];
+          break;
+        }
+      }
+      if (!item || !item.startDate) return "—";
+      var start = new Date(item.startDate);
+      if (isNaN(start.getTime())) return "—";
+      var now = new Date();
+      var days = Math.floor(
+        (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      var weeks = Math.round(days / 7);
+      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+    },
+    requiredPrepTime: function () {
+      if (!this.selectedProject) return "—";
+      var tl = this.selectedProject.timeline || [];
+      var item = null;
+      for (var i = 0; i < tl.length; i++) {
+        if (tl[i].systemKey === "required_preparation") {
+          item = tl[i];
+          break;
+        }
+      }
+      if (!item || !item.startDate || !item.endDate) return "—";
+      var s = new Date(item.startDate);
+      var e = new Date(item.endDate);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) return "—";
+      var days = Math.floor(
+        (e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      var weeks = Math.round(days / 7);
+      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+    },
     // Summary counts for the urgency strip
     dueCounts: function () {
       var counts = { overdue: 0, today: 0 };
       this.projectTasks.forEach(function (t) {
-        if (t.dueBucket === 'overdue') counts.overdue++;
-        if (t.dueBucket === 'today') counts.today++;
+        if (t.dueBucket === "overdue") counts.overdue++;
+        if (t.dueBucket === "today") counts.today++;
       });
       return counts;
     },
     statusCounts: function () {
       var counts = { open: 0, done: 0 };
       this.projectTasks.forEach(function (t) {
-        if (t.status === 'open') counts.open++;
-        if (t.status === 'done') counts.done++;
+        if (t.status === "open") counts.open++;
+        if (t.status === "done") counts.done++;
       });
       return counts;
     },
     filteredTasks: function () {
       var self = this;
       return this.projectTasks.filter(function (t) {
-        if (self.tbFilterName && t.title.toLowerCase().indexOf(self.tbFilterName.toLowerCase()) === -1) return false;
-        if (self.tbFilterStatus && t.status !== self.tbFilterStatus) return false;
+        if (
+          self.tbFilterName &&
+          t.title.toLowerCase().indexOf(self.tbFilterName.toLowerCase()) === -1
+        )
+          return false;
+        if (self.tbFilterStatus && t.status !== self.tbFilterStatus)
+          return false;
         if (self.tbFilterStack && t.stack !== self.tbFilterStack) return false;
-        if (self.tbFilterLabel && t.labels.indexOf(self.tbFilterLabel) === -1) return false;
+        if (self.tbFilterLabel && t.labels.indexOf(self.tbFilterLabel) === -1)
+          return false;
+        if (
+          self.tbFilterAssignee &&
+          (t.assignees || []).indexOf(self.tbFilterAssignee) === -1
+        )
+          return false;
         if (self.tbFilterDue && t.dueBucket !== self.tbFilterDue) return false;
         return true;
       });
@@ -497,18 +841,18 @@ export default {
     sortedTasks: function () {
       if (!this.tbSortKey) return this.filteredTasks;
       var key = this.tbSortKey;
-      var dir = this.tbSortDir === 'asc' ? 1 : -1;
+      var dir = this.tbSortDir === "asc" ? 1 : -1;
       var arr = this.filteredTasks.slice();
       arr.sort(function (a, b) {
         var va, vb;
-        if (key === 'title') {
-          va = (a.title || '').toLowerCase();
-          vb = (b.title || '').toLowerCase();
-        } else if (key === 'status') {
+        if (key === "title") {
+          va = (a.title || "").toLowerCase();
+          vb = (b.title || "").toLowerCase();
+        } else if (key === "status") {
           var order = { open: 1, done: 2, archived: 3 };
           va = order[a.status] || 4;
           vb = order[b.status] || 4;
-        } else if (key === 'due') {
+        } else if (key === "due") {
           va = a.due ? new Date(a.due).getTime() : 9999999999999;
           vb = b.due ? new Date(b.due).getTime() : 9999999999999;
         }
@@ -528,14 +872,15 @@ export default {
   },
   methods: {
     resetFilters: function () {
-      this.tbFilterName = '';
-      this.tbFilterStatus = '';
-      this.tbFilterStack = '';
-      this.tbFilterLabel = '';
-      this.tbFilterDue = '';
+      this.tbFilterName = "";
+      this.tbFilterStatus = "";
+      this.tbFilterStack = "";
+      this.tbFilterLabel = "";
+      this.tbFilterAssignee = "";
+      this.tbFilterDue = "";
       this.tbPage = 1;
-      this.tbSortKey = '';
-      this.tbSortDir = 'asc';
+      this.tbSortKey = "";
+      this.tbSortDir = "asc";
     },
     assigneePct: function (a) {
       if (!a.tasks || a.tasks === 0) return 0;
@@ -543,28 +888,32 @@ export default {
     },
     toggleSort: function (key) {
       if (this.tbSortKey === key) {
-        this.tbSortDir = this.tbSortDir === 'asc' ? 'desc' : 'asc';
+        this.tbSortDir = this.tbSortDir === "asc" ? "desc" : "asc";
       } else {
         this.tbSortKey = key;
-        this.tbSortDir = 'asc';
+        this.tbSortDir = "asc";
       }
       this.tbPage = 1;
     },
     sortArrow: function (key) {
-      if (this.tbSortKey !== key) return '↕';
-      return this.tbSortDir === 'asc' ? '↑' : '↓';
+      if (this.tbSortKey !== key) return "↕";
+      return this.tbSortDir === "asc" ? "↑" : "↓";
     },
     toggleDueFilter: function (val) {
-      this.tbFilterDue = this.tbFilterDue === val ? '' : val;
+      this.tbFilterDue = this.tbFilterDue === val ? "" : val;
     },
     toggleStatusFilter: function (val) {
-      this.tbFilterStatus = this.tbFilterStatus === val ? '' : val;
+      this.tbFilterStatus = this.tbFilterStatus === val ? "" : val;
     },
     formatDate: function (d) {
-      if (!d) return '—';
+      if (!d) return "—";
       var date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
   },
 };
@@ -649,13 +998,21 @@ export default {
 }
 
 .proj-details__tab--active .proj-details__tab-dot {
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
 }
 
-.proj-details__tab-dot--active { background: #22c55e; }
-.proj-details__tab-dot--waiting-on-customer { background: #f59e0b; }
-.proj-details__tab-dot--on-hold { background: #ef4444; }
-.proj-details__tab-dot--done { background: #6366f1; }
+.proj-details__tab-dot--active {
+  background: #22c55e;
+}
+.proj-details__tab-dot--waiting-on-customer {
+  background: #f59e0b;
+}
+.proj-details__tab-dot--on-hold {
+  background: #ef4444;
+}
+.proj-details__tab-dot--done {
+  background: #6366f1;
+}
 
 .proj-details__tab-name {
   max-width: 140px;
@@ -683,11 +1040,19 @@ export default {
   color: var(--color-text-muted, #9ca3af);
 }
 
-.proj-details__empty-icon { margin-bottom: 12px; opacity: 0.4; }
-.proj-details__empty-text { font-size: 13px; margin: 0; }
+.proj-details__empty-icon {
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+.proj-details__empty-text {
+  font-size: 13px;
+  margin: 0;
+}
 
 /* ── Layout ── */
-.proj-details__row { margin-bottom: 16px; }
+.proj-details__row {
+  margin-bottom: 16px;
+}
 
 .proj-details__row--two {
   display: grid;
@@ -708,7 +1073,9 @@ export default {
   padding: 20px;
 }
 
-.proj-details__card--full { width: 100%; }
+.proj-details__card--full {
+  width: 100%;
+}
 
 .proj-details__card-header {
   display: flex;
@@ -726,7 +1093,9 @@ export default {
   border: none;
 }
 
-.proj-details__card-header .proj-details__card-title { margin-bottom: 0; }
+.proj-details__card-header .proj-details__card-title {
+  margin-bottom: 0;
+}
 
 .proj-details__card-title--sub {
   font-size: 13px;
@@ -745,10 +1114,22 @@ export default {
   line-height: 1.4;
 }
 
-.proj-details__badge--active { background: #d4edda; color: #166534; }
-.proj-details__badge--waiting-on-customer { background: #fef3cd; color: #92400e; }
-.proj-details__badge--on-hold { background: #fde8e8; color: #b91c1c; }
-.proj-details__badge--done { background: #e0e7ff; color: #3730a3; }
+.proj-details__badge--active {
+  background: #d4edda;
+  color: #166534;
+}
+.proj-details__badge--waiting-on-customer {
+  background: #fef3cd;
+  color: #92400e;
+}
+.proj-details__badge--on-hold {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+.proj-details__badge--done {
+  background: #e0e7ff;
+  color: #3730a3;
+}
 
 /* ── Info Grid ── */
 .proj-details__info-grid {
@@ -757,7 +1138,11 @@ export default {
   gap: 12px;
 }
 
-.proj-details__info-item { display: flex; flex-direction: column; gap: 2px; }
+.proj-details__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .proj-details__info-label {
   font-size: 11px;
@@ -778,7 +1163,9 @@ export default {
   word-break: break-word;
 }
 
-.proj-details__info-link:hover { text-decoration: underline; }
+.proj-details__info-link:hover {
+  text-decoration: underline;
+}
 
 .proj-details__no-client {
   font-size: 13px;
@@ -825,9 +1212,15 @@ export default {
   transition: width 0.5s ease;
 }
 
-.proj-details__progress-fill--low { background: #ef4444; }
-.proj-details__progress-fill--mid { background: #f59e0b; }
-.proj-details__progress-fill--high { background: #10b981; }
+.proj-details__progress-fill--low {
+  background: #ef4444;
+}
+.proj-details__progress-fill--mid {
+  background: #f59e0b;
+}
+.proj-details__progress-fill--high {
+  background: #10b981;
+}
 
 .proj-details__progress-detail {
   font-size: 11px;
@@ -837,7 +1230,10 @@ export default {
 }
 
 /* ── Resources ── */
-.proj-details__resources { display: flex; gap: 0; }
+.proj-details__resources {
+  display: flex;
+  gap: 0;
+}
 
 .proj-details__resource-item {
   flex: 1;
@@ -849,7 +1245,9 @@ export default {
   background: #f8fafc;
 }
 
-.proj-details__resource-item + .proj-details__resource-item { margin-left: 8px; }
+.proj-details__resource-item + .proj-details__resource-item {
+  margin-left: 8px;
+}
 
 .proj-details__resource-value {
   font-size: 20px;
@@ -891,10 +1289,18 @@ export default {
   border-radius: 8px;
 }
 
-.proj-details__due-item--danger { background: #fef2f2; }
-.proj-details__due-item--warning { background: #fffbeb; }
-.proj-details__due-item--info { background: #eff6ff; }
-.proj-details__due-item--muted { background: #f8fafc; }
+.proj-details__due-item--danger {
+  background: #fef2f2;
+}
+.proj-details__due-item--warning {
+  background: #fffbeb;
+}
+.proj-details__due-item--info {
+  background: #eff6ff;
+}
+.proj-details__due-item--muted {
+  background: #f8fafc;
+}
 
 .proj-details__due-item--pulse {
   border: 2px solid #ef4444;
@@ -902,8 +1308,13 @@ export default {
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: #ef4444; }
-  50% { border-color: #fecaca; }
+  0%,
+  100% {
+    border-color: #ef4444;
+  }
+  50% {
+    border-color: #fecaca;
+  }
 }
 
 .proj-details__due-value {
@@ -1023,7 +1434,9 @@ export default {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.proj-details__table tbody tr:last-child td { border-bottom: none; }
+.proj-details__table tbody tr:last-child td {
+  border-bottom: none;
+}
 
 /* ── #6 Summary strip ── */
 .proj-details__tb-summary {
@@ -1064,10 +1477,18 @@ export default {
   flex-shrink: 0;
 }
 
-.proj-details__tb-summary-dot--danger { background: #ef4444; }
-.proj-details__tb-summary-dot--warning { background: #f59e0b; }
-.proj-details__tb-summary-dot--success { background: #22c55e; }
-.proj-details__tb-summary-dot--info { background: #4a90d9; }
+.proj-details__tb-summary-dot--danger {
+  background: #ef4444;
+}
+.proj-details__tb-summary-dot--warning {
+  background: #f59e0b;
+}
+.proj-details__tb-summary-dot--success {
+  background: #22c55e;
+}
+.proj-details__tb-summary-dot--info {
+  background: #4a90d9;
+}
 
 /* ── #6 Sortable headers ── */
 .proj-details__th-sort {
@@ -1127,7 +1548,9 @@ export default {
 }
 
 .proj-details__tb-input:focus,
-.proj-details__tb-select:focus { border-color: #4a90d9; }
+.proj-details__tb-select:focus {
+  border-color: #4a90d9;
+}
 
 .proj-details__tb-count {
   font-size: 12px;
@@ -1141,8 +1564,13 @@ export default {
   border-radius: 8px;
 }
 
-.proj-details__tb-table th { background: #fafbfd; white-space: nowrap; }
-.proj-details__tb-table tbody tr:hover { background: #fafbfd; }
+.proj-details__tb-table th {
+  background: #fafbfd;
+  white-space: nowrap;
+}
+.proj-details__tb-table tbody tr:hover {
+  background: #fafbfd;
+}
 
 .proj-details__tb-cell-title {
   font-weight: 500;
@@ -1172,9 +1600,18 @@ export default {
   text-transform: capitalize;
 }
 
-.proj-details__tb-status--open { background: #d4edda; color: #166534; }
-.proj-details__tb-status--done { background: #e0e7ff; color: #3730a3; }
-.proj-details__tb-status--archived { background: #f3f4f6; color: #6b7280; }
+.proj-details__tb-status--open {
+  background: #d4edda;
+  color: #166534;
+}
+.proj-details__tb-status--done {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.proj-details__tb-status--archived {
+  background: #f3f4f6;
+  color: #6b7280;
+}
 
 .proj-details__tb-label-badge {
   display: inline-block;
@@ -1188,10 +1625,20 @@ export default {
   white-space: nowrap;
 }
 
-.proj-details__tb-muted { color: var(--color-text-muted, #9ca3af); }
-.proj-details__tb-due--overdue { color: #d94040; font-weight: 600; }
-.proj-details__tb-due--today { color: #b8860b; font-weight: 600; }
-.proj-details__tb-due--tomorrow { color: #e67e5a; }
+.proj-details__tb-muted {
+  color: var(--color-text-muted, #9ca3af);
+}
+.proj-details__tb-due--overdue {
+  color: #d94040;
+  font-weight: 600;
+}
+.proj-details__tb-due--today {
+  color: #b8860b;
+  font-weight: 600;
+}
+.proj-details__tb-due--tomorrow {
+  color: #e67e5a;
+}
 
 .proj-details__tb-empty {
   text-align: center;
@@ -1219,12 +1666,82 @@ export default {
   transition: background 0.15s, border-color 0.15s;
 }
 
-.proj-details__tb-page-btn:hover:not(:disabled) { background: #fafbfd; border-color: #4a90d9; }
-.proj-details__tb-page-btn:disabled { opacity: 0.4; cursor: default; }
+.proj-details__tb-page-btn:hover:not(:disabled) {
+  background: #fafbfd;
+  border-color: #4a90d9;
+}
+.proj-details__tb-page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
 .proj-details__tb-page-info {
   font-size: 12px;
   color: var(--color-text-muted, #9ca3af);
+}
+
+/* ── Per-project Timeline KPI ── */
+.proj-details__row--kpi {
+  gap: 16px;
+}
+
+.proj-details__kpi-stat {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.proj-details__kpi-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+  line-height: 1.2;
+}
+
+.proj-details__kpi-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.proj-details__kpi-stat-sub {
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 4px;
+}
+
+.proj-details__kpi-bar {
+  width: 100%;
+  max-width: 160px;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.proj-details__kpi-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.proj-details__kpi-bar-fill--low {
+  background: #ef4444;
+}
+.proj-details__kpi-bar-fill--mid {
+  background: #f59e0b;
+}
+.proj-details__kpi-bar-fill--high {
+  background: #10b981;
 }
 
 /* ── Responsive ── */

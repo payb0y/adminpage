@@ -82,6 +82,21 @@
               {{ item.duration }}
             </span>
           </div>
+          <!-- Weeks elapsed indicator (from start date to today) -->
+          <span
+            v-if="item.weeksElapsed !== null"
+            class="timeline-chart__weeks-badge"
+            :style="{ left: todayBadgeLeft(item) + '%' }"
+            :title="
+              item.weeksElapsed +
+              ' week' +
+              (item.weeksElapsed !== 1 ? 's' : '') +
+              ' since ' +
+              formatDateShort(item.startDate)
+            "
+          >
+            {{ item.weeksElapsed }}w
+          </span>
         </div>
       </div>
     </div>
@@ -148,6 +163,7 @@ export default {
     },
     items: function () {
       var self = this;
+      var now = new Date();
       return this.parsedItems.map(function (item) {
         var startOff =
           (item.startDate.getTime() - self.rangeStart.getTime()) /
@@ -155,6 +171,12 @@ export default {
         var dur =
           (item.endDate.getTime() - item.startDate.getTime()) /
           (1000 * 60 * 60 * 24);
+        // Calculate weeks elapsed from start date to today
+        var daysSinceStart = Math.floor(
+          (now.getTime() - item.startDate.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        var weeksElapsed =
+          daysSinceStart > 0 ? Math.round(daysSinceStart / 7) : null;
         return {
           label: item.label,
           systemKey: item.systemKey,
@@ -164,6 +186,7 @@ export default {
           duration: item.duration,
           leftPct: (startOff / self.totalDays) * 100,
           widthPct: Math.max(0.5, (dur / self.totalDays) * 100),
+          weeksElapsed: weeksElapsed,
         };
       });
     },
@@ -241,6 +264,14 @@ export default {
         "Dec",
       ];
       return d.getDate() + " " + monthNames[d.getMonth()];
+    },
+    todayBadgeLeft: function (item) {
+      // Position the weeks badge at the today marker, clamped to bar bounds
+      var pct = this.todayPct;
+      var barEnd = item.leftPct + item.widthPct;
+      if (pct < item.leftPct) return item.leftPct;
+      if (pct > barEnd) return barEnd;
+      return pct;
     },
   },
 };
@@ -411,5 +442,22 @@ export default {
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
+}
+
+.timeline-chart__weeks-badge {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 16px;
+  white-space: nowrap;
+  z-index: 3;
+  pointer-events: none;
 }
 </style>
