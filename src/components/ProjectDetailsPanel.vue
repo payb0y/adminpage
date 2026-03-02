@@ -991,22 +991,47 @@ export default {
       });
     },
     applyTaskFilter: function (filterType, filterValue) {
-      // First select a project if none selected — pick the first visible
-      if (!this.selectedProjectId && this.visibleProjects.length > 0) {
-        this.selectedProjectId = this.visibleProjects[0].id;
+      // Clear project filters so all projects are visible
+      this.tabStatusFilter = '';
+      this.tabSearch = '';
+      // Find the first project that has tasks matching the criteria
+      var matchProject = null;
+      for (var i = 0; i < this.projects.length; i++) {
+        var p = this.projects[i];
+        var tasks = p.tasks || [];
+        var hasMatch = false;
+        for (var j = 0; j < tasks.length; j++) {
+          if (filterType === 'due' && tasks[j].dueBucket === filterValue) {
+            hasMatch = true;
+            break;
+          }
+          if (filterType === 'status' && tasks[j].status === filterValue) {
+            hasMatch = true;
+            break;
+          }
+        }
+        if (hasMatch) {
+          matchProject = p;
+          break;
+        }
+      }
+      if (matchProject) {
+        this.selectedProjectId = matchProject.id;
+      } else if (!this.selectedProjectId && this.projects.length > 0) {
+        this.selectedProjectId = this.projects[0].id;
       }
       var self = this;
       this.$nextTick(function () {
         self.resetFilters();
-        if (filterType === "due") {
+        if (filterType === 'due') {
           self.tbFilterDue = filterValue;
-        } else if (filterType === "status") {
+        } else if (filterType === 'status') {
           self.tbFilterStatus = filterValue;
         }
         self.$nextTick(function () {
-          var tbEl = self.$el.querySelector(".proj-details__tb-table-wrap");
+          var tbEl = self.$el.querySelector('.proj-details__tb-table-wrap');
           if (tbEl) {
-            tbEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            tbEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         });
       });

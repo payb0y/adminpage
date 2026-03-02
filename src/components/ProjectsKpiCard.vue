@@ -19,30 +19,6 @@
         </svg>
       </div>
       <span class="projects-kpi__title">Projects</span>
-      <span
-        v-if="withIssue > 0"
-        class="projects-kpi__badge projects-kpi__badge--danger"
-        @click="$emit('filter-projects', 'On Hold')"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-          />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-        {{ withIssue }} {{ withIssue === 1 ? "issue" : "issues" }}
-      </span>
     </div>
 
     <!-- Hero number -->
@@ -116,9 +92,6 @@ export default {
     },
     done: function () {
       return this.metricsMap["Done"] || 0;
-    },
-    withIssue: function () {
-      return this.metricsMap["With Issue"] || 0;
     },
     total: function () {
       return this.active + this.waiting + this.onHold + this.done;
@@ -204,22 +177,6 @@ export default {
   color: var(--color-text-secondary, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.4px;
-}
-
-.projects-kpi__badge {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 20px;
-}
-
-.projects-kpi__badge--danger {
-  background: var(--color-badge-danger-bg, #fde8e8);
-  color: var(--color-badge-danger-text, #b91c1c);
 }
 
 .projects-kpi__hero {
