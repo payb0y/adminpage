@@ -97,7 +97,7 @@ class KpiService {
             WHERE cp.organization_id = ?
               AND s.title <> 'Approved/Done'
               AND c.duedate IS NOT NULL
-              AND c.duedate < NOW()
+              AND DATE(c.duedate) < CURDATE()
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId]);
@@ -128,17 +128,17 @@ class KpiService {
 
     /**
      * Count tasks (deck cards) grouped by temporal status.
-     * Overdue  = duedate < NOW, not done, not in Done stack
-     * Today    = duedate = today, not done, not in Done stack
-     * Upcoming = duedate > NOW, not done, not in Done stack
+     * Overdue  = DATE(duedate) < CURDATE, not done, not in Done stack
+     * Today    = DATE(duedate) = CURDATE, not done, not in Done stack
+     * Upcoming = DATE(duedate) > CURDATE, not done, not in Done stack
      * In Progress = all open cards (not done, not in Done stack)
      */
     private function countTasksByStatus(int $orgId): array {
         $sql = "
             SELECT
-                SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate < NOW() THEN 1 ELSE 0 END) AS overdue,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE() THEN 1 ELSE 0 END) AS overdue,
                 SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
-                SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate > NOW() THEN 1 ELSE 0 END) AS upcoming,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) > CURDATE() THEN 1 ELSE 0 END) AS upcoming,
                 COUNT(*) AS in_progress,
                 SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS non_due,
                 COALESCE(ROUND(AVG(DATEDIFF(NOW(), FROM_UNIXTIME(c.created_at)))), 0) AS avg_days
