@@ -882,14 +882,16 @@ class DeckService {
 
         $sql = "
             SELECT b.id AS board_id,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate < NOW() THEN 1 ELSE 0 END) AS overdue,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE() THEN 1 ELSE 0 END) AS overdue,
                    SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND c.duedate > NOW() THEN 1 ELSE 0 END) AS upcoming,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) > CURDATE() THEN 1 ELSE 0 END) AS upcoming,
                    SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS no_due
             FROM *PREFIX*deck_boards b
             JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             WHERE b.id IN ($ph)
+              AND s.title <> 'Approved/Done'
+              AND c.done IS NULL
             GROUP BY b.id
         ";
         $result = $this->db->prepare($sql);
