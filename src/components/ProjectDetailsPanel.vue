@@ -992,8 +992,8 @@ export default {
     },
     applyTaskFilter: function (filterType, filterValue) {
       // Clear project filters so all projects are visible
-      this.tabStatusFilter = '';
-      this.tabSearch = '';
+      this.tabStatusFilter = "";
+      this.tabSearch = "";
       // Find the first project that has tasks matching the criteria
       var matchProject = null;
       for (var i = 0; i < this.projects.length; i++) {
@@ -1001,11 +1001,11 @@ export default {
         var tasks = p.tasks || [];
         var hasMatch = false;
         for (var j = 0; j < tasks.length; j++) {
-          if (filterType === 'due' && tasks[j].dueBucket === filterValue) {
+          if (filterType === "due" && tasks[j].dueBucket === filterValue) {
             hasMatch = true;
             break;
           }
-          if (filterType === 'status' && tasks[j].status === filterValue) {
+          if (filterType === "status" && tasks[j].status === filterValue) {
             hasMatch = true;
             break;
           }
@@ -1023,15 +1023,15 @@ export default {
       var self = this;
       this.$nextTick(function () {
         self.resetFilters();
-        if (filterType === 'due') {
+        if (filterType === "due") {
           self.tbFilterDue = filterValue;
-        } else if (filterType === 'status') {
+        } else if (filterType === "status") {
           self.tbFilterStatus = filterValue;
         }
         self.$nextTick(function () {
-          var tbEl = self.$el.querySelector('.proj-details__tb-table-wrap');
+          var tbEl = self.$el.querySelector(".proj-details__tb-table-wrap");
           if (tbEl) {
-            tbEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tbEl.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         });
       });
