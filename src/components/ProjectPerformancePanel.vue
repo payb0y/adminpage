@@ -270,7 +270,7 @@
         <div class="perf-panel__card">
           <h3 class="perf-panel__card-title">Per Project Details</h3>
           <div class="perf-panel__card-title-underline"></div>
-          <ProjectDetailsPanel :projects="projectDetails" />
+          <ProjectDetailsPanel ref="detailsPanel" :projects="projectDetails" />
         </div>
       </div>
     </div>
@@ -750,6 +750,16 @@ export default {
       return tasks.filter(function (t) {
         return t.category === cat;
       }).length;
+    },
+    filterProjectsByStatus: function (statusLabel) {
+      if (this.$refs.detailsPanel) {
+        this.$refs.detailsPanel.applyProjectFilter(statusLabel);
+      }
+    },
+    filterTasks: function (filterType, filterValue) {
+      if (this.$refs.detailsPanel) {
+        this.$refs.detailsPanel.applyTaskFilter(filterType, filterValue);
+      }
     },
   },
 };

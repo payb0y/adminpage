@@ -43,6 +43,7 @@
             v-for="seg in segments"
             :key="seg.key"
             class="tasks-kpi__legend-item"
+            @click="$emit('filter-tasks', seg.filterType, seg.filterValue)"
           >
             <span
               class="tasks-kpi__legend-dot"
@@ -130,19 +131,32 @@ export default {
           label: "Overdue",
           value: this.overdue,
           color: "#EF4444",
+          filterType: "due",
+          filterValue: "overdue",
         },
-        { key: "today", label: "Today", value: this.today, color: "#F59E0B" },
+        {
+          key: "today",
+          label: "Today",
+          value: this.today,
+          color: "#F59E0B",
+          filterType: "due",
+          filterValue: "today",
+        },
         {
           key: "upcoming",
           label: "Upcoming",
           value: this.upcoming,
           color: "#4A90D9",
+          filterType: "due",
+          filterValue: "nextSevenDays",
         },
         {
           key: "nondue",
           label: "Non Due",
           value: this.nonDue,
           color: "#94A3B8",
+          filterType: "due",
+          filterValue: "nodue",
         },
       ];
     },
@@ -343,6 +357,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.tasks-kpi__legend-item:hover {
+  background: #f0f4ff;
 }
 
 .tasks-kpi__legend-dot {

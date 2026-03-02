@@ -22,6 +22,7 @@
       <span
         v-if="withIssue > 0"
         class="projects-kpi__badge projects-kpi__badge--danger"
+        @click="$emit('filter-projects', 'On Hold')"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -45,7 +46,10 @@
     </div>
 
     <!-- Hero number -->
-    <div class="projects-kpi__hero">
+    <div
+      class="projects-kpi__hero projects-kpi__hero--clickable"
+      @click="$emit('filter-projects', '')"
+    >
       <span class="projects-kpi__hero-value">{{ total }}</span>
       <span class="projects-kpi__hero-label">Total Projects</span>
     </div>
@@ -59,6 +63,7 @@
           class="projects-kpi__bar-segment"
           :style="{ width: seg.pct + '%', backgroundColor: seg.color }"
           :title="seg.label + ': ' + seg.value"
+          @click="$emit('filter-projects', seg.statusLabel)"
         ></div>
       </div>
       <div class="projects-kpi__legend">
@@ -66,6 +71,7 @@
           v-for="seg in segments"
           :key="seg.key"
           class="projects-kpi__legend-item"
+          @click="$emit('filter-projects', seg.statusLabel)"
         >
           <span
             class="projects-kpi__legend-dot"
@@ -123,6 +129,7 @@ export default {
         {
           key: "active",
           label: "Active",
+          statusLabel: "Active",
           value: this.active,
           color: "#22C55E",
           pct: (this.active / t) * 100,
@@ -130,6 +137,7 @@ export default {
         {
           key: "waiting",
           label: "W.o.c.",
+          statusLabel: "Waiting on Customer",
           value: this.waiting,
           color: "#F59E0B",
           pct: (this.waiting / t) * 100,
@@ -137,6 +145,7 @@ export default {
         {
           key: "on_hold",
           label: "On Hold",
+          statusLabel: "On Hold",
           value: this.onHold,
           color: "#94A3B8",
           pct: (this.onHold / t) * 100,
@@ -144,6 +153,7 @@ export default {
         {
           key: "done",
           label: "Done",
+          statusLabel: "Done",
           value: this.done,
           color: "#4A90D9",
           pct: (this.done / t) * 100,
@@ -218,6 +228,18 @@ export default {
   gap: 8px;
 }
 
+.projects-kpi__hero--clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  transition: background 0.15s;
+}
+
+.projects-kpi__hero--clickable:hover {
+  background: #f0f4ff;
+}
+
 .projects-kpi__hero-value {
   font-size: 36px;
   font-weight: 800;
@@ -249,6 +271,11 @@ export default {
 .projects-kpi__bar-segment {
   min-width: 4px;
   transition: width 0.4s ease;
+  cursor: pointer;
+}
+
+.projects-kpi__bar-segment:hover {
+  opacity: 0.8;
 }
 
 .projects-kpi__bar-segment:first-child {
@@ -269,6 +296,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.projects-kpi__legend-item:hover {
+  background: #f0f4ff;
 }
 
 .projects-kpi__legend-dot {

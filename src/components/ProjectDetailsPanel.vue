@@ -2,13 +2,30 @@
   <div class="proj-details">
     <!-- ── #4: Project Selector → Tabbed pill strip ── -->
     <div class="proj-details__tabs">
-      <div v-if="projects.length > 6" class="proj-details__tabs-search">
+      <div class="proj-details__tabs-toolbar">
         <input
           v-model="tabSearch"
           type="text"
           class="proj-details__tabs-search-input"
           placeholder="Search projects…"
         />
+        <select
+          v-model="tabStatusFilter"
+          class="proj-details__tabs-status-select"
+        >
+          <option value="">All Statuses</option>
+          <option value="Active">Active</option>
+          <option value="Waiting on Customer">Waiting on Customer</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Done">Done</option>
+        </select>
+        <button
+          v-if="tabSearch || tabStatusFilter"
+          class="proj-details__tabs-clear"
+          @click="clearProjectFilters"
+        >
+          ✕ Clear
+        </button>
       </div>
       <div class="proj-details__tabs-strip">
         <button
@@ -537,11 +554,23 @@
                       sortArrow("due")
                     }}</span>
                   </th>
+                  <th
+                    class="proj-details__th-sort"
+                    :class="{
+                      'proj-details__th-sort--active': tbSortKey === 'age',
+                    }"
+                    @click="toggleSort('age')"
+                  >
+                    Opened
+                    <span class="proj-details__sort-arrow">{{
+                      sortArrow("age")
+                    }}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="filteredTasks.length === 0">
-                  <td colspan="6" class="proj-details__tb-empty">
+                  <td colspan="7" class="proj-details__tb-empty">
                     No tasks match the current filters
                   </td>
                 </tr>
@@ -585,6 +614,16 @@
                       :class="'proj-details__tb-due--' + task.dueBucket"
                       >{{ formatDate(task.due) }}</span
                     >
+                    <span v-else class="proj-details__tb-muted">&mdash;</span>
+                  </td>
+                  <td>
+                    <span
+                      v-if="task.createdAt"
+                      class="proj-details__tb-age"
+                      :title="formatDate(task.createdAt)"
+                    >
+                      {{ taskAge(task.createdAt) }}
+                    </span>
                     <span v-else class="proj-details__tb-muted">&mdash;</span>
                   </td>
                 </tr>
@@ -637,6 +676,7 @@ export default {
     return {
       selectedProjectId: "",
       tabSearch: "",
+      tabStatusFilter: "",
       stackColors: [
         "#4A90D9",
         "#E67E5A",
@@ -688,14 +728,23 @@ export default {
   computed: {
     // Tab strip
     visibleProjects: function () {
-      if (!this.tabSearch) return this.projects;
-      var q = this.tabSearch.toLowerCase();
-      return this.projects.filter(function (p) {
-        return (
-          p.name.toLowerCase().indexOf(q) !== -1 ||
-          (p.number && p.number.toLowerCase().indexOf(q) !== -1)
-        );
-      });
+      var self = this;
+      var list = this.projects;
+      if (this.tabStatusFilter) {
+        list = list.filter(function (p) {
+          return p.statusLabel === self.tabStatusFilter;
+        });
+      }
+      if (this.tabSearch) {
+        var q = this.tabSearch.toLowerCase();
+        list = list.filter(function (p) {
+          return (
+            p.name.toLowerCase().indexOf(q) !== -1 ||
+            (p.number && p.number.toLowerCase().indexOf(q) !== -1)
+          );
+        });
+      }
+      return list;
     },
     selectedProject: function () {
       if (!this.selectedProjectId) return null;
@@ -855,6 +904,9 @@ export default {
         } else if (key === "due") {
           va = a.due ? new Date(a.due).getTime() : 9999999999999;
           vb = b.due ? new Date(b.due).getTime() : 9999999999999;
+        } else if (key === "age") {
+          va = a.createdAt ? new Date(a.createdAt).getTime() : 9999999999999;
+          vb = b.createdAt ? new Date(b.createdAt).getTime() : 9999999999999;
         }
         if (va < vb) return -1 * dir;
         if (va > vb) return 1 * dir;
@@ -905,6 +957,60 @@ export default {
     toggleStatusFilter: function (val) {
       this.tbFilterStatus = this.tbFilterStatus === val ? "" : val;
     },
+    clearProjectFilters: function () {
+      this.tabSearch = "";
+      this.tabStatusFilter = "";
+    },
+    taskAge: function (createdAt) {
+      if (!createdAt) return "—";
+      var created = new Date(createdAt);
+      if (isNaN(created.getTime())) return "—";
+      var now = new Date();
+      var diffMs = now.getTime() - created.getTime();
+      var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (days < 1) return "Today";
+      if (days === 1) return "1 day";
+      if (days < 7) return days + " days";
+      var weeks = Math.floor(days / 7);
+      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      var months = Math.floor(days / 30);
+      if (months < 12) return months + (months === 1 ? " month" : " months");
+      var years = Math.floor(days / 365);
+      return years + (years === 1 ? " year" : " years");
+    },
+    applyProjectFilter: function (statusLabel) {
+      this.tabStatusFilter = statusLabel;
+      this.tabSearch = "";
+      this.selectedProjectId = "";
+      var self = this;
+      this.$nextTick(function () {
+        var el = self.$el;
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    },
+    applyTaskFilter: function (filterType, filterValue) {
+      // First select a project if none selected — pick the first visible
+      if (!this.selectedProjectId && this.visibleProjects.length > 0) {
+        this.selectedProjectId = this.visibleProjects[0].id;
+      }
+      var self = this;
+      this.$nextTick(function () {
+        self.resetFilters();
+        if (filterType === "due") {
+          self.tbFilterDue = filterValue;
+        } else if (filterType === "status") {
+          self.tbFilterStatus = filterValue;
+        }
+        self.$nextTick(function () {
+          var tbEl = self.$el.querySelector(".proj-details__tb-table-wrap");
+          if (tbEl) {
+            tbEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      });
+    },
     formatDate: function (d) {
       if (!d) return "—";
       var date = new Date(d);
@@ -925,8 +1031,12 @@ export default {
   margin-bottom: 20px;
 }
 
-.proj-details__tabs-search {
+.proj-details__tabs-toolbar {
+  display: flex;
+  gap: 8px;
   margin-bottom: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .proj-details__tabs-search-input {
@@ -937,12 +1047,46 @@ export default {
   color: var(--color-text-primary, #1a1a2e);
   background: #fff;
   outline: none;
-  width: 220px;
+  width: 200px;
   transition: border-color 0.15s;
 }
 
 .proj-details__tabs-search-input:focus {
   border-color: #4a90d9;
+}
+
+.proj-details__tabs-status-select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+
+.proj-details__tabs-status-select:focus {
+  border-color: #4a90d9;
+}
+
+.proj-details__tabs-clear {
+  padding: 5px 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.proj-details__tabs-clear:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .proj-details__tabs-strip {
@@ -1645,6 +1789,13 @@ export default {
   padding: 24px 12px;
   color: #9ca3af;
   font-style: italic;
+}
+
+.proj-details__tb-age {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  white-space: nowrap;
 }
 
 .proj-details__tb-pagination {

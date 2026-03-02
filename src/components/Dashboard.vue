@@ -28,14 +28,23 @@
     <template v-else>
       <!-- ── KPI Strip ── -->
       <section class="adminpage-dashboard__kpi-strip">
-        <ProjectsKpiCard v-if="projectsKpi" :kpi="projectsKpi" />
-        <TasksKpiCard v-if="tasksKpi" :kpi="tasksKpi" />
+        <ProjectsKpiCard
+          v-if="projectsKpi"
+          :kpi="projectsKpi"
+          @filter-projects="onFilterProjects"
+        />
+        <TasksKpiCard
+          v-if="tasksKpi"
+          :kpi="tasksKpi"
+          @filter-tasks="onFilterTasks"
+        />
         <ResourcesKpiCard v-if="resourcesKpi" :kpi="resourcesKpi" />
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
+        ref="perfPanel"
         :project-progress="data.projectProgress"
         :member-performance="data.memberPerformance"
         :task-delay-projects="data.taskDelayProjects"
@@ -107,6 +116,18 @@ export default {
           return k.id === "timeline";
         }) || null
       );
+    },
+  },
+  methods: {
+    onFilterProjects: function (statusLabel) {
+      if (this.$refs.perfPanel) {
+        this.$refs.perfPanel.filterProjectsByStatus(statusLabel);
+      }
+    },
+    onFilterTasks: function (filterType, filterValue) {
+      if (this.$refs.perfPanel) {
+        this.$refs.perfPanel.filterTasks(filterType, filterValue);
+      }
     },
   },
 };

@@ -769,6 +769,7 @@ class DeckService {
                 'status'    => $row['task_status'],
                 'dueBucket' => $row['due_bucket'],
                 'due'       => $row['duedate'],
+                'createdAt' => $row['card_created_at'] ?? null,
                 'labels'    => $labels,
                 'assignees' => $assigneeList,
             ];
