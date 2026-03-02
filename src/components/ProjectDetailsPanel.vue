@@ -19,8 +19,31 @@
           <option value="On Hold">On Hold</option>
           <option value="Done">Done</option>
         </select>
+        <select
+          v-model="tabTaskDueFilter"
+          class="proj-details__tabs-status-select"
+        >
+          <option value="">All Task Due</option>
+          <option value="overdue">Has Overdue</option>
+          <option value="today">Has Due Today</option>
+          <option value="nextSevenDays">Has Upcoming</option>
+          <option value="nodue">Has No Due Date</option>
+        </select>
+        <select
+          v-model="tabTaskStatusFilter"
+          class="proj-details__tabs-status-select"
+        >
+          <option value="">All Task Status</option>
+          <option value="open">Has Open Tasks</option>
+          <option value="done">Has Done Tasks</option>
+        </select>
         <button
-          v-if="tabSearch || tabStatusFilter"
+          v-if="
+            tabSearch ||
+            tabStatusFilter ||
+            tabTaskDueFilter ||
+            tabTaskStatusFilter
+          "
           class="proj-details__tabs-clear"
           @click="clearProjectFilters"
         >
@@ -677,6 +700,8 @@ export default {
       selectedProjectId: "",
       tabSearch: "",
       tabStatusFilter: "",
+      tabTaskDueFilter: "",
+      tabTaskStatusFilter: "",
       stackColors: [
         "#4A90D9",
         "#E67E5A",
@@ -733,6 +758,26 @@ export default {
       if (this.tabStatusFilter) {
         list = list.filter(function (p) {
           return p.statusLabel === self.tabStatusFilter;
+        });
+      }
+      if (this.tabTaskDueFilter) {
+        var dueVal = this.tabTaskDueFilter;
+        list = list.filter(function (p) {
+          var tasks = p.tasks || [];
+          for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].dueBucket === dueVal) return true;
+          }
+          return false;
+        });
+      }
+      if (this.tabTaskStatusFilter) {
+        var statusVal = this.tabTaskStatusFilter;
+        list = list.filter(function (p) {
+          var tasks = p.tasks || [];
+          for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].status === statusVal) return true;
+          }
+          return false;
         });
       }
       if (this.tabSearch) {
@@ -960,6 +1005,8 @@ export default {
     clearProjectFilters: function () {
       this.tabSearch = "";
       this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
     },
     taskAge: function (createdAt) {
       if (!createdAt) return "—";
@@ -991,49 +1038,26 @@ export default {
       });
     },
     applyTaskFilter: function (filterType, filterValue) {
-      // Clear project filters so all projects are visible
-      this.tabStatusFilter = "";
+      // Deselect current project so user sees filtered list
+      this.selectedProjectId = "";
+      // Clear existing project filters
       this.tabSearch = "";
-      // Find the first project that has tasks matching the criteria
-      var matchProject = null;
-      for (var i = 0; i < this.projects.length; i++) {
-        var p = this.projects[i];
-        var tasks = p.tasks || [];
-        var hasMatch = false;
-        for (var j = 0; j < tasks.length; j++) {
-          if (filterType === "due" && tasks[j].dueBucket === filterValue) {
-            hasMatch = true;
-            break;
-          }
-          if (filterType === "status" && tasks[j].status === filterValue) {
-            hasMatch = true;
-            break;
-          }
-        }
-        if (hasMatch) {
-          matchProject = p;
-          break;
-        }
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      // Set the matching tab-level filter
+      if (filterType === "due") {
+        this.tabTaskDueFilter = filterValue;
+      } else if (filterType === "status") {
+        this.tabTaskStatusFilter = filterValue;
       }
-      if (matchProject) {
-        this.selectedProjectId = matchProject.id;
-      } else if (!this.selectedProjectId && this.projects.length > 0) {
-        this.selectedProjectId = this.projects[0].id;
-      }
+      // Scroll to the project selector
       var self = this;
       this.$nextTick(function () {
-        self.resetFilters();
-        if (filterType === "due") {
-          self.tbFilterDue = filterValue;
-        } else if (filterType === "status") {
-          self.tbFilterStatus = filterValue;
+        var el = self.$el;
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-        self.$nextTick(function () {
-          var tbEl = self.$el.querySelector(".proj-details__tb-table-wrap");
-          if (tbEl) {
-            tbEl.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-        });
       });
     },
     formatDate: function (d) {
