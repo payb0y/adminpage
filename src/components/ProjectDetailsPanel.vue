@@ -1026,9 +1026,15 @@ export default {
       return years + (years === 1 ? " year" : " years");
     },
     applyProjectFilter: function (statusLabel) {
-      this.tabStatusFilter = statusLabel;
-      this.tabSearch = "";
+      // Deselect current project so user sees filtered list
       this.selectedProjectId = "";
+      // Clear all existing filters
+      this.tabSearch = "";
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      // Set the matching project status filter
+      this.tabStatusFilter = statusLabel;
       var self = this;
       this.$nextTick(function () {
         var el = self.$el;
