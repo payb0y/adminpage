@@ -294,14 +294,15 @@
                 class="perf-modal__project-header"
                 @click="toggleProject('progress', proj.name)"
               >
-                <span class="perf-modal__project-name">{{ proj.name }}</span>
-                <button
-                  class="perf-modal__goto-btn"
-                  title="View in Per Project Details"
-                  @click.stop="gotoProject(proj.projectId)"
-                >
-                  &#8599;
-                </button>
+                <div class="perf-modal__project-main">
+                  <span class="perf-modal__project-name">{{ proj.name }}</span>
+                  <button
+                    class="perf-modal__goto-btn"
+                    @click.stop="goToProjectFromProgress(proj)"
+                  >
+                    Open in Details
+                  </button>
+                </div>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.done }}/{{ proj.total }} done
@@ -874,11 +875,15 @@ export default {
         );
       }
     },
-    gotoProject: function (projectId) {
+    goToProjectFromProgress: function (proj) {
+      if (!proj || !proj.id) return;
       this.closeModal();
-      if (this.$refs.detailsPanel && projectId) {
-        this.$refs.detailsPanel.scrollToProject(projectId);
-      }
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.detailsPanel) {
+          self.$refs.detailsPanel.focusProject(proj.id);
+        }
+      });
     },
   },
 };
@@ -1308,6 +1313,30 @@ export default {
   background: #fafbfd;
 }
 
+.perf-modal__project-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.perf-modal__goto-btn {
+  border: 1px solid #d8dbe3;
+  background: #fff;
+  color: #5b2c6f;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.perf-modal__goto-btn:hover {
+  background: #f5f2f8;
+}
+
 .perf-modal__project-name {
   font-size: 14px;
   font-weight: 600;
@@ -1317,25 +1346,6 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.perf-modal__goto-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  color: #6c63ff;
-  padding: 2px 4px;
-  margin-left: 4px;
-  border-radius: 4px;
-  opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
-  flex-shrink: 0;
-}
-
-.perf-modal__goto-btn:hover {
-  opacity: 1;
-  background: rgba(108, 99, 255, 0.1);
 }
 
 .perf-modal__project-stats {
