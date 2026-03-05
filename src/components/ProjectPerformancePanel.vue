@@ -137,7 +137,7 @@
           </p>
           <div class="perf-panel__member-list">
             <div
-              v-for="(item, idx) in memberPerformance"
+              v-for="(item, idx) in previewMemberPerformance"
               :key="'mem-' + idx"
               class="perf-panel__member-item"
             >
@@ -164,6 +164,13 @@
                 ></div>
               </div>
             </div>
+          </div>
+          <div
+            v-if="memberPerformance.length > memberPreviewLimit"
+            class="perf-panel__bar-hint"
+          >
+            Showing {{ previewMemberPerformance.length }} of
+            {{ memberPerformance.length }} members (click for full details)
           </div>
         </div>
       </div>
@@ -760,6 +767,9 @@ export default {
     progressPreviewLimit: function () {
       return 5;
     },
+    memberPreviewLimit: function () {
+      return 5;
+    },
     previewProjectProgress: function () {
       return (this.projectProgress || [])
         .slice()
@@ -767,6 +777,18 @@ export default {
           return (b.progress || 0) - (a.progress || 0);
         })
         .slice(0, this.progressPreviewLimit);
+    },
+    previewMemberPerformance: function () {
+      return (this.memberPerformance || [])
+        .slice()
+        .sort(function (a, b) {
+          var progressDiff = (b.progress || 0) - (a.progress || 0);
+          if (progressDiff !== 0) {
+            return progressDiff;
+          }
+          return (b.done || 0) - (a.done || 0);
+        })
+        .slice(0, this.memberPreviewLimit);
     },
     activeDelayProject: function () {
       return this.taskDelayProjects[this.delayIndex];
