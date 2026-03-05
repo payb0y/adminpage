@@ -460,8 +460,21 @@
 
           <!-- Delay Detail -->
           <template v-if="modal === 'delay'">
+            <div class="perf-modal__sort-bar">
+              <span class="perf-modal__sort-label">Sort by:</span>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{ 'perf-modal__sort-btn--active': delaySortBy === 'name' }"
+                @click="delaySortBy = 'name'"
+              >Name</button>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{ 'perf-modal__sort-btn--active': delaySortBy === 'latest' }"
+                @click="delaySortBy = 'latest'"
+              >Latest Opened</button>
+            </div>
             <div
-              v-for="proj in details.delayDetails"
+              v-for="proj in sortedDelayDetails"
               :key="'mdl-' + proj.name"
               class="perf-modal__project"
             >
@@ -508,6 +521,7 @@
                         <th>Status</th>
                         <th>Category</th>
                         <th>Due</th>
+                        <th>Opened</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -537,6 +551,14 @@
                           </span>
                         </td>
                         <td>{{ task.due || "\u2014" }}</td>
+                        <td>
+                          <span
+                            v-if="task.createdAt"
+                            class="perf-modal__age-badge"
+                            :title="formatDateShort(task.createdAt)"
+                          >{{ taskAge(task.createdAt) }}</span>
+                          <span v-else>\u2014</span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -544,7 +566,7 @@
               </transition>
             </div>
             <div
-              v-if="details.delayDetails.length === 0"
+              v-if="sortedDelayDetails.length === 0"
               class="perf-modal__empty"
             >
               No delay data available
@@ -680,6 +702,7 @@ export default {
       completionIndex: 0,
       modal: null,
       expandedProjects: {},
+      delaySortBy: 'name',
     };
   },
   computed: {
@@ -698,6 +721,22 @@ export default {
           completionDetails: [],
         }
       );
+    },
+    sortedDelayDetails: function () {
+      var list = (this.details.delayDetails || []).slice();
+      var sortBy = this.delaySortBy;
+      if (sortBy === 'latest') {
+        list.sort(function (a, b) {
+          var da = a.latestTaskOpened ? new Date(a.latestTaskOpened).getTime() : 0;
+          var db = b.latestTaskOpened ? new Date(b.latestTaskOpened).getTime() : 0;
+          return db - da;
+        });
+      } else {
+        list.sort(function (a, b) {
+          return a.name.localeCompare(b.name);
+        });
+      }
+      return list;
     },
     modalTitle: function () {
       var titles = {
@@ -759,6 +798,33 @@ export default {
       if (days < 7) return days + "d";
       var weeks = Math.floor(days / 7);
       return weeks + (weeks === 1 ? " week" : " weeks");
+    },
+    taskAge: function (createdAt) {
+      if (!createdAt) return "\u2014";
+      var created = new Date(createdAt);
+      if (isNaN(created.getTime())) return "\u2014";
+      var now = new Date();
+      var diffMs = now.getTime() - created.getTime();
+      var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (days < 1) return "Today";
+      if (days === 1) return "1 day";
+      if (days < 7) return days + " days";
+      var weeks = Math.floor(days / 7);
+      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      var months = Math.floor(days / 30);
+      if (months < 12) return months + (months === 1 ? " month" : " months");
+      var years = Math.floor(days / 365);
+      return years + (years === 1 ? " year" : " years");
+    },
+    formatDateShort: function (d) {
+      if (!d) return "\u2014";
+      var date = new Date(d);
+      if (isNaN(date.getTime())) return d;
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     },
     filterProjectsByStatus: function (statusLabel) {
       if (this.$refs.detailsPanel) {
@@ -1262,6 +1328,55 @@ export default {
 .perf-modal__badge--neutral {
   background: #f0f1f5;
   color: #555;
+}
+
+/* Sort bar */
+.perf-modal__sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+}
+
+.perf-modal__sort-label {
+  font-size: 12px;
+  color: #777;
+  font-weight: 500;
+}
+
+.perf-modal__sort-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.perf-modal__sort-btn:hover {
+  border-color: #aaa;
+}
+
+.perf-modal__sort-btn--active {
+  background: #5b2c6f;
+  color: #fff;
+  border-color: #5b2c6f;
+}
+
+/* Age badge in modal */
+.perf-modal__age-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #f0f1f5;
+  color: #555;
+  white-space: nowrap;
 }
 
 /* Progress bar in modal */

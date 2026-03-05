@@ -589,6 +589,10 @@ class DeckService {
                     }
                 }
 
+                $createdAt = !empty($t['card_created_at'])
+                    ? date('Y-m-d H:i:s', (int)$t['card_created_at'])
+                    : null;
+
                 $tasks[] = [
                     'title'        => $t['task_title'],
                     'status'       => $t['task_status'],
@@ -596,6 +600,7 @@ class DeckService {
                     'due'          => $t['duedate'],
                     'category'     => $category,
                     'days_overdue' => $daysOverdue,
+                    'createdAt'    => $createdAt,
                 ];
             }
             // Compute average days active for non-deleted tasks
@@ -612,10 +617,23 @@ class DeckService {
             }
             $avgDays = $ageCount > 0 ? (int)round($totalAge / $ageCount) : 0;
 
+            // Find latest task created_at
+            $latestOpened = null;
+            foreach ($proj['tasks'] as $t) {
+                if ($t['task_status'] === 'deleted') continue;
+                if (!empty($t['card_created_at'])) {
+                    $ts = (int)$t['card_created_at'];
+                    if ($latestOpened === null || $ts > $latestOpened) {
+                        $latestOpened = $ts;
+                    }
+                }
+            }
+
             $result[] = [
-                'name'           => $proj['name'],
-                'tasks'          => $tasks,
-                'avgDaysActive'  => $avgDays,
+                'name'              => $proj['name'],
+                'tasks'             => $tasks,
+                'avgDaysActive'     => $avgDays,
+                'latestTaskOpened'  => $latestOpened ? date('Y-m-d H:i:s', $latestOpened) : null,
             ];
         }
         return $result;
