@@ -499,6 +499,7 @@ class DeckService {
             }
             $result[] = [
                 'name'     => $proj['name'],
+                'id'       => $proj['board_id'],
                 'total'    => $total,
                 'done'     => $done,
                 'progress' => $total > 0 ? (int)round(($done / $total) * 100) : 0,

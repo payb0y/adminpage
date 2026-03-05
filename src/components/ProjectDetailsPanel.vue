@@ -1066,6 +1066,22 @@ export default {
         }
       });
     },
+    selectProject: function (boardId, projectName) {
+      // Find the project by name (progressDetails uses board_id, projectDetails uses custom id)
+      var match = this.projects.find(function (p) {
+        return p.name === projectName;
+      });
+      // Clear filters and select
+      this.tabSearch = "";
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      this.selectedProjectId = match ? match.id : "";
+      var self = this;
+      this.$nextTick(function () {
+        self.$el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    },
     selectProjectAndFilterTask: function (projectId, taskTitle) {
       // Clear all tab-level filters
       this.tabSearch = "";
