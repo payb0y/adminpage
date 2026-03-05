@@ -465,15 +465,6 @@
               <button
                 class="perf-modal__sort-btn"
                 :class="{
-                  'perf-modal__sort-btn--active': delaySortBy === 'name',
-                }"
-                @click="delaySortBy = 'name'"
-              >
-                Name
-              </button>
-              <button
-                class="perf-modal__sort-btn"
-                :class="{
                   'perf-modal__sort-btn--active': delaySortBy === 'latest',
                 }"
                 @click="delaySortBy = 'latest'"
@@ -720,7 +711,7 @@ export default {
       completionIndex: 0,
       modal: null,
       expandedProjects: {},
-      delaySortBy: "name",
+      delaySortBy: "latest",
     };
   },
   computed: {
