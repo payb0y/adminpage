@@ -664,6 +664,7 @@ class DeckService {
                         'completed_at' => $dt->format('Y-m-d H:i'),
                         'stack'        => $t['stack_title'],
                         'due'          => $t['duedate'],
+                        'created_at'   => $t['card_created_at'] ? date('Y-m-d H:i:s', (int)$t['card_created_at']) : null,
                     ];
                 }
             }

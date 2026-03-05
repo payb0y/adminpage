@@ -285,8 +285,38 @@
         <div class="perf-modal__body">
           <!-- Progress Detail -->
           <template v-if="modal === 'progress'">
+            <div class="perf-modal__sort-bar" @click.stop>
+              <span class="perf-modal__sort-label">Sort by:</span>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{
+                  'perf-modal__sort-btn--active': progressSortBy === 'progress',
+                }"
+                @click="progressSortBy = 'progress'"
+              >
+                % Done
+              </button>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{
+                  'perf-modal__sort-btn--active': progressSortBy === 'done',
+                }"
+                @click="progressSortBy = 'done'"
+              >
+                Tasks Done
+              </button>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{
+                  'perf-modal__sort-btn--active': progressSortBy === 'name',
+                }"
+                @click="progressSortBy = 'name'"
+              >
+                Name
+              </button>
+            </div>
             <div
-              v-for="proj in details.progressDetails"
+              v-for="proj in sortedProgressDetails"
               :key="'mp-' + proj.name"
               class="perf-modal__project"
             >
@@ -625,15 +655,31 @@
                     <thead>
                       <tr>
                         <th>Task</th>
+                        <th>Stack</th>
                         <th>Completed</th>
                         <th>Due Date</th>
+                        <th>Opened</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="(task, ti) in proj.tasks" :key="'mct-' + ti">
                         <td>{{ task.title }}</td>
+                        <td>
+                          <span class="perf-modal__stack-badge">{{
+                            task.stack
+                          }}</span>
+                        </td>
                         <td>{{ task.completed_at }}</td>
                         <td>{{ task.due || "\u2014" }}</td>
+                        <td>
+                          <span
+                            v-if="task.created_at"
+                            class="perf-modal__age-badge"
+                            :title="formatDateShort(task.created_at)"
+                            >{{ taskAge(task.created_at) }}</span
+                          >
+                          <span v-else>—</span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -712,6 +758,7 @@ export default {
       modal: null,
       expandedProjects: {},
       delaySortBy: "latest",
+      progressSortBy: "progress",
     };
   },
   computed: {
@@ -730,6 +777,24 @@ export default {
           completionDetails: [],
         }
       );
+    },
+    sortedProgressDetails: function () {
+      var list = (this.details.progressDetails || []).slice();
+      var sortBy = this.progressSortBy;
+      if (sortBy === "progress") {
+        list.sort(function (a, b) {
+          return b.progress - a.progress;
+        });
+      } else if (sortBy === "done") {
+        list.sort(function (a, b) {
+          return b.done - a.done;
+        });
+      } else {
+        list.sort(function (a, b) {
+          return a.name.localeCompare(b.name);
+        });
+      }
+      return list;
     },
     sortedDelayDetails: function () {
       var list = (this.details.delayDetails || []).slice();
