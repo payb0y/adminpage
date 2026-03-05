@@ -911,7 +911,7 @@ export default {
       if (this.$refs.detailsPanel) {
         this.$refs.detailsPanel.selectProjectAndFilterTask(
           oldestTask.projectId,
-          oldestTask.taskTitle,
+          oldestTask.fullTitle || oldestTask.taskTitle,
         );
       }
     },
