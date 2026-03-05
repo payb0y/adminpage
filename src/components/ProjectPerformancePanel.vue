@@ -286,33 +286,12 @@
           <!-- Progress Detail -->
           <template v-if="modal === 'progress'">
             <div class="perf-modal__sort-bar" @click.stop>
-              <span class="perf-modal__sort-label">Sort by:</span>
+              <span class="perf-modal__sort-label">% Done:</span>
               <button
-                class="perf-modal__sort-btn"
-                :class="{
-                  'perf-modal__sort-btn--active': progressSortBy === 'progress',
-                }"
-                @click="progressSortBy = 'progress'"
+                class="perf-modal__sort-btn perf-modal__sort-btn--active"
+                @click="progressSortBy = progressSortBy === 'desc' ? 'asc' : 'desc'"
               >
-                % Done
-              </button>
-              <button
-                class="perf-modal__sort-btn"
-                :class="{
-                  'perf-modal__sort-btn--active': progressSortBy === 'done',
-                }"
-                @click="progressSortBy = 'done'"
-              >
-                Tasks Done
-              </button>
-              <button
-                class="perf-modal__sort-btn"
-                :class="{
-                  'perf-modal__sort-btn--active': progressSortBy === 'name',
-                }"
-                @click="progressSortBy = 'name'"
-              >
-                Name
+                {{ progressSortBy === 'desc' ? 'High → Low' : 'Low → High' }}
               </button>
             </div>
             <div
@@ -758,7 +737,7 @@ export default {
       modal: null,
       expandedProjects: {},
       delaySortBy: "latest",
-      progressSortBy: "progress",
+      progressSortBy: "desc",
     };
   },
   computed: {
@@ -780,19 +759,10 @@ export default {
     },
     sortedProgressDetails: function () {
       var list = (this.details.progressDetails || []).slice();
-      var sortBy = this.progressSortBy;
-      if (sortBy === "progress") {
-        list.sort(function (a, b) {
-          return b.progress - a.progress;
-        });
-      } else if (sortBy === "done") {
-        list.sort(function (a, b) {
-          return b.done - a.done;
-        });
+      if (this.progressSortBy === 'asc') {
+        list.sort(function (a, b) { return a.progress - b.progress; });
       } else {
-        list.sort(function (a, b) {
-          return a.name.localeCompare(b.name);
-        });
+        list.sort(function (a, b) { return b.progress - a.progress; });
       }
       return list;
     },
