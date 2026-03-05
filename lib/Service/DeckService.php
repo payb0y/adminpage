@@ -617,14 +617,18 @@ class DeckService {
             }
             $avgDays = $ageCount > 0 ? (int)round($totalAge / $ageCount) : 0;
 
-            // Find latest task created_at
+            // Find latest and oldest task created_at
             $latestOpened = null;
+            $oldestOpened = null;
             foreach ($proj['tasks'] as $t) {
                 if ($t['task_status'] === 'deleted') continue;
                 if (!empty($t['card_created_at'])) {
                     $ts = (int)$t['card_created_at'];
                     if ($latestOpened === null || $ts > $latestOpened) {
                         $latestOpened = $ts;
+                    }
+                    if ($oldestOpened === null || $ts < $oldestOpened) {
+                        $oldestOpened = $ts;
                     }
                 }
             }
@@ -634,6 +638,7 @@ class DeckService {
                 'tasks'             => $tasks,
                 'avgDaysActive'     => $avgDays,
                 'latestTaskOpened'  => $latestOpened ? date('Y-m-d H:i:s', $latestOpened) : null,
+                'oldestTaskOpened'  => $oldestOpened ? date('Y-m-d H:i:s', $oldestOpened) : null,
             ];
         }
         return $result;

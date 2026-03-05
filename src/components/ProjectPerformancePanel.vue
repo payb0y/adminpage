@@ -480,6 +480,15 @@
               >
                 Latest Opened
               </button>
+              <button
+                class="perf-modal__sort-btn"
+                :class="{
+                  'perf-modal__sort-btn--active': delaySortBy === 'oldest',
+                }"
+                @click="delaySortBy = 'oldest'"
+              >
+                Oldest Opened
+              </button>
             </div>
             <div
               v-for="proj in sortedDelayDetails"
@@ -566,7 +575,7 @@
                             :title="formatDateShort(task.createdAt)"
                             >{{ taskAge(task.createdAt) }}</span
                           >
-                          <span v-else>\u2014</span>
+                          <span v-else>—</span>
                         </td>
                       </tr>
                     </tbody>
@@ -743,6 +752,16 @@ export default {
             ? new Date(b.latestTaskOpened).getTime()
             : 0;
           return db - da;
+        });
+      } else if (sortBy === "oldest") {
+        list.sort(function (a, b) {
+          var da = a.oldestTaskOpened
+            ? new Date(a.oldestTaskOpened).getTime()
+            : Infinity;
+          var db = b.oldestTaskOpened
+            ? new Date(b.oldestTaskOpened).getTime()
+            : Infinity;
+          return da - db;
         });
       } else {
         list.sort(function (a, b) {
