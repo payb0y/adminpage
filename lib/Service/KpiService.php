@@ -109,6 +109,7 @@ class KpiService {
 
     private function getTasksKpi(int $orgId): array {
         $counts = $this->countTasksByStatus($orgId);
+        $oldest = $this->findOldestTask($orgId);
 
         return [
             'id'        => 'tasks',
@@ -123,6 +124,45 @@ class KpiService {
                 ['value' => (string)$counts['non_due'],     'label' => 'Non Due'],
                 ['value' => $counts['avg_days'] . 'd',      'label' => 'Avg Days Active'],
             ],
+            'oldestTask' => $oldest,
+        ];
+    }
+
+    /**
+     * Find the oldest open (non-done, non-deleted) task across all projects.
+     */
+    private function findOldestTask(int $orgId): ?array {
+        $sql = "
+            SELECT c.title AS task_title,
+                   c.created_at AS task_created_at,
+                   cp.id AS project_id,
+                   cp.name AS project_name
+            FROM *PREFIX*deck_cards c
+            JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+            JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
+            JOIN *PREFIX*custom_projects cp
+                ON CAST(cp.board_id AS UNSIGNED) = b.id
+               AND cp.organization_id = ?
+            WHERE c.deleted_at = 0
+              AND c.done IS NULL
+              AND s.title <> 'Approved/Done'
+            ORDER BY c.created_at ASC
+            LIMIT 1
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+        $row = $result->fetch();
+        if (!$row) return null;
+
+        $createdTs = (int)$row['task_created_at'];
+        $ageDays = (int)round((time() - $createdTs) / 86400);
+
+        return [
+            'taskTitle'   => $row['task_title'],
+            'projectId'   => (int)$row['project_id'],
+            'projectName' => $row['project_name'],
+            'createdAt'   => date('Y-m-d H:i:s', $createdTs),
+            'ageDays'     => $ageDays,
         ];
     }
 

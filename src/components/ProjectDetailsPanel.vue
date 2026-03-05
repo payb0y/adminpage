@@ -1066,6 +1066,27 @@ export default {
         }
       });
     },
+    selectProjectAndFilterTask: function (projectId, taskTitle) {
+      // Clear all tab-level filters
+      this.tabSearch = "";
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      // Select the project
+      this.selectedProjectId = projectId;
+      // Set the task name filter in the task browser
+      var self = this;
+      this.$nextTick(function () {
+        self.resetFilters();
+        self.tbFilterName = taskTitle;
+        self.$nextTick(function () {
+          var el = self.$el;
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+    },
     formatDate: function (d) {
       if (!d) return "—";
       var date = new Date(d);

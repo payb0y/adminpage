@@ -74,6 +74,39 @@
             <strong>{{ avgDays }}</strong> avg days active
           </span>
         </div>
+
+        <!-- Oldest task -->
+        <div
+          v-if="oldestTask"
+          class="tasks-kpi__oldest"
+          :title="'Opened ' + oldestTask.createdAt"
+          @click.stop="$emit('goto-oldest-task', oldestTask)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span class="tasks-kpi__oldest-text">
+            Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
+            <span class="tasks-kpi__oldest-age"
+              >({{ formatAge(oldestTask.ageDays) }})</span
+            >
+            <span class="tasks-kpi__oldest-project"
+              >in {{ oldestTask.projectName }}</span
+            >
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -160,6 +193,9 @@ export default {
         },
       ];
     },
+    oldestTask: function () {
+      return this.kpi.oldestTask || null;
+    },
     hasData: function () {
       return this.overdue + this.today + this.upcoming + this.nonDue > 0;
     },
@@ -188,6 +224,17 @@ export default {
     },
   },
   methods: {
+    formatAge: function (days) {
+      if (!days || days < 1) return "Today";
+      if (days === 1) return "1 day";
+      if (days < 7) return days + " days";
+      var weeks = Math.floor(days / 7);
+      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      var months = Math.floor(days / 30);
+      if (months < 12) return months + (months === 1 ? " month" : " months");
+      var years = Math.floor(days / 365);
+      return years + (years === 1 ? " year" : " years");
+    },
     renderChart: function () {
       var ctx = this.$refs.chartCanvas.getContext("2d");
       var colors = this.segments.map(function (s) {
@@ -405,5 +452,49 @@ export default {
 .tasks-kpi__secondary-text strong {
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
+}
+
+/* ── Oldest task ── */
+.tasks-kpi__oldest {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #fef3f2;
+  border-radius: 8px;
+  color: #92400e;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.tasks-kpi__oldest:hover {
+  background: #fde8e5;
+}
+
+.tasks-kpi__oldest svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #dc2626;
+}
+
+.tasks-kpi__oldest-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #92400e;
+}
+
+.tasks-kpi__oldest-text strong {
+  font-weight: 600;
+  color: #7c2d12;
+}
+
+.tasks-kpi__oldest-age {
+  font-weight: 500;
+  color: #dc2626;
+}
+
+.tasks-kpi__oldest-project {
+  color: #b45309;
+  font-style: italic;
 }
 </style>

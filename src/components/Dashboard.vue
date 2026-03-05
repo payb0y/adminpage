@@ -37,6 +37,7 @@
           v-if="tasksKpi"
           :kpi="tasksKpi"
           @filter-tasks="onFilterTasks"
+          @goto-oldest-task="onGotoOldestTask"
         />
         <ResourcesKpiCard v-if="resourcesKpi" :kpi="resourcesKpi" />
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
@@ -127,6 +128,11 @@ export default {
     onFilterTasks: function (filterType, filterValue) {
       if (this.$refs.perfPanel) {
         this.$refs.perfPanel.filterTasks(filterType, filterValue);
+      }
+    },
+    onGotoOldestTask: function (oldestTask) {
+      if (this.$refs.perfPanel) {
+        this.$refs.perfPanel.gotoOldestTask(oldestTask);
       }
     },
   },

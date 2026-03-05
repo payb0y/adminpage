@@ -859,6 +859,14 @@ export default {
         this.$refs.detailsPanel.applyTaskFilter(filterType, filterValue);
       }
     },
+    gotoOldestTask: function (oldestTask) {
+      if (this.$refs.detailsPanel) {
+        this.$refs.detailsPanel.selectProjectAndFilterTask(
+          oldestTask.projectId,
+          oldestTask.taskTitle,
+        );
+      }
+    },
   },
 };
 </script>
