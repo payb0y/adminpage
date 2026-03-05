@@ -289,9 +289,11 @@
               <span class="perf-modal__sort-label">% Done:</span>
               <button
                 class="perf-modal__sort-btn perf-modal__sort-btn--active"
-                @click="progressSortBy = progressSortBy === 'desc' ? 'asc' : 'desc'"
+                @click="
+                  progressSortBy = progressSortBy === 'desc' ? 'asc' : 'desc'
+                "
               >
-                {{ progressSortBy === 'desc' ? 'High → Low' : 'Low → High' }}
+                {{ progressSortBy === "desc" ? "High → Low" : "Low → High" }}
               </button>
             </div>
             <div
@@ -759,10 +761,14 @@ export default {
     },
     sortedProgressDetails: function () {
       var list = (this.details.progressDetails || []).slice();
-      if (this.progressSortBy === 'asc') {
-        list.sort(function (a, b) { return a.progress - b.progress; });
+      if (this.progressSortBy === "asc") {
+        list.sort(function (a, b) {
+          return a.progress - b.progress;
+        });
       } else {
-        list.sort(function (a, b) { return b.progress - a.progress; });
+        list.sort(function (a, b) {
+          return b.progress - a.progress;
+        });
       }
       return list;
     },
