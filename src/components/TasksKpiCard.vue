@@ -79,7 +79,11 @@
         <div
           v-if="oldestTask"
           class="tasks-kpi__oldest"
-          :title="'Opened ' + oldestTask.createdAt"
+          :title="
+            (oldestTask.fullTitle || oldestTask.taskTitle) +
+            ' — Opened ' +
+            oldestTask.createdAt
+          "
           @click.stop="$emit('goto-oldest-task', oldestTask)"
         >
           <svg
@@ -196,8 +200,11 @@ export default {
     oldestTask: function () {
       var raw = this.kpi.oldestTask || null;
       if (raw && raw.taskTitle) {
+        var title = raw.taskTitle;
         return Object.assign({}, raw, {
-          taskTitle: raw.taskTitle.replace(/\s*\(important\)\s*/gi, "").trim(),
+          taskTitle:
+            title.length > 40 ? title.slice(0, 40).trimEnd() + "\u2026" : title,
+          fullTitle: title,
         });
       }
       return raw;
