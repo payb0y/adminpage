@@ -79,7 +79,7 @@
           <div class="perf-panel__card-title-underline"></div>
           <div class="perf-panel__bar-list">
             <div
-              v-for="(item, idx) in projectProgress"
+              v-for="(item, idx) in previewProjectProgress"
               :key="'prog-' + idx"
               class="perf-panel__bar-item"
             >
@@ -94,6 +94,13 @@
                 ></div>
               </div>
             </div>
+          </div>
+          <div
+            v-if="projectProgress.length > progressPreviewLimit"
+            class="perf-panel__bar-hint"
+          >
+            Showing {{ previewProjectProgress.length }} of
+            {{ projectProgress.length }} projects (click for full details)
           </div>
         </div>
 
@@ -750,6 +757,17 @@ export default {
     };
   },
   computed: {
+    progressPreviewLimit: function () {
+      return 5;
+    },
+    previewProjectProgress: function () {
+      return (this.projectProgress || [])
+        .slice()
+        .sort(function (a, b) {
+          return (b.progress || 0) - (a.progress || 0);
+        })
+        .slice(0, this.progressPreviewLimit);
+    },
     activeDelayProject: function () {
       return this.taskDelayProjects[this.delayIndex];
     },
@@ -1111,6 +1129,12 @@ export default {
   background: linear-gradient(90deg, #c878c8, #d494d4);
   border-radius: 3px;
   transition: width 0.4s ease;
+}
+
+.perf-panel__bar-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
 }
 
 /* Member Performance list */
