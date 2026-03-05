@@ -480,6 +480,9 @@
                   <span class="perf-modal__badge perf-modal__badge--danger">
                     {{ countByCategory(proj.tasks, "blocked") }} blocked
                   </span>
+                  <span class="perf-modal__badge perf-modal__badge--neutral">
+                    &#9202; {{ formatAge(proj.avgDaysActive) }} avg
+                  </span>
                   <span
                     class="perf-modal__chevron"
                     :class="{
@@ -750,6 +753,12 @@ export default {
       return tasks.filter(function (t) {
         return t.category === cat;
       }).length;
+    },
+    formatAge: function (days) {
+      if (!days || days < 1) return "0d";
+      if (days < 7) return days + "d";
+      var weeks = Math.floor(days / 7);
+      return weeks + (weeks === 1 ? " week" : " weeks");
     },
     filterProjectsByStatus: function (statusLabel) {
       if (this.$refs.detailsPanel) {
@@ -1248,6 +1257,11 @@ export default {
 .perf-modal__badge--info {
   background: #e8f0fe;
   color: #1e4a8a;
+}
+
+.perf-modal__badge--neutral {
+  background: #f0f1f5;
+  color: #555;
 }
 
 /* Progress bar in modal */

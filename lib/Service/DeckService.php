@@ -598,9 +598,24 @@ class DeckService {
                     'days_overdue' => $daysOverdue,
                 ];
             }
+            // Compute average days active for non-deleted tasks
+            $now = new \DateTime();
+            $totalAge = 0;
+            $ageCount = 0;
+            foreach ($proj['tasks'] as $t) {
+                if ($t['task_status'] === 'deleted') continue;
+                if (!empty($t['card_created_at'])) {
+                    $created = (new \DateTime())->setTimestamp((int)$t['card_created_at']);
+                    $totalAge += (int)$now->diff($created)->days;
+                    $ageCount++;
+                }
+            }
+            $avgDays = $ageCount > 0 ? (int)round($totalAge / $ageCount) : 0;
+
             $result[] = [
-                'name'  => $proj['name'],
-                'tasks' => $tasks,
+                'name'           => $proj['name'],
+                'tasks'          => $tasks,
+                'avgDaysActive'  => $avgDays,
             ];
         }
         return $result;
