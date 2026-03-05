@@ -133,7 +133,7 @@ export default {
             },
           },
           layout: {
-            padding: { top: 20 },
+            padding: { top: 32, left: 4, right: 4 },
           },
         },
         plugins: [
@@ -156,18 +156,29 @@ export default {
                 c.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
                 const textWidth = c.measureText(text).width;
                 const boxPad = 6;
-                const boxX = point.x - textWidth / 2 - boxPad;
-                const boxY = point.y - 30;
+                const boxW = textWidth + boxPad * 2;
+                const boxH = 18;
+                const margin = 4;
+
+                // Centre above the point, then clamp within canvas bounds
+                let boxX = point.x - boxW / 2;
+                let boxY = point.y - boxH - 8;
+
+                boxX = Math.max(
+                  margin,
+                  Math.min(boxX, chart.width - boxW - margin),
+                );
+                boxY = Math.max(margin, boxY);
 
                 c.fillStyle = "rgba(26, 26, 46, 0.85)";
                 c.beginPath();
-                c.roundRect(boxX, boxY, textWidth + boxPad * 2, 18, 4);
+                c.roundRect(boxX, boxY, boxW, boxH, 4);
                 c.fill();
 
                 c.fillStyle = "#ffffff";
-                c.textAlign = "center";
+                c.textAlign = "left";
                 c.textBaseline = "middle";
-                c.fillText(text, point.x, boxY + 9);
+                c.fillText(text, boxX + boxPad, boxY + boxH / 2);
                 c.restore();
               }
             },
