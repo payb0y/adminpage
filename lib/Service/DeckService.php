@@ -498,11 +498,12 @@ class DeckService {
                 ];
             }
             $result[] = [
-                'name'     => $proj['name'],
-                'total'    => $total,
-                'done'     => $done,
-                'progress' => $total > 0 ? (int)round(($done / $total) * 100) : 0,
-                'tasks'    => $tasks,
+                'projectId' => $proj['project_id'] ?? null,
+                'name'      => $proj['name'],
+                'total'     => $total,
+                'done'      => $done,
+                'progress'  => $total > 0 ? (int)round(($done / $total) * 100) : 0,
+                'tasks'     => $tasks,
             ];
         }
         return $result;

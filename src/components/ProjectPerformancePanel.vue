@@ -295,6 +295,13 @@
                 @click="toggleProject('progress', proj.name)"
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
+                <button
+                  class="perf-modal__goto-btn"
+                  title="View in Per Project Details"
+                  @click.stop="gotoProject(proj.projectId)"
+                >
+                  &#8599;
+                </button>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.done }}/{{ proj.total }} done
@@ -867,6 +874,12 @@ export default {
         );
       }
     },
+    gotoProject: function (projectId) {
+      this.closeModal();
+      if (this.$refs.detailsPanel && projectId) {
+        this.$refs.detailsPanel.scrollToProject(projectId);
+      }
+    },
   },
 };
 </script>
@@ -1304,6 +1317,25 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.perf-modal__goto-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6c63ff;
+  padding: 2px 4px;
+  margin-left: 4px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.perf-modal__goto-btn:hover {
+  opacity: 1;
+  background: rgba(108, 99, 255, 0.1);
 }
 
 .perf-modal__project-stats {

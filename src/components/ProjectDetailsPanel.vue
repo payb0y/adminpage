@@ -1066,6 +1066,21 @@ export default {
         }
       });
     },
+    scrollToProject: function (projectId) {
+      // Clear all filters and select the project
+      this.tabSearch = "";
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      this.selectedProjectId = projectId;
+      var self = this;
+      this.$nextTick(function () {
+        var el = self.$el;
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    },
     selectProjectAndFilterTask: function (projectId, taskTitle) {
       // Clear all tab-level filters
       this.tabSearch = "";
