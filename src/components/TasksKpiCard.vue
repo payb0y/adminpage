@@ -194,7 +194,13 @@ export default {
       ];
     },
     oldestTask: function () {
-      return this.kpi.oldestTask || null;
+      var raw = this.kpi.oldestTask || null;
+      if (raw && raw.taskTitle) {
+        return Object.assign({}, raw, {
+          taskTitle: raw.taskTitle.replace(/\s*\(important\)\s*/gi, "").trim(),
+        });
+      }
+      return raw;
     },
     hasData: function () {
       return this.overdue + this.today + this.upcoming + this.nonDue > 0;

@@ -1080,9 +1080,9 @@ export default {
         self.resetFilters();
         self.tbFilterName = taskTitle;
         self.$nextTick(function () {
-          var el = self.$el;
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          var tbEl = self.$el.querySelector(".proj-details__tb-table-wrap");
+          if (tbEl) {
+            tbEl.scrollIntoView({ behavior: "smooth", block: "start" });
           }
         });
       });
