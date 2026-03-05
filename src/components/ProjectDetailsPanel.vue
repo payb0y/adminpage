@@ -1087,25 +1087,6 @@ export default {
         });
       });
     },
-    focusProject: function (projectId) {
-      // Clear all project-level filters so the target project is visible
-      this.tabSearch = "";
-      this.tabStatusFilter = "";
-      this.tabTaskDueFilter = "";
-      this.tabTaskStatusFilter = "";
-      // Select project and reset task-browser filters
-      this.selectedProjectId = projectId;
-      var self = this;
-      this.$nextTick(function () {
-        self.resetFilters();
-        self.$nextTick(function () {
-          var el = self.$el;
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        });
-      });
-    },
     formatDate: function (d) {
       if (!d) return "—";
       var date = new Date(d);

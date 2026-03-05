@@ -194,14 +194,13 @@ class DeckService {
         }
 
         // Build a project map keyed by board_id, and collect board IDs
-        $projectMap = [];   // board_id => { id, name, board_id, tasks[] }
+        $projectMap = [];   // board_id => { name, board_id, tasks[] }
         $boardIds   = [];
 
         foreach ($projectRows as $p) {
             $bid = (int)$p['board_id'];
             $boardIds[] = $bid;
             $projectMap[$bid] = [
-                'id'       => (int)$p['project_id'],
                 'name'     => $p['project_name'],
                 'board_id' => $bid,
                 'tasks'    => [],
@@ -499,7 +498,6 @@ class DeckService {
                 ];
             }
             $result[] = [
-                'id'       => $proj['id'] ?? null,
                 'name'     => $proj['name'],
                 'total'    => $total,
                 'done'     => $done,

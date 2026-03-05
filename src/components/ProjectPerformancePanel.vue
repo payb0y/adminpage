@@ -196,15 +196,15 @@
 
           <!-- Project navigator -->
           <div class="perf-panel__navigator" @click.stop>
-            <button class="perf-panel__nav-btn" @click="prevDelayProject">
-              &lsaquo;
-            </button>
-            <span class="perf-panel__nav-label">{{
-              activeDelayProject.name
-            }}</span>
-            <button class="perf-panel__nav-btn" @click="nextDelayProject">
-              &rsaquo;
-            </button>
+            <select v-model="delayIndex" class="perf-panel__nav-select">
+              <option
+                v-for="(proj, i) in taskDelayProjects"
+                :key="i"
+                :value="i"
+              >
+                {{ proj.name }}
+              </option>
+            </select>
           </div>
 
           <DonutChart
@@ -246,15 +246,15 @@
 
           <!-- Project navigator -->
           <div class="perf-panel__navigator" @click.stop>
-            <button class="perf-panel__nav-btn" @click="prevCompletionProject">
-              &lsaquo;
-            </button>
-            <span class="perf-panel__nav-label">{{
-              activeCompletionProject.name
-            }}</span>
-            <button class="perf-panel__nav-btn" @click="nextCompletionProject">
-              &rsaquo;
-            </button>
+            <select v-model="completionIndex" class="perf-panel__nav-select">
+              <option
+                v-for="(proj, i) in taskCompletionProjects"
+                :key="i"
+                :value="i"
+              >
+                {{ proj.name }}
+              </option>
+            </select>
           </div>
 
           <AreaChart
@@ -294,15 +294,7 @@
                 class="perf-modal__project-header"
                 @click="toggleProject('progress', proj.name)"
               >
-                <div class="perf-modal__project-main">
-                  <span class="perf-modal__project-name">{{ proj.name }}</span>
-                  <button
-                    class="perf-modal__goto-btn"
-                    @click.stop="goToProjectFromProgress(proj)"
-                  >
-                    Open in Details
-                  </button>
-                </div>
+                <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.done }}/{{ proj.total }} done
@@ -875,16 +867,6 @@ export default {
         );
       }
     },
-    goToProjectFromProgress: function (proj) {
-      if (!proj || !proj.id) return;
-      this.closeModal();
-      var self = this;
-      this.$nextTick(function () {
-        if (self.$refs.detailsPanel) {
-          self.$refs.detailsPanel.focusProject(proj.id);
-        }
-      });
-    },
   },
 };
 </script>
@@ -1160,32 +1142,23 @@ export default {
   margin-bottom: var(--spacing-lg, 24px);
 }
 
-.perf-panel__nav-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 1;
-  color: var(--color-text-secondary, #6b7280);
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-}
-
-.perf-panel__nav-btn:hover {
-  color: var(--color-text-primary, #1a1a2e);
-}
-
-.perf-panel__nav-label {
+.perf-panel__nav-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #dde1e7;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary, #1a1a2e);
-  text-align: center;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.perf-panel__nav-select:hover,
+.perf-panel__nav-select:focus {
+  border-color: #5b2c6f;
 }
 
 /* =============== DRILL-DOWN MODAL =============== */
@@ -1311,30 +1284,6 @@ export default {
 
 .perf-modal__project-header:hover {
   background: #fafbfd;
-}
-
-.perf-modal__project-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-
-.perf-modal__goto-btn {
-  border: 1px solid #d8dbe3;
-  background: #fff;
-  color: #5b2c6f;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.perf-modal__goto-btn:hover {
-  background: #f5f2f8;
 }
 
 .perf-modal__project-name {
