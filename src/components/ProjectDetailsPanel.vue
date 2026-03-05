@@ -117,6 +117,12 @@
             >
           </div>
           <div class="proj-details__info-grid">
+            <div class="proj-details__info-item">
+              <span class="proj-details__info-label">Project Name</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.name
+              }}</span>
+            </div>
             <div class="proj-details__info-item" v-if="selectedProject.number">
               <span class="proj-details__info-label">Project Number</span>
               <span class="proj-details__info-value">{{
