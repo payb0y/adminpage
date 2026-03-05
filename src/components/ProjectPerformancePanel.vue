@@ -464,14 +464,22 @@
               <span class="perf-modal__sort-label">Sort by:</span>
               <button
                 class="perf-modal__sort-btn"
-                :class="{ 'perf-modal__sort-btn--active': delaySortBy === 'name' }"
+                :class="{
+                  'perf-modal__sort-btn--active': delaySortBy === 'name',
+                }"
                 @click="delaySortBy = 'name'"
-              >Name</button>
+              >
+                Name
+              </button>
               <button
                 class="perf-modal__sort-btn"
-                :class="{ 'perf-modal__sort-btn--active': delaySortBy === 'latest' }"
+                :class="{
+                  'perf-modal__sort-btn--active': delaySortBy === 'latest',
+                }"
                 @click="delaySortBy = 'latest'"
-              >Latest Opened</button>
+              >
+                Latest Opened
+              </button>
             </div>
             <div
               v-for="proj in sortedDelayDetails"
@@ -556,7 +564,8 @@
                             v-if="task.createdAt"
                             class="perf-modal__age-badge"
                             :title="formatDateShort(task.createdAt)"
-                          >{{ taskAge(task.createdAt) }}</span>
+                            >{{ taskAge(task.createdAt) }}</span
+                          >
                           <span v-else>\u2014</span>
                         </td>
                       </tr>
@@ -702,7 +711,7 @@ export default {
       completionIndex: 0,
       modal: null,
       expandedProjects: {},
-      delaySortBy: 'name',
+      delaySortBy: "name",
     };
   },
   computed: {
@@ -725,10 +734,14 @@ export default {
     sortedDelayDetails: function () {
       var list = (this.details.delayDetails || []).slice();
       var sortBy = this.delaySortBy;
-      if (sortBy === 'latest') {
+      if (sortBy === "latest") {
         list.sort(function (a, b) {
-          var da = a.latestTaskOpened ? new Date(a.latestTaskOpened).getTime() : 0;
-          var db = b.latestTaskOpened ? new Date(b.latestTaskOpened).getTime() : 0;
+          var da = a.latestTaskOpened
+            ? new Date(a.latestTaskOpened).getTime()
+            : 0;
+          var db = b.latestTaskOpened
+            ? new Date(b.latestTaskOpened).getTime()
+            : 0;
           return db - da;
         });
       } else {
