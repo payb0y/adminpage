@@ -1078,7 +1078,7 @@ export default {
         return p.name === projectName;
       });
       // Clear filters and select
-      this.tabSearch = "";
+      this.tabSearch = projectName || "";
       this.tabStatusFilter = "";
       this.tabTaskDueFilter = "";
       this.tabTaskStatusFilter = "";
