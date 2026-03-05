@@ -203,7 +203,7 @@ export default {
         var title = raw.taskTitle;
         return Object.assign({}, raw, {
           taskTitle:
-            title.length > 40 ? title.slice(0, 40).trimEnd() + "\u2026" : title,
+            title.length > 40 ? title.slice(0, 10).trimEnd() + "\u2026" : title,
           fullTitle: title,
         });
       }
