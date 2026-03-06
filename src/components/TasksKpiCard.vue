@@ -21,22 +21,47 @@
     </div>
 
     <div class="tasks-kpi__body">
-      <!-- Donut -->
-      <div class="tasks-kpi__chart-wrap">
-        <div v-if="hasData" class="tasks-kpi__chart">
-          <canvas ref="chartCanvas" width="160" height="160"></canvas>
-          <!-- Center label -->
-          <div class="tasks-kpi__chart-center">
-            <span class="tasks-kpi__chart-center-value">{{ inProgress }}</span>
-            <span class="tasks-kpi__chart-center-label">Active</span>
+      <!-- Left column: Donut + Avg Days Active -->
+      <div class="tasks-kpi__left">
+        <div class="tasks-kpi__chart-wrap">
+          <div v-if="hasData" class="tasks-kpi__chart">
+            <canvas ref="chartCanvas" width="160" height="160"></canvas>
+            <!-- Center label -->
+            <div class="tasks-kpi__chart-center">
+              <span class="tasks-kpi__chart-center-value">{{
+                inProgress
+              }}</span>
+              <span class="tasks-kpi__chart-center-label">Active</span>
+            </div>
+          </div>
+          <div v-else class="tasks-kpi__chart-empty">
+            <span>No tasks</span>
           </div>
         </div>
-        <div v-else class="tasks-kpi__chart-empty">
-          <span>No tasks</span>
+
+        <!-- Avg Days Active -->
+        <div class="tasks-kpi__secondary">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span class="tasks-kpi__secondary-text">
+            <strong>{{ avgDays }}</strong> avg days active
+          </span>
         </div>
       </div>
 
-      <!-- Legend + secondary stat -->
+      <!-- Right column: Legend + Oldest task -->
       <div class="tasks-kpi__details">
         <div class="tasks-kpi__legend">
           <div
@@ -54,63 +79,41 @@
           </div>
         </div>
 
-        <!-- Avg Days Active + Oldest task side by side -->
-        <div class="tasks-kpi__stats-row">
-          <div class="tasks-kpi__secondary">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span class="tasks-kpi__secondary-text">
-              <strong>{{ avgDays }}</strong> avg days active
-            </span>
-          </div>
-
-          <div
-            v-if="oldestTask"
-            class="tasks-kpi__oldest"
-            :title="
-              (oldestTask.fullTitle || oldestTask.taskTitle) +
-              ' — Opened ' +
-              oldestTask.createdAt
-            "
-            @click.stop="$emit('goto-oldest-task', oldestTask)"
+        <!-- Oldest task -->
+        <div
+          v-if="oldestTask"
+          class="tasks-kpi__oldest"
+          :title="
+            (oldestTask.fullTitle || oldestTask.taskTitle) +
+            ' — Opened ' +
+            oldestTask.createdAt
+          "
+          @click.stop="$emit('goto-oldest-task', oldestTask)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span class="tasks-kpi__oldest-text">
+            Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
+            <span class="tasks-kpi__oldest-age"
+              >({{ formatAge(oldestTask.ageDays) }})</span
             >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span class="tasks-kpi__oldest-text">
-              Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
-              <span class="tasks-kpi__oldest-age"
-                >({{ formatAge(oldestTask.ageDays) }})</span
-              >
-              <span class="tasks-kpi__oldest-project"
-                >in {{ oldestTask.projectName }}</span
-              >
-            </span>
-          </div>
+            <span class="tasks-kpi__oldest-project"
+              >in {{ oldestTask.projectName }}</span
+            >
+          </span>
         </div>
       </div>
     </div>
@@ -346,6 +349,14 @@ export default {
   gap: 20px;
 }
 
+.tasks-kpi__left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .tasks-kpi__chart-wrap {
   flex-shrink: 0;
 }
@@ -447,23 +458,16 @@ export default {
   color: var(--color-text-primary, #1a1a2e);
 }
 
-/* ── Stats row (side by side) ── */
-.tasks-kpi__stats-row {
-  display: flex;
-  gap: 8px;
-}
-
 /* ── Secondary stat ── */
 .tasks-kpi__secondary {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: var(--bg-page, #f0f1f5);
   border-radius: 8px;
   color: var(--color-text-secondary, #6b7280);
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 .tasks-kpi__secondary-text {
@@ -487,8 +491,6 @@ export default {
   color: #92400e;
   cursor: pointer;
   transition: background 0.15s;
-  flex: 1;
-  min-width: 0;
 }
 
 .tasks-kpi__oldest:hover {
