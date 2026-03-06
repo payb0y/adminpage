@@ -1089,8 +1089,12 @@ export default {
       });
     },
     selectProjectAndFilterTask: function (projectId, taskTitle) {
+      // Find the project name for the search field
+      var match = this.projects.find(function (p) {
+        return p.id === projectId || String(p.id) === String(projectId);
+      });
       // Clear all tab-level filters
-      this.tabSearch = "";
+      this.tabSearch = match ? match.name : "";
       this.tabStatusFilter = "";
       this.tabTaskDueFilter = "";
       this.tabTaskStatusFilter = "";
