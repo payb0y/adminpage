@@ -1310,7 +1310,7 @@ export default {
 .perf-panel__chart-row {
   display: flex;
   gap: 16px;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 /* Project list sidebar */
