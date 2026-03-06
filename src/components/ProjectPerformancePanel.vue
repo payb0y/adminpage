@@ -669,8 +669,24 @@
 
           <!-- Completion Detail -->
           <template v-if="modal === 'completion'">
+            <div class="perf-modal__sort-bar" @click.stop>
+              <span class="perf-modal__sort-label">Completion Rate:</span>
+              <button
+                class="perf-modal__sort-btn perf-modal__sort-btn--active"
+                @click="
+                  completionSortBy =
+                    completionSortBy === 'desc' ? 'asc' : 'desc'
+                "
+              >
+                {{
+                  completionSortBy === "desc"
+                    ? "High \u2192 Low"
+                    : "Low \u2192 High"
+                }}
+              </button>
+            </div>
             <div
-              v-for="proj in details.completionDetails"
+              v-for="proj in sortedCompletionDetails"
               :key="'mc-' + proj.name"
               class="perf-modal__project"
             >
@@ -749,7 +765,7 @@
               </transition>
             </div>
             <div
-              v-if="details.completionDetails.length === 0"
+              v-if="sortedCompletionDetails.length === 0"
               class="perf-modal__empty"
             >
               No completion data available
@@ -821,6 +837,7 @@ export default {
       expandedProjects: {},
       delaySortBy: "latest",
       progressSortBy: "desc",
+      completionSortBy: "desc",
       delaySearch: "",
       completionSearch: "",
     };
@@ -929,6 +946,24 @@ export default {
       } else {
         list.sort(function (a, b) {
           return a.name.localeCompare(b.name);
+        });
+      }
+      return list;
+    },
+    sortedCompletionDetails: function () {
+      var list = (this.details.completionDetails || []).slice();
+      var sortBy = this.completionSortBy;
+      if (sortBy === "asc") {
+        list.sort(function (a, b) {
+          var rateA = a.total_tasks > 0 ? a.completed / a.total_tasks : 0;
+          var rateB = b.total_tasks > 0 ? b.completed / b.total_tasks : 0;
+          return rateA - rateB;
+        });
+      } else {
+        list.sort(function (a, b) {
+          var rateA = a.total_tasks > 0 ? a.completed / a.total_tasks : 0;
+          var rateB = b.total_tasks > 0 ? b.completed / b.total_tasks : 0;
+          return rateB - rateA;
         });
       }
       return list;
