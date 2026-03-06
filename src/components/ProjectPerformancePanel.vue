@@ -1342,9 +1342,8 @@ export default {
 }
 
 .perf-panel__proj-items {
-  flex: 1;
   overflow-y: auto;
-  max-height: 200px;
+  height: 200px;
 }
 
 .perf-panel__proj-items::-webkit-scrollbar {
