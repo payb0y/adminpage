@@ -178,15 +178,16 @@
       <!-- BOTTOM ROW: Delay Donut + Completion Area -->
       <div class="perf-panel__bottom-grid">
         <!-- Project Tasks Delay Overview -->
-        <div
-          class="perf-panel__card perf-panel__card--clickable"
-          @click="openModal('delay')"
-        >
+        <div class="perf-panel__card">
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
               Project Tasks Delay<br />Overview
             </h3>
-            <span class="perf-panel__card-drill" title="Click for details">
+            <span
+              class="perf-panel__card-drill perf-panel__card-drill--visible"
+              title="Click for details"
+              @click="openModal('delay')"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -208,35 +209,58 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
 
-          <!-- Project navigator -->
-          <div class="perf-panel__navigator" @click.stop>
-            <select v-model="delayIndex" class="perf-panel__nav-select">
-              <option
-                v-for="(proj, i) in taskDelayProjects"
-                :key="i"
-                :value="i"
-              >
-                {{ proj.name }}
-              </option>
-            </select>
+          <div class="perf-panel__chart-row">
+            <!-- Project list panel -->
+            <div class="perf-panel__proj-list">
+              <input
+                v-model="delaySearch"
+                class="perf-panel__proj-search"
+                type="text"
+                placeholder="Filter…"
+                @click.stop
+              />
+              <div class="perf-panel__proj-items">
+                <div
+                  v-for="(proj, i) in filteredDelayProjects"
+                  :key="'dp-' + i"
+                  class="perf-panel__proj-item"
+                  :class="{
+                    'perf-panel__proj-item--active':
+                      delayIndex === proj.originalIndex,
+                  }"
+                  @click.stop="delayIndex = proj.originalIndex"
+                >
+                  {{ proj.name }}
+                </div>
+                <div
+                  v-if="filteredDelayProjects.length === 0"
+                  class="perf-panel__proj-empty"
+                >
+                  No match
+                </div>
+              </div>
+            </div>
+            <!-- Chart -->
+            <div class="perf-panel__chart-area">
+              <DonutChart
+                :key="'donut-' + delayIndex"
+                :chart-data="activeDelayProject.chart"
+              />
+            </div>
           </div>
-
-          <DonutChart
-            :key="'donut-' + delayIndex"
-            :chart-data="activeDelayProject.chart"
-          />
         </div>
 
         <!-- Task Completion Over Time -->
-        <div
-          class="perf-panel__card perf-panel__card--clickable"
-          @click="openModal('completion')"
-        >
+        <div class="perf-panel__card">
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
               Task Completion<br />Over Time
             </h3>
-            <span class="perf-panel__card-drill" title="Click for details">
+            <span
+              class="perf-panel__card-drill perf-panel__card-drill--visible"
+              title="Click for details"
+              @click="openModal('completion')"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -258,24 +282,46 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
 
-          <!-- Project navigator -->
-          <div class="perf-panel__navigator" @click.stop>
-            <select v-model="completionIndex" class="perf-panel__nav-select">
-              <option
-                v-for="(proj, i) in taskCompletionProjects"
-                :key="i"
-                :value="i"
-              >
-                {{ proj.name }}
-              </option>
-            </select>
+          <div class="perf-panel__chart-row">
+            <!-- Project list panel -->
+            <div class="perf-panel__proj-list">
+              <input
+                v-model="completionSearch"
+                class="perf-panel__proj-search"
+                type="text"
+                placeholder="Filter…"
+                @click.stop
+              />
+              <div class="perf-panel__proj-items">
+                <div
+                  v-for="(proj, i) in filteredCompletionProjects"
+                  :key="'cp-' + i"
+                  class="perf-panel__proj-item"
+                  :class="{
+                    'perf-panel__proj-item--active':
+                      completionIndex === proj.originalIndex,
+                  }"
+                  @click.stop="completionIndex = proj.originalIndex"
+                >
+                  {{ proj.name }}
+                </div>
+                <div
+                  v-if="filteredCompletionProjects.length === 0"
+                  class="perf-panel__proj-empty"
+                >
+                  No match
+                </div>
+              </div>
+            </div>
+            <!-- Chart -->
+            <div class="perf-panel__chart-area">
+              <AreaChart
+                :key="'area-' + completionIndex"
+                :labels="activeCompletionProject.weeks"
+                :data="activeCompletionProject.data"
+              />
+            </div>
           </div>
-
-          <AreaChart
-            :key="'area-' + completionIndex"
-            :labels="activeCompletionProject.weeks"
-            :data="activeCompletionProject.data"
-          />
         </div>
       </div>
 
@@ -761,6 +807,8 @@ export default {
       expandedProjects: {},
       delaySortBy: "latest",
       progressSortBy: "desc",
+      delaySearch: "",
+      completionSearch: "",
     };
   },
   computed: {
@@ -789,6 +837,28 @@ export default {
           return (b.done || 0) - (a.done || 0);
         })
         .slice(0, this.memberPreviewLimit);
+    },
+    filteredDelayProjects: function () {
+      var q = (this.delaySearch || "").toLowerCase();
+      var result = [];
+      for (var i = 0; i < this.taskDelayProjects.length; i++) {
+        var proj = this.taskDelayProjects[i];
+        if (!q || proj.name.toLowerCase().indexOf(q) !== -1) {
+          result.push({ name: proj.name, originalIndex: i });
+        }
+      }
+      return result;
+    },
+    filteredCompletionProjects: function () {
+      var q = (this.completionSearch || "").toLowerCase();
+      var result = [];
+      for (var i = 0; i < this.taskCompletionProjects.length; i++) {
+        var proj = this.taskCompletionProjects[i];
+        if (!q || proj.name.toLowerCase().indexOf(q) !== -1) {
+          result.push({ name: proj.name, originalIndex: i });
+        }
+      }
+      return result;
     },
     activeDelayProject: function () {
       return this.taskDelayProjects[this.delayIndex];
@@ -1236,32 +1306,99 @@ export default {
   flex-shrink: 0;
 }
 
-/* Project Navigator */
-.perf-panel__navigator {
+/* Chart Row: list + chart side by side */
+.perf-panel__chart-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-md, 16px);
-  margin-bottom: var(--spacing-lg, 24px);
+  gap: 16px;
+  align-items: stretch;
 }
 
-.perf-panel__nav-select {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1px solid #dde1e7;
+/* Project list sidebar */
+.perf-panel__proj-list {
+  width: 150px;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #eef1f5;
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s ease;
+  overflow: hidden;
+  background: #fafbfd;
 }
 
-.perf-panel__nav-select:hover,
-.perf-panel__nav-select:focus {
-  border-color: #5b2c6f;
+.perf-panel__proj-search {
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-bottom: 1px solid #eef1f5;
+  font-size: 12px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: transparent;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.perf-panel__proj-search::placeholder {
+  color: #b0b5be;
+}
+
+.perf-panel__proj-items {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.perf-panel__proj-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.perf-panel__proj-items::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.perf-panel__proj-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--color-text-primary, #1a1a2e);
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 3px solid transparent;
+}
+
+.perf-panel__proj-item:hover {
+  background: #f0f1f5;
+}
+
+.perf-panel__proj-item--active {
+  background: #f3edf7;
+  font-weight: 600;
+  border-left-color: #c878c8;
+}
+
+.perf-panel__proj-empty {
+  padding: 10px;
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* Chart fills remaining space */
+.perf-panel__chart-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Drill icon always visible (not hidden by card hover) */
+.perf-panel__card-drill--visible {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.perf-panel__card-drill--visible:hover {
+  color: #c878c8;
 }
 
 /* =============== DRILL-DOWN MODAL =============== */
