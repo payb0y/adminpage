@@ -570,6 +570,13 @@
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
+                  <button
+                    class="perf-modal__goto-btn"
+                    title="Open in Per Project Details"
+                    @click.stop="goToProjectDetails(proj)"
+                  >
+                    &#8594; Details
+                  </button>
                   <span class="perf-modal__badge perf-modal__badge--success">
                     {{ countByCategory(proj.tasks, "on-time") }} on-time
                   </span>
@@ -673,6 +680,13 @@
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
                 <div class="perf-modal__project-stats">
+                  <button
+                    class="perf-modal__goto-btn"
+                    title="Open in Per Project Details"
+                    @click.stop="goToProjectDetails(proj)"
+                  >
+                    &#8594; Details
+                  </button>
                   <span class="perf-modal__badge perf-modal__badge--info">
                     {{ proj.completed }}/{{ proj.total_tasks }} completed
                   </span>
