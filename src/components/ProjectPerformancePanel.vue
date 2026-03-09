@@ -662,7 +662,7 @@
               </transition>
             </div>
             <div
-              v-if="details.progressDetails.length === 0"
+              v-if="dateFilteredProgressDetails.length === 0"
               class="perf-modal__empty"
             >
               No project data available
@@ -672,7 +672,7 @@
           <!-- Member Detail -->
           <template v-if="modal === 'member'">
             <div
-              v-for="mem in details.memberDetails"
+              v-for="mem in dateFilteredMemberDetails"
               :key="'mm-' + mem.name"
               class="perf-modal__project"
             >
@@ -753,7 +753,7 @@
               </transition>
             </div>
             <div
-              v-if="details.memberDetails.length === 0"
+              v-if="dateFilteredMemberDetails.length === 0"
               class="perf-modal__empty"
             >
               No member assignment data available
@@ -1352,8 +1352,141 @@ export default {
         }
       );
     },
+    dateFilteredProgressDetails: function () {
+      var list = this.details.progressDetails || [];
+      if (!this.hasDateFilter) return list;
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var tasks = [];
+        var total = 0;
+        var done = 0;
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.created_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          tasks.push(t);
+          total++;
+          if (t.status === "done") done++;
+        }
+        result.push({
+          name: proj.name,
+          id: proj.id,
+          total: total,
+          done: done,
+          progress: total > 0 ? Math.round((done / total) * 100) : 0,
+          tasks: tasks,
+        });
+      }
+      return result;
+    },
+    dateFilteredMemberDetails: function () {
+      var list = this.details.memberDetails || [];
+      if (!this.hasDateFilter) return list;
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var mem = list[i];
+        var tasks = [];
+        var total = 0;
+        var done = 0;
+        for (var j = 0; j < (mem.tasks || []).length; j++) {
+          var t = mem.tasks[j];
+          var ca = (t.created_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          tasks.push(t);
+          total++;
+          if (t.status === "done") done++;
+        }
+        if (total > 0) {
+          result.push({
+            name: mem.name,
+            total: total,
+            done: done,
+            progress: Math.round((done / total) * 100),
+            tasks: tasks,
+          });
+        }
+      }
+      return result;
+    },
+    dateFilteredDelayDetails: function () {
+      var list = this.details.delayDetails || [];
+      if (!this.hasDateFilter) return list;
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var tasks = [];
+        var totalAge = 0;
+        var ageCount = 0;
+        var now = new Date();
+        var latestOpened = null;
+        var oldestOpened = null;
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.createdAt || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          tasks.push(t);
+          if (t.createdAt) {
+            var created = new Date(t.createdAt);
+            var age = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+            totalAge += age;
+            ageCount++;
+            if (!latestOpened || t.createdAt > latestOpened)
+              latestOpened = t.createdAt;
+            if (!oldestOpened || t.createdAt < oldestOpened)
+              oldestOpened = t.createdAt;
+          }
+        }
+        result.push({
+          name: proj.name,
+          id: proj.id,
+          status: proj.status || "",
+          tasks: tasks,
+          avgDaysActive: ageCount > 0 ? Math.round(totalAge / ageCount) : 0,
+          latestTaskOpened: latestOpened,
+          oldestTaskOpened: oldestOpened,
+        });
+      }
+      return result;
+    },
+    dateFilteredCompletionDetails: function () {
+      var list = this.details.completionDetails || [];
+      if (!this.hasDateFilter) return list;
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var tasks = [];
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.completed_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          tasks.push(t);
+        }
+        result.push({
+          name: proj.name,
+          id: proj.id,
+          status: proj.status || "",
+          total_tasks: proj.total_tasks,
+          completed: tasks.length,
+          tasks: tasks,
+        });
+      }
+      return result;
+    },
     sortedProgressDetails: function () {
-      var list = (this.details.progressDetails || []).slice();
+      var list = this.dateFilteredProgressDetails.slice();
       if (this.progressSortBy === "asc") {
         list.sort(function (a, b) {
           return a.progress - b.progress;
@@ -1366,7 +1499,7 @@ export default {
       return list;
     },
     sortedDelayDetails: function () {
-      var list = (this.details.delayDetails || []).slice();
+      var list = this.dateFilteredDelayDetails.slice();
       var sortBy = this.delaySortBy;
       if (sortBy === "latest") {
         list.sort(function (a, b) {
@@ -1396,7 +1529,7 @@ export default {
       return list;
     },
     sortedCompletionDetails: function () {
-      var list = (this.details.completionDetails || []).slice();
+      var list = this.dateFilteredCompletionDetails.slice();
       var sortBy = this.completionSortBy;
       if (sortBy === "asc") {
         list.sort(function (a, b) {
