@@ -532,6 +532,22 @@
                 <option value="nodue">No Due Date</option>
               </select>
             </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Opened From</label>
+              <input
+                v-model="tbFilterDateFrom"
+                type="date"
+                class="proj-details__tb-input proj-details__tb-input--date"
+              />
+            </div>
+            <div class="proj-details__tb-filter">
+              <label class="proj-details__tb-label">Opened To</label>
+              <input
+                v-model="tbFilterDateTo"
+                type="date"
+                class="proj-details__tb-input proj-details__tb-input--date"
+              />
+            </div>
           </div>
 
           <!-- Count -->
@@ -727,6 +743,8 @@ export default {
       tbFilterLabel: "",
       tbFilterAssignee: "",
       tbFilterDue: "",
+      tbFilterDateFrom: "",
+      tbFilterDateTo: "",
       tbPage: 1,
       tbPageSize: 15,
       tbSortKey: "",
@@ -753,6 +771,12 @@ export default {
       this.tbPage = 1;
     },
     tbFilterDue: function () {
+      this.tbPage = 1;
+    },
+    tbFilterDateFrom: function () {
+      this.tbPage = 1;
+    },
+    tbFilterDateTo: function () {
       this.tbPage = 1;
     },
   },
@@ -935,6 +959,14 @@ export default {
         )
           return false;
         if (self.tbFilterDue && t.dueBucket !== self.tbFilterDue) return false;
+        if (self.tbFilterDateFrom || self.tbFilterDateTo) {
+          if (!t.createdAt) return false;
+          var taskDate = t.createdAt.substring(0, 10);
+          if (self.tbFilterDateFrom && taskDate < self.tbFilterDateFrom)
+            return false;
+          if (self.tbFilterDateTo && taskDate > self.tbFilterDateTo)
+            return false;
+        }
         return true;
       });
     },
@@ -981,6 +1013,8 @@ export default {
       this.tbFilterLabel = "";
       this.tbFilterAssignee = "";
       this.tbFilterDue = "";
+      this.tbFilterDateFrom = "";
+      this.tbFilterDateTo = "";
       this.tbPage = 1;
       this.tbSortKey = "";
       this.tbSortDir = "asc";
@@ -1796,6 +1830,11 @@ export default {
 .proj-details__tb-input:focus,
 .proj-details__tb-select:focus {
   border-color: #4a90d9;
+}
+
+.proj-details__tb-input--date {
+  min-width: 130px;
+  font-size: 12px;
 }
 
 .proj-details__tb-count {
