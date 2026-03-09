@@ -47,18 +47,36 @@
     <div v-show="embedded || !collapsed">
       <!-- Date Range Filter -->
       <div class="perf-panel__date-filter-row">
-        <label class="perf-panel__date-label">Filter by Date</label>
-        <div
-          class="perf-panel__date-range"
-          @click="showDatePicker = !showDatePicker"
-        >
-          <span class="perf-panel__date-range-value">{{
-            perfDateFrom || "Start"
-          }}</span>
-          <span class="perf-panel__date-range-arrow">→</span>
-          <span class="perf-panel__date-range-value">{{
-            perfDateTo || "End"
-          }}</span>
+        <div class="perf-panel__date-filter-inner">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="perf-panel__date-icon"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <div
+            class="perf-panel__date-range"
+            @click="showDatePicker = !showDatePicker"
+          >
+            <span class="perf-panel__date-range-value">{{
+              perfDateFrom || "Start date"
+            }}</span>
+            <span class="perf-panel__date-range-arrow">→</span>
+            <span class="perf-panel__date-range-value">{{
+              perfDateTo || "End date"
+            }}</span>
+          </div>
           <button
             v-if="perfDateFrom || perfDateTo"
             class="perf-panel__date-range-clear"
@@ -1163,7 +1181,7 @@ export default {
         var total = onTime + delayed + blocked;
         result.push({
           name: proj.name,
-          status: "",
+          status: proj.status || "",
           chart: {
             labels: ["On-time Tasks", "Delayed Tasks", "Blocked Tasks"],
             data: [
@@ -1196,7 +1214,7 @@ export default {
         if (completedDates.length === 0) {
           result.push({
             name: proj.name,
-            status: "",
+            status: proj.status || "",
             weeks: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
             data: [0, 0, 0, 0, 0, 0],
           });
@@ -1244,7 +1262,7 @@ export default {
         }
         result.push({
           name: proj.name,
-          status: "",
+          status: proj.status || "",
           weeks: weekLabels,
           data: weekCounts,
         });
@@ -1718,41 +1736,46 @@ export default {
 .perf-panel__date-filter-row {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
-  padding: 0 var(--spacing-lg, 24px);
-  margin-bottom: 16px;
+  padding: 4px var(--spacing-lg, 24px) 14px;
+  margin-bottom: 0;
+  position: relative;
 }
 
-.perf-panel__date-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.perf-panel__date-filter-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--color-main-background, #fff);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.perf-panel__date-filter-inner:hover {
+  border-color: #c878c8;
+  box-shadow: 0 1px 4px rgba(200, 120, 200, 0.1);
+}
+
+.perf-panel__date-icon {
+  color: #c878c8;
+  flex-shrink: 0;
 }
 
 .perf-panel__date-range {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 6px;
-  background: var(--color-main-background, #fff);
+  gap: 8px;
   cursor: pointer;
-  font-size: 12px;
-  transition: border-color 0.15s;
-}
-
-.perf-panel__date-range:hover {
-  border-color: #4a90d9;
+  font-size: 13px;
 }
 
 .perf-panel__date-range-value {
   color: var(--color-text-primary, #1a1a2e);
   font-weight: 500;
-  min-width: 70px;
+  min-width: 72px;
   text-align: center;
 }
 
@@ -1762,28 +1785,31 @@ export default {
 }
 
 .perf-panel__date-range-clear {
-  margin-left: 4px;
+  margin-left: 2px;
   background: none;
   border: none;
   color: var(--color-text-muted, #9ca3af);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
-  padding: 0 2px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
 }
 
 .perf-panel__date-range-clear:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .perf-panel__date-picker-dropdown {
   display: inline-flex;
   flex-direction: column;
-  margin-top: 4px;
+  margin-top: 6px;
   background: var(--color-main-background, #fff);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
   padding: 12px 14px 8px;
   min-width: 460px;
   width: fit-content;

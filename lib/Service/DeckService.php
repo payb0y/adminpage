@@ -644,6 +644,7 @@ class DeckService {
             $result[] = [
                 'name'              => $proj['name'],
                 'id'                => $proj['board_id'],
+                'status'            => $proj['status'] ?? '',
                 'tasks'             => $tasks,
                 'avgDaysActive'     => $avgDays,
                 'latestTaskOpened'  => $latestOpened ? date('Y-m-d H:i:s', $latestOpened) : null,
@@ -685,6 +686,7 @@ class DeckService {
             $result[] = [
                 'name'        => $proj['name'],
                 'id'          => $proj['board_id'],
+                'status'      => $proj['status'] ?? '',
                 'total_tasks' => $totalTasks,
                 'completed'   => count($completed),
                 'tasks'       => $completed,
