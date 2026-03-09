@@ -209,6 +209,53 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
 
+          <div class="perf-panel__status-badges">
+            <span
+              class="perf-panel__status-badge"
+              :class="{
+                'perf-panel__status-badge--active': delayStatusFilter === '',
+              }"
+              @click="delayStatusFilter = ''"
+              >All</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--green"
+              :class="{
+                'perf-panel__status-badge--active':
+                  delayStatusFilter === 'Active',
+              }"
+              @click="delayStatusFilter = 'Active'"
+              >Active</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--amber"
+              :class="{
+                'perf-panel__status-badge--active':
+                  delayStatusFilter === 'Waiting on Customer',
+              }"
+              @click="delayStatusFilter = 'Waiting on Customer'"
+              >W.o.c.</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--orange"
+              :class="{
+                'perf-panel__status-badge--active':
+                  delayStatusFilter === 'On Hold',
+              }"
+              @click="delayStatusFilter = 'On Hold'"
+              >On Hold</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--slate"
+              :class="{
+                'perf-panel__status-badge--active':
+                  delayStatusFilter === 'Done',
+              }"
+              @click="delayStatusFilter = 'Done'"
+              >Done</span
+            >
+          </div>
+
           <div class="perf-panel__chart-row">
             <!-- Project list panel -->
             <div class="perf-panel__proj-list">
@@ -219,17 +266,6 @@
                 placeholder="Filter…"
                 @click.stop
               />
-              <select
-                v-model="delayStatusFilter"
-                class="perf-panel__proj-status-filter"
-                @click.stop
-              >
-                <option value="">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Waiting on Customer">W.o.c.</option>
-                <option value="On Hold">On Hold</option>
-                <option value="Done">Done</option>
-              </select>
               <div class="perf-panel__proj-items">
                 <div
                   v-for="(proj, i) in filteredDelayProjects"
@@ -293,6 +329,54 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
 
+          <div class="perf-panel__status-badges">
+            <span
+              class="perf-panel__status-badge"
+              :class="{
+                'perf-panel__status-badge--active':
+                  completionStatusFilter === '',
+              }"
+              @click="completionStatusFilter = ''"
+              >All</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--green"
+              :class="{
+                'perf-panel__status-badge--active':
+                  completionStatusFilter === 'Active',
+              }"
+              @click="completionStatusFilter = 'Active'"
+              >Active</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--amber"
+              :class="{
+                'perf-panel__status-badge--active':
+                  completionStatusFilter === 'Waiting on Customer',
+              }"
+              @click="completionStatusFilter = 'Waiting on Customer'"
+              >W.o.c.</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--orange"
+              :class="{
+                'perf-panel__status-badge--active':
+                  completionStatusFilter === 'On Hold',
+              }"
+              @click="completionStatusFilter = 'On Hold'"
+              >On Hold</span
+            >
+            <span
+              class="perf-panel__status-badge perf-panel__status-badge--slate"
+              :class="{
+                'perf-panel__status-badge--active':
+                  completionStatusFilter === 'Done',
+              }"
+              @click="completionStatusFilter = 'Done'"
+              >Done</span
+            >
+          </div>
+
           <div class="perf-panel__chart-row">
             <!-- Project list panel -->
             <div class="perf-panel__proj-list">
@@ -303,17 +387,6 @@
                 placeholder="Filter…"
                 @click.stop
               />
-              <select
-                v-model="completionStatusFilter"
-                class="perf-panel__proj-status-filter"
-                @click.stop
-              >
-                <option value="">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Waiting on Customer">W.o.c.</option>
-                <option value="On Hold">On Hold</option>
-                <option value="Done">Done</option>
-              </select>
               <div class="perf-panel__proj-items">
                 <div
                   v-for="(proj, i) in filteredCompletionProjects"
@@ -1454,24 +1527,61 @@ export default {
   color: #b0b5be;
 }
 
-.perf-panel__proj-status-filter {
-  width: 100%;
-  padding: 5px 8px;
-  border: none;
-  border-bottom: 1px solid #eef1f5;
+.perf-panel__status-badges {
+  display: flex;
+  gap: 6px;
+  padding: 8px 0 4px;
+  flex-wrap: wrap;
+}
+
+.perf-panel__status-badge {
   font-size: 11px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: transparent;
-  outline: none;
-  box-sizing: border-box;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
   cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 22px;
+  background: #f0f1f5;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  user-select: none;
+  border: 1.5px solid transparent;
+}
+
+.perf-panel__status-badge:hover {
+  background: #e5e7eb;
+}
+
+.perf-panel__status-badge--active {
+  font-weight: 600;
+  border-color: currentColor;
+}
+
+.perf-panel__status-badge--green {
+  color: #16a34a;
+}
+.perf-panel__status-badge--green.perf-panel__status-badge--active {
+  background: #dcfce7;
+}
+
+.perf-panel__status-badge--amber {
+  color: #d97706;
+}
+.perf-panel__status-badge--amber.perf-panel__status-badge--active {
+  background: #fef3c7;
+}
+
+.perf-panel__status-badge--orange {
+  color: #ea580c;
+}
+.perf-panel__status-badge--orange.perf-panel__status-badge--active {
+  background: #ffedd5;
+}
+
+.perf-panel__status-badge--slate {
+  color: #475569;
+}
+.perf-panel__status-badge--slate.perf-panel__status-badge--active {
+  background: #e2e8f0;
 }
 
 .perf-panel__proj-items {
