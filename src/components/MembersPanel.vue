@@ -46,12 +46,55 @@
     </div>
 
     <div v-show="embedded || !collapsed" class="members-panel__body">
-      <div v-if="members.length === 0" class="members-panel__empty">
-        No members yet.
+      <!-- Filters -->
+      <div class="members-panel__filters">
+        <input
+          v-model="search"
+          class="members-panel__search"
+          type="text"
+          placeholder="Search members…"
+        />
+        <div class="members-panel__role-badges">
+          <span
+            class="members-panel__role-badge"
+            :class="{ 'members-panel__role-badge--active': roleFilter === '' }"
+            @click="
+              roleFilter = '';
+              currentPage = 1;
+            "
+            >All</span
+          >
+          <span
+            class="members-panel__role-badge members-panel__role-badge--admin-color"
+            :class="{
+              'members-panel__role-badge--active': roleFilter === 'admin',
+            }"
+            @click="
+              roleFilter = 'admin';
+              currentPage = 1;
+            "
+            >Admin</span
+          >
+          <span
+            class="members-panel__role-badge members-panel__role-badge--member-color"
+            :class="{
+              'members-panel__role-badge--active': roleFilter === 'member',
+            }"
+            @click="
+              roleFilter = 'member';
+              currentPage = 1;
+            "
+            >Member</span
+          >
+        </div>
+      </div>
+
+      <div v-if="filteredMembers.length === 0" class="members-panel__empty">
+        No members match your filters.
       </div>
 
       <div
-        v-for="member in members"
+        v-for="member in paginatedMembers"
         :key="'mem-' + member.userId"
         class="members-panel__card"
       >
@@ -215,6 +258,34 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="members-panel__pagination">
+        <button
+          class="members-panel__page-btn"
+          :disabled="currentPage <= 1"
+          @click="currentPage--"
+        >
+          ‹
+        </button>
+        <span class="members-panel__page-info">
+          {{ currentPage }} / {{ totalPages }}
+        </span>
+        <button
+          class="members-panel__page-btn"
+          :disabled="currentPage >= totalPages"
+          @click="currentPage++"
+        >
+          ›
+        </button>
+      </div>
+      <div
+        v-if="filteredMembers.length > 0"
+        class="members-panel__showing-hint"
+      >
+        Showing {{ paginatedMembers.length }} of
+        {{ filteredMembers.length }} members
+      </div>
     </div>
   </component>
 </template>
@@ -238,7 +309,58 @@ export default {
     return {
       collapsed: false,
       expanded: {},
+      search: "",
+      roleFilter: "",
+      currentPage: 1,
+      pageSize: 5,
     };
+  },
+  computed: {
+    filteredMembers: function () {
+      var q = (this.search || "").toLowerCase();
+      var role = this.roleFilter;
+      var result = [];
+      for (var i = 0; i < this.members.length; i++) {
+        var m = this.members[i];
+        if (role && m.role !== role) {
+          continue;
+        }
+        if (q) {
+          var name = (m.displayName || "").toLowerCase();
+          var uid = (m.userId || "").toLowerCase();
+          var email = (m.email || "").toLowerCase();
+          if (
+            name.indexOf(q) === -1 &&
+            uid.indexOf(q) === -1 &&
+            email.indexOf(q) === -1
+          ) {
+            continue;
+          }
+        }
+        result.push(m);
+      }
+      return result;
+    },
+    totalPages: function () {
+      return Math.max(
+        1,
+        Math.ceil(this.filteredMembers.length / this.pageSize),
+      );
+    },
+    paginatedMembers: function () {
+      var start = (this.currentPage - 1) * this.pageSize;
+      return this.filteredMembers.slice(start, start + this.pageSize);
+    },
+  },
+  watch: {
+    search: function () {
+      this.currentPage = 1;
+    },
+    filteredMembers: function () {
+      if (this.currentPage > this.totalPages) {
+        this.currentPage = this.totalPages;
+      }
+    },
   },
   methods: {
     toggle: function (uid) {
@@ -335,6 +457,125 @@ export default {
 
 .members-panel__body {
   padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
+}
+
+/* ── Filters ── */
+.members-panel__filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.members-panel__search {
+  flex: 1;
+  min-width: 120px;
+  padding: 7px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.members-panel__search:focus {
+  border-color: #4a90d9;
+}
+
+.members-panel__search::placeholder {
+  color: #b0b5be;
+}
+
+.members-panel__role-badges {
+  display: flex;
+  gap: 5px;
+}
+
+.members-panel__role-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #f0f1f5;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  user-select: none;
+  border: 1.5px solid transparent;
+}
+
+.members-panel__role-badge:hover {
+  background: #e5e7eb;
+}
+
+.members-panel__role-badge--active {
+  font-weight: 600;
+  border-color: currentColor;
+}
+
+.members-panel__role-badge--admin-color {
+  color: #1e4a8a;
+}
+.members-panel__role-badge--admin-color.members-panel__role-badge--active {
+  background: #e8f0fe;
+}
+
+.members-panel__role-badge--member-color {
+  color: #475569;
+}
+.members-panel__role-badge--member-color.members-panel__role-badge--active {
+  background: #e2e8f0;
+}
+
+/* ── Pagination ── */
+.members-panel__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.members-panel__page-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a90d9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.members-panel__page-btn:hover:not(:disabled) {
+  background: #e8f0fe;
+  border-color: #4a90d9;
+}
+
+.members-panel__page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.members-panel__page-info {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.members-panel__showing-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 6px;
 }
 
 .members-panel__empty {
