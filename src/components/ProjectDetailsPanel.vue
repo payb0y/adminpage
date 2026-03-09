@@ -533,20 +533,119 @@
               </select>
             </div>
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Opened From</label>
-              <input
-                v-model="tbFilterDateFrom"
-                type="date"
-                class="proj-details__tb-input proj-details__tb-input--date"
-              />
-            </div>
-            <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Opened To</label>
-              <input
-                v-model="tbFilterDateTo"
-                type="date"
-                class="proj-details__tb-input proj-details__tb-input--date"
-              />
+              <label class="proj-details__tb-label">Opened</label>
+              <div
+                class="proj-details__date-range"
+                @click="showDateRangePicker = !showDateRangePicker"
+              >
+                <span class="proj-details__date-range-value">
+                  {{ tbFilterDateFrom || "Start" }}
+                </span>
+                <span class="proj-details__date-range-arrow">→</span>
+                <span class="proj-details__date-range-value">
+                  {{ tbFilterDateTo || "End" }}
+                </span>
+                <button
+                  v-if="tbFilterDateFrom || tbFilterDateTo"
+                  class="proj-details__date-range-clear"
+                  title="Clear dates"
+                  @click.stop="
+                    tbFilterDateFrom = '';
+                    tbFilterDateTo = '';
+                    showDateRangePicker = false;
+                  "
+                >
+                  ✕
+                </button>
+              </div>
+              <div
+                v-if="showDateRangePicker"
+                v-click-outside="
+                  function () {
+                    showDateRangePicker = false;
+                  }
+                "
+                class="proj-details__date-picker-dropdown"
+              >
+                <div class="proj-details__date-picker-months">
+                  <div class="proj-details__date-picker-month">
+                    <div class="proj-details__date-picker-header">
+                      <button
+                        class="proj-details__date-picker-nav"
+                        @click.stop="shiftCalendar(-1)"
+                      >
+                        ‹
+                      </button>
+                      <span class="proj-details__date-picker-title">{{
+                        calendarMonthLabel(0)
+                      }}</span>
+                      <span></span>
+                    </div>
+                    <div class="proj-details__date-picker-grid">
+                      <span
+                        v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                        :key="d"
+                        class="proj-details__date-picker-dow"
+                        >{{ d }}</span
+                      >
+                      <span
+                        v-for="(cell, ci) in calendarCells(0)"
+                        :key="'L' + ci"
+                        :class="dateCellClass(cell)"
+                        @click.stop="cell.date && pickDate(cell.date)"
+                        >{{ cell.day }}</span
+                      >
+                    </div>
+                  </div>
+                  <div class="proj-details__date-picker-month">
+                    <div class="proj-details__date-picker-header">
+                      <span></span>
+                      <span class="proj-details__date-picker-title">{{
+                        calendarMonthLabel(1)
+                      }}</span>
+                      <button
+                        class="proj-details__date-picker-nav"
+                        @click.stop="shiftCalendar(1)"
+                      >
+                        ›
+                      </button>
+                    </div>
+                    <div class="proj-details__date-picker-grid">
+                      <span
+                        v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                        :key="d"
+                        class="proj-details__date-picker-dow"
+                        >{{ d }}</span
+                      >
+                      <span
+                        v-for="(cell, ci) in calendarCells(1)"
+                        :key="'R' + ci"
+                        :class="dateCellClass(cell)"
+                        @click.stop="cell.date && pickDate(cell.date)"
+                        >{{ cell.day }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="proj-details__date-picker-footer">
+                  <button
+                    class="proj-details__date-picker-btn"
+                    @click.stop="
+                      tbFilterDateFrom = '';
+                      tbFilterDateTo = '';
+                      datePickStep = 'from';
+                    "
+                  >
+                    Clear
+                  </button>
+                  <button
+                    class="proj-details__date-picker-btn proj-details__date-picker-btn--apply"
+                    @click.stop="showDateRangePicker = false"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -709,6 +808,22 @@ import TimelineChart from "./TimelineChart.vue";
 export default {
   name: "ProjectDetailsPanel",
   components: { DonutChart, TimelineChart },
+  directives: {
+    "click-outside": {
+      bind: function (el, binding) {
+        el.__clickOutsideHandler = function (e) {
+          if (!el.contains(e.target)) {
+            binding.value(e);
+          }
+        };
+        document.addEventListener("pointerdown", el.__clickOutsideHandler);
+      },
+      unbind: function (el) {
+        document.removeEventListener("pointerdown", el.__clickOutsideHandler);
+        delete el.__clickOutsideHandler;
+      },
+    },
+  },
   props: {
     projects: {
       type: Array,
@@ -745,6 +860,9 @@ export default {
       tbFilterDue: "",
       tbFilterDateFrom: "",
       tbFilterDateTo: "",
+      showDateRangePicker: false,
+      datePickStep: "from",
+      calendarBase: new Date(),
       tbPage: 1,
       tbPageSize: 15,
       tbSortKey: "",
@@ -1015,9 +1133,102 @@ export default {
       this.tbFilterDue = "";
       this.tbFilterDateFrom = "";
       this.tbFilterDateTo = "";
+      this.showDateRangePicker = false;
+      this.datePickStep = "from";
       this.tbPage = 1;
       this.tbSortKey = "";
       this.tbSortDir = "asc";
+    },
+    /* ---- Date range picker helpers ---- */
+    pad: function (n) {
+      return n < 10 ? "0" + n : "" + n;
+    },
+    toDateStr: function (d) {
+      return (
+        d.getFullYear() +
+        "-" +
+        this.pad(d.getMonth() + 1) +
+        "-" +
+        this.pad(d.getDate())
+      );
+    },
+    calendarMonthLabel: function (offset) {
+      var d = new Date(
+        this.calendarBase.getFullYear(),
+        this.calendarBase.getMonth() + offset,
+        1,
+      );
+      var months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      return months[d.getMonth()] + " " + d.getFullYear();
+    },
+    shiftCalendar: function (dir) {
+      var d = new Date(this.calendarBase);
+      d.setMonth(d.getMonth() + dir);
+      this.calendarBase = d;
+    },
+    calendarCells: function (offset) {
+      var year = this.calendarBase.getFullYear();
+      var month = this.calendarBase.getMonth() + offset;
+      var first = new Date(year, month, 1);
+      var dayOfWeek = first.getDay(); // 0=Sun
+      var startPad = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon-based
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var cells = [];
+      for (var i = 0; i < startPad; i++) {
+        cells.push({ day: "", date: null });
+      }
+      for (var d = 1; d <= daysInMonth; d++) {
+        cells.push({ day: d, date: this.toDateStr(new Date(year, month, d)) });
+      }
+      return cells;
+    },
+    pickDate: function (dateStr) {
+      if (this.datePickStep === "from") {
+        this.tbFilterDateFrom = dateStr;
+        this.tbFilterDateTo = "";
+        this.datePickStep = "to";
+      } else {
+        if (dateStr < this.tbFilterDateFrom) {
+          this.tbFilterDateFrom = dateStr;
+          this.tbFilterDateTo = "";
+          this.datePickStep = "to";
+        } else {
+          this.tbFilterDateTo = dateStr;
+          this.datePickStep = "from";
+        }
+      }
+    },
+    dateCellClass: function (cell) {
+      var cls = ["proj-details__date-picker-cell"];
+      if (!cell.date) {
+        cls.push("proj-details__date-picker-cell--empty");
+        return cls;
+      }
+      var from = this.tbFilterDateFrom;
+      var to = this.tbFilterDateTo;
+      if (cell.date === from) cls.push("proj-details__date-picker-cell--start");
+      if (cell.date === to) cls.push("proj-details__date-picker-cell--end");
+      if (from && to && cell.date > from && cell.date < to)
+        cls.push("proj-details__date-picker-cell--in-range");
+      if (cell.date === from && !to)
+        cls.push("proj-details__date-picker-cell--solo");
+      var today = this.toDateStr(new Date());
+      if (cell.date === today)
+        cls.push("proj-details__date-picker-cell--today");
+      return cls;
     },
     assigneePct: function (a) {
       if (!a.tasks || a.tasks === 0) return 0;
@@ -1835,6 +2046,209 @@ export default {
 .proj-details__tb-input--date {
   min-width: 130px;
   font-size: 12px;
+}
+
+/* ── Date Range Picker ── */
+.proj-details__tb-filter {
+  position: relative;
+}
+
+.proj-details__date-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-main-background, #fff);
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 180px;
+  transition: border-color 0.15s;
+}
+
+.proj-details__date-range:hover {
+  border-color: #4a90d9;
+}
+
+.proj-details__date-range-value {
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+}
+
+.proj-details__date-range-value:empty,
+.proj-details__date-range-value:not(:empty) {
+  /* ensure placeholder text visible */
+}
+
+.proj-details__date-range-arrow {
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 13px;
+}
+
+.proj-details__date-range-clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.proj-details__date-range-clear:hover {
+  color: #ef4444;
+}
+
+.proj-details__date-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 200;
+  margin-top: 4px;
+  background: var(--color-main-background, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 12px 14px 8px;
+  min-width: 460px;
+}
+
+.proj-details__date-picker-months {
+  display: flex;
+  gap: 16px;
+}
+
+.proj-details__date-picker-month {
+  flex: 1;
+  min-width: 200px;
+}
+
+.proj-details__date-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.proj-details__date-picker-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.proj-details__date-picker-nav {
+  background: none;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary, #1a1a2e);
+  transition: background 0.15s;
+}
+
+.proj-details__date-picker-nav:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.proj-details__date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px 0;
+  text-align: center;
+}
+
+.proj-details__date-picker-dow {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  padding: 2px 0 4px;
+  text-transform: uppercase;
+}
+
+.proj-details__date-picker-cell {
+  font-size: 12px;
+  padding: 5px 0;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.proj-details__date-picker-cell:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.proj-details__date-picker-cell--empty {
+  cursor: default;
+}
+
+.proj-details__date-picker-cell--today {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.proj-details__date-picker-cell--start {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 6px 0 0 6px;
+}
+
+.proj-details__date-picker-cell--end {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 0 6px 6px 0;
+}
+
+.proj-details__date-picker-cell--solo {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 6px;
+}
+
+.proj-details__date-picker-cell--in-range {
+  background: rgba(200, 120, 200, 0.15);
+}
+
+.proj-details__date-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.proj-details__date-picker-btn {
+  padding: 4px 14px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-main-background, #fff);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.proj-details__date-picker-btn:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.proj-details__date-picker-btn--apply {
+  background: #c878c8;
+  color: #fff;
+  border-color: #c878c8;
+}
+
+.proj-details__date-picker-btn--apply:hover {
+  background: #b060b0;
 }
 
 .proj-details__tb-count {
