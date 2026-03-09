@@ -532,7 +532,7 @@
                 <option value="nodue">No Due Date</option>
               </select>
             </div>
-            <div class="proj-details__tb-filter">
+            <div class="proj-details__tb-filter proj-details__tb-filter--date">
               <label class="proj-details__tb-label">Opened</label>
               <div
                 class="proj-details__date-range"
@@ -558,90 +558,92 @@
                   ✕
                 </button>
               </div>
-              <div
-                v-if="showDateRangePicker"
-                v-click-outside="closeDatePicker"
-                class="proj-details__date-picker-dropdown"
-              >
-                <div class="proj-details__date-picker-months">
-                  <div class="proj-details__date-picker-month">
-                    <div class="proj-details__date-picker-header">
-                      <button
-                        class="proj-details__date-picker-nav"
-                        @click.stop="shiftCalendar(-1)"
-                      >
-                        ‹
-                      </button>
-                      <span class="proj-details__date-picker-title">{{
-                        calendarMonthLabel(0)
-                      }}</span>
-                      <span></span>
-                    </div>
-                    <div class="proj-details__date-picker-grid">
-                      <span
-                        v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
-                        :key="d"
-                        class="proj-details__date-picker-dow"
-                        >{{ d }}</span
-                      >
-                      <span
-                        v-for="(cell, ci) in calendarCells(0)"
-                        :key="'L' + ci"
-                        :class="dateCellClass(cell)"
-                        @click.stop="cell.date && pickDate(cell.date)"
-                        >{{ cell.day }}</span
-                      >
-                    </div>
-                  </div>
-                  <div class="proj-details__date-picker-month">
-                    <div class="proj-details__date-picker-header">
-                      <span></span>
-                      <span class="proj-details__date-picker-title">{{
-                        calendarMonthLabel(1)
-                      }}</span>
-                      <button
-                        class="proj-details__date-picker-nav"
-                        @click.stop="shiftCalendar(1)"
-                      >
-                        ›
-                      </button>
-                    </div>
-                    <div class="proj-details__date-picker-grid">
-                      <span
-                        v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
-                        :key="d"
-                        class="proj-details__date-picker-dow"
-                        >{{ d }}</span
-                      >
-                      <span
-                        v-for="(cell, ci) in calendarCells(1)"
-                        :key="'R' + ci"
-                        :class="dateCellClass(cell)"
-                        @click.stop="cell.date && pickDate(cell.date)"
-                        >{{ cell.day }}</span
-                      >
-                    </div>
-                  </div>
+            </div>
+          </div>
+
+          <!-- Date range picker (own row, in-flow) -->
+          <div
+            v-if="showDateRangePicker"
+            v-click-outside="closeDatePicker"
+            class="proj-details__date-picker-dropdown"
+          >
+            <div class="proj-details__date-picker-months">
+              <div class="proj-details__date-picker-month">
+                <div class="proj-details__date-picker-header">
+                  <button
+                    class="proj-details__date-picker-nav"
+                    @click.stop="shiftCalendar(-1)"
+                  >
+                    ‹
+                  </button>
+                  <span class="proj-details__date-picker-title">{{
+                    calendarMonthLabel(0)
+                  }}</span>
+                  <span></span>
                 </div>
-                <div class="proj-details__date-picker-footer">
-                  <button
-                    class="proj-details__date-picker-btn"
-                    @click.stop="
-                      tbFilterDateFrom = '';
-                      tbFilterDateTo = '';
-                      datePickStep = 'from';
-                    "
+                <div class="proj-details__date-picker-grid">
+                  <span
+                    v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                    :key="d"
+                    class="proj-details__date-picker-dow"
+                    >{{ d }}</span
                   >
-                    Clear
-                  </button>
-                  <button
-                    class="proj-details__date-picker-btn proj-details__date-picker-btn--apply"
-                    @click.stop="showDateRangePicker = false"
+                  <span
+                    v-for="(cell, ci) in calendarCells(0)"
+                    :key="'L' + ci"
+                    :class="dateCellClass(cell)"
+                    @click.stop="cell.date && pickDate(cell.date)"
+                    >{{ cell.day }}</span
                   >
-                    Apply
-                  </button>
                 </div>
               </div>
+              <div class="proj-details__date-picker-month">
+                <div class="proj-details__date-picker-header">
+                  <span></span>
+                  <span class="proj-details__date-picker-title">{{
+                    calendarMonthLabel(1)
+                  }}</span>
+                  <button
+                    class="proj-details__date-picker-nav"
+                    @click.stop="shiftCalendar(1)"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div class="proj-details__date-picker-grid">
+                  <span
+                    v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                    :key="d"
+                    class="proj-details__date-picker-dow"
+                    >{{ d }}</span
+                  >
+                  <span
+                    v-for="(cell, ci) in calendarCells(1)"
+                    :key="'R' + ci"
+                    :class="dateCellClass(cell)"
+                    @click.stop="cell.date && pickDate(cell.date)"
+                    >{{ cell.day }}</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="proj-details__date-picker-footer">
+              <button
+                class="proj-details__date-picker-btn"
+                @click.stop="
+                  tbFilterDateFrom = '';
+                  tbFilterDateTo = '';
+                  datePickStep = 'from';
+                "
+              >
+                Clear
+              </button>
+              <button
+                class="proj-details__date-picker-btn proj-details__date-picker-btn--apply"
+                @click.stop="showDateRangePicker = false"
+              >
+                Apply
+              </button>
             </div>
           </div>
 
@@ -1561,7 +1563,6 @@ export default {
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
   padding: 20px;
-  overflow: visible;
 }
 
 .proj-details__card--full {
@@ -2016,7 +2017,6 @@ export default {
   flex: 1;
   min-width: 120px;
   max-width: 200px;
-  position: relative;
 }
 
 .proj-details__tb-label {
@@ -2050,8 +2050,9 @@ export default {
 }
 
 /* ── Date Range Picker ── */
-.proj-details__tb-filter {
-  position: relative;
+.proj-details__tb-filter--date {
+  max-width: none;
+  flex: 0 0 auto;
 }
 
 .proj-details__date-range {
@@ -2105,17 +2106,16 @@ export default {
 }
 
 .proj-details__date-picker-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 200;
-  margin-top: 4px;
+  display: inline-flex;
+  flex-direction: column;
+  margin-bottom: 12px;
   background: var(--color-main-background, #fff);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   padding: 12px 14px 8px;
   min-width: 460px;
+  width: fit-content;
 }
 
 .proj-details__date-picker-months {
