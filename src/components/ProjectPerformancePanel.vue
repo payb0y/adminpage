@@ -219,6 +219,17 @@
                 placeholder="Filter…"
                 @click.stop
               />
+              <select
+                v-model="delayStatusFilter"
+                class="perf-panel__proj-status-filter"
+                @click.stop
+              >
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Waiting on Customer">W.o.c.</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Done">Done</option>
+              </select>
               <div class="perf-panel__proj-items">
                 <div
                   v-for="(proj, i) in filteredDelayProjects"
@@ -292,6 +303,17 @@
                 placeholder="Filter…"
                 @click.stop
               />
+              <select
+                v-model="completionStatusFilter"
+                class="perf-panel__proj-status-filter"
+                @click.stop
+              >
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Waiting on Customer">W.o.c.</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Done">Done</option>
+              </select>
               <div class="perf-panel__proj-items">
                 <div
                   v-for="(proj, i) in filteredCompletionProjects"
@@ -840,6 +862,8 @@ export default {
       completionSortBy: "desc",
       delaySearch: "",
       completionSearch: "",
+      delayStatusFilter: "",
+      completionStatusFilter: "",
     };
   },
   computed: {
@@ -871,23 +895,33 @@ export default {
     },
     filteredDelayProjects: function () {
       var q = (this.delaySearch || "").toLowerCase();
+      var statusFilter = this.delayStatusFilter;
       var result = [];
       for (var i = 0; i < this.taskDelayProjects.length; i++) {
         var proj = this.taskDelayProjects[i];
-        if (!q || proj.name.toLowerCase().indexOf(q) !== -1) {
-          result.push({ name: proj.name, originalIndex: i });
+        if (q && proj.name.toLowerCase().indexOf(q) === -1) {
+          continue;
         }
+        if (statusFilter && proj.status !== statusFilter) {
+          continue;
+        }
+        result.push({ name: proj.name, originalIndex: i });
       }
       return result;
     },
     filteredCompletionProjects: function () {
       var q = (this.completionSearch || "").toLowerCase();
+      var statusFilter = this.completionStatusFilter;
       var result = [];
       for (var i = 0; i < this.taskCompletionProjects.length; i++) {
         var proj = this.taskCompletionProjects[i];
-        if (!q || proj.name.toLowerCase().indexOf(q) !== -1) {
-          result.push({ name: proj.name, originalIndex: i });
+        if (q && proj.name.toLowerCase().indexOf(q) === -1) {
+          continue;
         }
+        if (statusFilter && proj.status !== statusFilter) {
+          continue;
+        }
+        result.push({ name: proj.name, originalIndex: i });
       }
       return result;
     },
@@ -976,6 +1010,36 @@ export default {
         completion: "Task Completion \u2014 Completed Tasks",
       };
       return titles[this.modal] || "";
+    },
+  },
+  watch: {
+    filteredDelayProjects: function (list) {
+      if (list.length > 0) {
+        var found = false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].originalIndex === this.delayIndex) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          this.delayIndex = list[0].originalIndex;
+        }
+      }
+    },
+    filteredCompletionProjects: function (list) {
+      if (list.length > 0) {
+        var found = false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].originalIndex === this.completionIndex) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          this.completionIndex = list[0].originalIndex;
+        }
+      }
     },
   },
   methods: {
@@ -1388,6 +1452,26 @@ export default {
 
 .perf-panel__proj-search::placeholder {
   color: #b0b5be;
+}
+
+.perf-panel__proj-status-filter {
+  width: 100%;
+  padding: 5px 8px;
+  border: none;
+  border-bottom: 1px solid #eef1f5;
+  font-size: 11px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: transparent;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 22px;
 }
 
 .perf-panel__proj-items {

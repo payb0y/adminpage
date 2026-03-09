@@ -325,8 +325,9 @@ class DeckService {
 
             $total = $onTime + $delayed + $blocked;
             $taskDelayProjects[] = [
-                'name'  => $proj['name'],
-                'chart' => [
+                'name'   => $proj['name'],
+                'status' => $proj['status'],
+                'chart'  => [
                     'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
                     'data'   => [
                         $total > 0 ? (int)round(($onTime  / $total) * 100) : 0,
@@ -350,9 +351,10 @@ class DeckService {
 
             if (empty($completedDates)) {
                 $taskCompletionProjects[] = [
-                    'name'  => $proj['name'],
-                    'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                    'data'  => [0, 0, 0, 0, 0, 0],
+                    'name'   => $proj['name'],
+                    'status' => $proj['status'],
+                    'weeks'  => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    'data'   => [0, 0, 0, 0, 0, 0],
                 ];
                 continue;
             }
@@ -377,9 +379,10 @@ class DeckService {
             }
 
             $taskCompletionProjects[] = [
-                'name'  => $proj['name'],
-                'weeks' => $weekLabels,
-                'data'  => $weekCounts,
+                'name'   => $proj['name'],
+                'status' => $proj['status'],
+                'weeks'  => $weekLabels,
+                'data'   => $weekCounts,
             ];
         }
 
