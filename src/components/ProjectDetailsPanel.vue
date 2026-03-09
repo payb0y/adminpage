@@ -560,11 +560,7 @@
               </div>
               <div
                 v-if="showDateRangePicker"
-                v-click-outside="
-                  function () {
-                    showDateRangePicker = false;
-                  }
-                "
+                v-click-outside="closeDatePicker"
                 class="proj-details__date-picker-dropdown"
               >
                 <div class="proj-details__date-picker-months">
@@ -1230,6 +1226,9 @@ export default {
         cls.push("proj-details__date-picker-cell--today");
       return cls;
     },
+    closeDatePicker: function () {
+      this.showDateRangePicker = false;
+    },
     assigneePct: function (a) {
       if (!a.tasks || a.tasks === 0) return 0;
       return Math.round(((a.doneTasks || 0) / a.tasks) * 100);
@@ -1562,6 +1561,7 @@ export default {
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
   padding: 20px;
+  overflow: visible;
 }
 
 .proj-details__card--full {
@@ -2016,6 +2016,7 @@ export default {
   flex: 1;
   min-width: 120px;
   max-width: 200px;
+  position: relative;
 }
 
 .proj-details__tb-label {
@@ -2106,7 +2107,7 @@ export default {
 .proj-details__date-picker-dropdown {
   position: absolute;
   top: 100%;
-  left: 0;
+  right: 0;
   z-index: 200;
   margin-top: 4px;
   background: var(--color-main-background, #fff);
