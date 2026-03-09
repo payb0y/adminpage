@@ -203,6 +203,7 @@ class DeckService {
             $projectMap[$bid] = [
                 'name'     => $p['project_name'],
                 'board_id' => $bid,
+                'status'   => $this->statusLabel((int)$p['project_status']),
                 'tasks'    => [],
             ];
         }
@@ -453,6 +454,7 @@ class DeckService {
             $projectMap[$bid] = [
                 'name'     => $p['project_name'],
                 'board_id' => $bid,
+                'status'   => $this->statusLabel((int)$p['project_status']),
                 'tasks'    => [],
             ];
         }
