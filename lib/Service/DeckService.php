@@ -496,10 +496,11 @@ class DeckService {
                     $done++;
                 }
                 $tasks[] = [
-                    'title'  => $t['task_title'],
-                    'status' => $t['task_status'],
-                    'stack'  => $t['stack_title'],
-                    'due'    => $t['duedate'],
+                    'title'      => $t['task_title'],
+                    'status'     => $t['task_status'],
+                    'stack'      => $t['stack_title'],
+                    'due'        => $t['duedate'],
+                    'created_at' => !empty($t['card_created_at']) ? date('Y-m-d H:i:s', (int)$t['card_created_at']) : null,
                 ];
             }
             $result[] = [
@@ -534,11 +535,12 @@ class DeckService {
                     $members[$uid]['done']++;
                 }
                 $members[$uid]['tasks'][] = [
-                    'title'   => $row['task_title'],
-                    'status'  => $row['task_status'],
-                    'project' => $row['board_title'],
-                    'stack'   => $row['stack_title'],
-                    'due'     => $row['duedate'],
+                    'title'      => $row['task_title'],
+                    'status'     => $row['task_status'],
+                    'project'    => $row['board_title'],
+                    'stack'      => $row['stack_title'],
+                    'due'        => $row['duedate'],
+                    'created_at' => !empty($row['card_created_at']) ? date('Y-m-d H:i:s', (int)$row['card_created_at']) : null,
                 ];
             }
         }

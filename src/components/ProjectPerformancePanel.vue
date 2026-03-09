@@ -45,6 +45,115 @@
     </div>
 
     <div v-show="embedded || !collapsed">
+      <!-- Date Range Filter -->
+      <div class="perf-panel__date-filter-row">
+        <label class="perf-panel__date-label">Filter by Date</label>
+        <div
+          class="perf-panel__date-range"
+          @click="showDatePicker = !showDatePicker"
+        >
+          <span class="perf-panel__date-range-value">{{
+            perfDateFrom || "Start"
+          }}</span>
+          <span class="perf-panel__date-range-arrow">→</span>
+          <span class="perf-panel__date-range-value">{{
+            perfDateTo || "End"
+          }}</span>
+          <button
+            v-if="perfDateFrom || perfDateTo"
+            class="perf-panel__date-range-clear"
+            title="Clear dates"
+            @click.stop="clearPerfDates"
+          >
+            ✕
+          </button>
+        </div>
+        <div
+          v-if="showDatePicker"
+          v-click-outside="closePerfDatePicker"
+          class="perf-panel__date-picker-dropdown"
+        >
+          <div class="perf-panel__date-picker-months">
+            <div class="perf-panel__date-picker-month">
+              <div class="perf-panel__date-picker-header">
+                <button
+                  class="perf-panel__date-picker-nav"
+                  @click.stop="shiftPerfCalendar(-1)"
+                >
+                  ‹
+                </button>
+                <span class="perf-panel__date-picker-title">{{
+                  perfCalendarLabel(0)
+                }}</span>
+                <span></span>
+              </div>
+              <div class="perf-panel__date-picker-grid">
+                <span
+                  v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                  :key="d"
+                  class="perf-panel__date-picker-dow"
+                  >{{ d }}</span
+                >
+                <span
+                  v-for="(cell, ci) in perfCalendarCells(0)"
+                  :key="'PL' + ci"
+                  :class="perfDateCellClass(cell)"
+                  @click.stop="cell.date && pickPerfDate(cell.date)"
+                  >{{ cell.day }}</span
+                >
+              </div>
+            </div>
+            <div class="perf-panel__date-picker-month">
+              <div class="perf-panel__date-picker-header">
+                <span></span>
+                <span class="perf-panel__date-picker-title">{{
+                  perfCalendarLabel(1)
+                }}</span>
+                <button
+                  class="perf-panel__date-picker-nav"
+                  @click.stop="shiftPerfCalendar(1)"
+                >
+                  ›
+                </button>
+              </div>
+              <div class="perf-panel__date-picker-grid">
+                <span
+                  v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                  :key="d"
+                  class="perf-panel__date-picker-dow"
+                  >{{ d }}</span
+                >
+                <span
+                  v-for="(cell, ci) in perfCalendarCells(1)"
+                  :key="'PR' + ci"
+                  :class="perfDateCellClass(cell)"
+                  @click.stop="cell.date && pickPerfDate(cell.date)"
+                  >{{ cell.day }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="perf-panel__date-picker-footer">
+            <button
+              class="perf-panel__date-picker-btn"
+              @click.stop="
+                perfDateFrom = '';
+                perfDateTo = '';
+                perfDateStep = 'from';
+              "
+            >
+              Clear
+            </button>
+            <button
+              class="perf-panel__date-picker-btn perf-panel__date-picker-btn--apply"
+              @click.stop="showDatePicker = false"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- TOP ROW: Progress + Productivity -->
       <div class="perf-panel__top-grid">
         <!-- Project Progress Comparison -->
@@ -96,11 +205,12 @@
             </div>
           </div>
           <div
-            v-if="projectProgress.length > progressPreviewLimit"
+            v-if="effectiveProjectProgress.length > progressPreviewLimit"
             class="perf-panel__bar-hint"
           >
             Showing {{ previewProjectProgress.length }} of
-            {{ projectProgress.length }} projects (click for full details)
+            {{ effectiveProjectProgress.length }} projects (click for full
+            details)
           </div>
         </div>
 
@@ -166,11 +276,12 @@
             </div>
           </div>
           <div
-            v-if="memberPerformance.length > memberPreviewLimit"
+            v-if="effectiveMemberPerformance.length > memberPreviewLimit"
             class="perf-panel__bar-hint"
           >
             Showing {{ previewMemberPerformance.length }} of
-            {{ memberPerformance.length }} members (click for full details)
+            {{ effectiveMemberPerformance.length }} members (click for full
+            details)
           </div>
         </div>
       </div>
@@ -884,6 +995,22 @@ export default {
     AreaChart,
     ProjectDetailsPanel,
   },
+  directives: {
+    "click-outside": {
+      bind: function (el, binding) {
+        el.__clickOutsideHandler = function (e) {
+          if (!el.contains(e.target)) {
+            binding.value(e);
+          }
+        };
+        document.addEventListener("pointerdown", el.__clickOutsideHandler);
+      },
+      unbind: function (el) {
+        document.removeEventListener("pointerdown", el.__clickOutsideHandler);
+        delete el.__clickOutsideHandler;
+      },
+    },
+  },
   props: {
     embedded: {
       type: Boolean,
@@ -937,6 +1064,12 @@ export default {
       completionSearch: "",
       delayStatusFilter: "",
       completionStatusFilter: "",
+      // Date range filter
+      perfDateFrom: "",
+      perfDateTo: "",
+      showDatePicker: false,
+      perfDateStep: "from",
+      perfCalendarBase: new Date(),
     };
   },
   computed: {
@@ -946,8 +1079,180 @@ export default {
     memberPreviewLimit: function () {
       return 5;
     },
+    hasDateFilter: function () {
+      return !!(this.perfDateFrom || this.perfDateTo);
+    },
+    /* ── Date-filtered card data (re-aggregated from detail tasks) ── */
+    effectiveProjectProgress: function () {
+      if (!this.hasDateFilter) return this.projectProgress || [];
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var list = this.details.progressDetails || [];
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var total = 0;
+        var done = 0;
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.created_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          total++;
+          if (t.status === "done") done++;
+        }
+        result.push({
+          name: proj.name,
+          progress: total > 0 ? Math.round((done / total) * 100) : 0,
+        });
+      }
+      return result;
+    },
+    effectiveMemberPerformance: function () {
+      if (!this.hasDateFilter) return this.memberPerformance || [];
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var list = this.details.memberDetails || [];
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var member = list[i];
+        var total = 0;
+        var done = 0;
+        for (var j = 0; j < (member.tasks || []).length; j++) {
+          var t = member.tasks[j];
+          var ca = (t.created_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          total++;
+          if (t.status === "done") done++;
+        }
+        if (total > 0) {
+          result.push({
+            name: member.name,
+            total: total,
+            done: done,
+            progress: Math.round((done / total) * 100),
+          });
+        }
+      }
+      if (result.length === 0) {
+        result.push({ name: "No Assignments", total: 0, done: 0, progress: 0 });
+      }
+      return result;
+    },
+    effectiveDelayProjects: function () {
+      if (!this.hasDateFilter) return this.taskDelayProjects || [];
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var list = this.details.delayDetails || [];
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var onTime = 0;
+        var delayed = 0;
+        var blocked = 0;
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.createdAt || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          if (t.category === "delayed") delayed++;
+          else if (t.category === "blocked") blocked++;
+          else onTime++;
+        }
+        var total = onTime + delayed + blocked;
+        result.push({
+          name: proj.name,
+          status: "",
+          chart: {
+            labels: ["On-time Tasks", "Delayed Tasks", "Blocked Tasks"],
+            data: [
+              total > 0 ? Math.round((onTime / total) * 100) : 0,
+              total > 0 ? Math.round((delayed / total) * 100) : 0,
+              total > 0 ? Math.round((blocked / total) * 100) : 0,
+            ],
+            colors: ["#2ec4b6", "#f4a261", "#e63946"],
+          },
+        });
+      }
+      return result;
+    },
+    effectiveCompletionProjects: function () {
+      if (!this.hasDateFilter) return this.taskCompletionProjects || [];
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      var list = this.details.completionDetails || [];
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        var proj = list[i];
+        var completedDates = [];
+        for (var j = 0; j < (proj.tasks || []).length; j++) {
+          var t = proj.tasks[j];
+          var ca = (t.completed_at || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+          completedDates.push(new Date(t.completed_at));
+        }
+        if (completedDates.length === 0) {
+          result.push({
+            name: proj.name,
+            status: "",
+            weeks: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
+            data: [0, 0, 0, 0, 0, 0],
+          });
+          continue;
+        }
+        var now = new Date();
+        var weekLabels = [];
+        var weekCounts = [];
+        for (var w = 5; w >= 0; w--) {
+          var weekStart = new Date(now);
+          weekStart.setDate(weekStart.getDate() - w * 7);
+          var day = weekStart.getDay();
+          var diff = day === 0 ? -6 : 1 - day;
+          weekStart.setDate(weekStart.getDate() + diff);
+          weekStart.setHours(0, 0, 0, 0);
+          var weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekEnd.getDate() + 6);
+          weekEnd.setHours(23, 59, 59, 999);
+          var months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          weekLabels.push(
+            months[weekStart.getMonth()] +
+              " " +
+              (weekStart.getDate() < 10 ? "0" : "") +
+              weekStart.getDate(),
+          );
+          var count = 0;
+          for (var k = 0; k < completedDates.length; k++) {
+            if (completedDates[k] >= weekStart && completedDates[k] <= weekEnd)
+              count++;
+          }
+          weekCounts.push(count);
+        }
+        result.push({
+          name: proj.name,
+          status: "",
+          weeks: weekLabels,
+          data: weekCounts,
+        });
+      }
+      return result;
+    },
     previewProjectProgress: function () {
-      return (this.projectProgress || [])
+      return this.effectiveProjectProgress
         .slice()
         .sort(function (a, b) {
           return (b.progress || 0) - (a.progress || 0);
@@ -955,7 +1260,7 @@ export default {
         .slice(0, this.progressPreviewLimit);
     },
     previewMemberPerformance: function () {
-      return (this.memberPerformance || [])
+      return this.effectiveMemberPerformance
         .slice()
         .sort(function (a, b) {
           var progressDiff = (b.progress || 0) - (a.progress || 0);
@@ -970,8 +1275,8 @@ export default {
       var q = (this.delaySearch || "").toLowerCase();
       var statusFilter = this.delayStatusFilter;
       var result = [];
-      for (var i = 0; i < this.taskDelayProjects.length; i++) {
-        var proj = this.taskDelayProjects[i];
+      for (var i = 0; i < this.effectiveDelayProjects.length; i++) {
+        var proj = this.effectiveDelayProjects[i];
         if (q && proj.name.toLowerCase().indexOf(q) === -1) {
           continue;
         }
@@ -986,8 +1291,8 @@ export default {
       var q = (this.completionSearch || "").toLowerCase();
       var statusFilter = this.completionStatusFilter;
       var result = [];
-      for (var i = 0; i < this.taskCompletionProjects.length; i++) {
-        var proj = this.taskCompletionProjects[i];
+      for (var i = 0; i < this.effectiveCompletionProjects.length; i++) {
+        var proj = this.effectiveCompletionProjects[i];
         if (q && proj.name.toLowerCase().indexOf(q) === -1) {
           continue;
         }
@@ -999,10 +1304,25 @@ export default {
       return result;
     },
     activeDelayProject: function () {
-      return this.taskDelayProjects[this.delayIndex];
+      return (
+        this.effectiveDelayProjects[this.delayIndex] || {
+          name: "",
+          chart: {
+            labels: [],
+            data: [0, 0, 0],
+            colors: ["#2ec4b6", "#f4a261", "#e63946"],
+          },
+        }
+      );
     },
     activeCompletionProject: function () {
-      return this.taskCompletionProjects[this.completionIndex];
+      return (
+        this.effectiveCompletionProjects[this.completionIndex] || {
+          name: "",
+          weeks: [],
+          data: [],
+        }
+      );
     },
     details: function () {
       return (
@@ -1114,24 +1434,35 @@ export default {
         }
       }
     },
+    effectiveDelayProjects: function (list) {
+      if (this.delayIndex >= list.length) {
+        this.delayIndex = 0;
+      }
+    },
+    effectiveCompletionProjects: function (list) {
+      if (this.completionIndex >= list.length) {
+        this.completionIndex = 0;
+      }
+    },
   },
   methods: {
     prevDelayProject: function () {
       this.delayIndex =
-        (this.delayIndex - 1 + this.taskDelayProjects.length) %
-        this.taskDelayProjects.length;
+        (this.delayIndex - 1 + this.effectiveDelayProjects.length) %
+        this.effectiveDelayProjects.length;
     },
     nextDelayProject: function () {
-      this.delayIndex = (this.delayIndex + 1) % this.taskDelayProjects.length;
+      this.delayIndex =
+        (this.delayIndex + 1) % this.effectiveDelayProjects.length;
     },
     prevCompletionProject: function () {
       this.completionIndex =
-        (this.completionIndex - 1 + this.taskCompletionProjects.length) %
-        this.taskCompletionProjects.length;
+        (this.completionIndex - 1 + this.effectiveCompletionProjects.length) %
+        this.effectiveCompletionProjects.length;
     },
     nextCompletionProject: function () {
       this.completionIndex =
-        (this.completionIndex + 1) % this.taskCompletionProjects.length;
+        (this.completionIndex + 1) % this.effectiveCompletionProjects.length;
     },
     openModal: function (type) {
       this.modal = type;
@@ -1220,6 +1551,108 @@ export default {
         }
       });
     },
+    /* ── Date range picker helpers ── */
+    perfPad: function (n) {
+      return n < 10 ? "0" + n : "" + n;
+    },
+    perfToDateStr: function (d) {
+      return (
+        d.getFullYear() +
+        "-" +
+        this.perfPad(d.getMonth() + 1) +
+        "-" +
+        this.perfPad(d.getDate())
+      );
+    },
+    perfCalendarLabel: function (offset) {
+      var d = new Date(
+        this.perfCalendarBase.getFullYear(),
+        this.perfCalendarBase.getMonth() + offset,
+        1,
+      );
+      var months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      return months[d.getMonth()] + " " + d.getFullYear();
+    },
+    shiftPerfCalendar: function (dir) {
+      var d = new Date(this.perfCalendarBase);
+      d.setMonth(d.getMonth() + dir);
+      this.perfCalendarBase = d;
+    },
+    perfCalendarCells: function (offset) {
+      var year = this.perfCalendarBase.getFullYear();
+      var month = this.perfCalendarBase.getMonth() + offset;
+      var first = new Date(year, month, 1);
+      var dayOfWeek = first.getDay();
+      var startPad = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var cells = [];
+      for (var i = 0; i < startPad; i++) {
+        cells.push({ day: "", date: null });
+      }
+      for (var d = 1; d <= daysInMonth; d++) {
+        cells.push({
+          day: d,
+          date: this.perfToDateStr(new Date(year, month, d)),
+        });
+      }
+      return cells;
+    },
+    pickPerfDate: function (dateStr) {
+      if (this.perfDateStep === "from") {
+        this.perfDateFrom = dateStr;
+        this.perfDateTo = "";
+        this.perfDateStep = "to";
+      } else {
+        if (dateStr < this.perfDateFrom) {
+          this.perfDateFrom = dateStr;
+          this.perfDateTo = "";
+          this.perfDateStep = "to";
+        } else {
+          this.perfDateTo = dateStr;
+          this.perfDateStep = "from";
+        }
+      }
+    },
+    perfDateCellClass: function (cell) {
+      var cls = ["perf-panel__date-picker-cell"];
+      if (!cell.date) {
+        cls.push("perf-panel__date-picker-cell--empty");
+        return cls;
+      }
+      var from = this.perfDateFrom;
+      var to = this.perfDateTo;
+      if (cell.date === from) cls.push("perf-panel__date-picker-cell--start");
+      if (cell.date === to) cls.push("perf-panel__date-picker-cell--end");
+      if (from && to && cell.date > from && cell.date < to)
+        cls.push("perf-panel__date-picker-cell--in-range");
+      if (cell.date === from && !to)
+        cls.push("perf-panel__date-picker-cell--solo");
+      var today = this.perfToDateStr(new Date());
+      if (cell.date === today) cls.push("perf-panel__date-picker-cell--today");
+      return cls;
+    },
+    closePerfDatePicker: function () {
+      this.showDatePicker = false;
+    },
+    clearPerfDates: function () {
+      this.perfDateFrom = "";
+      this.perfDateTo = "";
+      this.perfDateStep = "from";
+      this.showDatePicker = false;
+    },
   },
 };
 </script>
@@ -1279,6 +1712,215 @@ export default {
 
 .perf-panel__chevron--rotated {
   transform: rotate(180deg);
+}
+
+/* ── Date Range Filter ── */
+.perf-panel__date-filter-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0 var(--spacing-lg, 24px);
+  margin-bottom: 16px;
+}
+
+.perf-panel__date-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.perf-panel__date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-main-background, #fff);
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color 0.15s;
+}
+
+.perf-panel__date-range:hover {
+  border-color: #4a90d9;
+}
+
+.perf-panel__date-range-value {
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+}
+
+.perf-panel__date-range-arrow {
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 13px;
+}
+
+.perf-panel__date-range-clear {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.perf-panel__date-range-clear:hover {
+  color: #ef4444;
+}
+
+.perf-panel__date-picker-dropdown {
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 4px;
+  background: var(--color-main-background, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 12px 14px 8px;
+  min-width: 460px;
+  width: fit-content;
+}
+
+.perf-panel__date-picker-months {
+  display: flex;
+  gap: 16px;
+}
+
+.perf-panel__date-picker-month {
+  flex: 1;
+  min-width: 200px;
+}
+
+.perf-panel__date-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.perf-panel__date-picker-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.perf-panel__date-picker-nav {
+  background: none;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary, #1a1a2e);
+  transition: background 0.15s;
+}
+
+.perf-panel__date-picker-nav:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.perf-panel__date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px 0;
+  text-align: center;
+}
+
+.perf-panel__date-picker-dow {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  padding: 2px 0 4px;
+  text-transform: uppercase;
+}
+
+.perf-panel__date-picker-cell {
+  font-size: 12px;
+  padding: 5px 0;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.1s;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.perf-panel__date-picker-cell:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.perf-panel__date-picker-cell--empty {
+  cursor: default;
+}
+
+.perf-panel__date-picker-cell--today {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.perf-panel__date-picker-cell--start {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 6px 0 0 6px;
+}
+
+.perf-panel__date-picker-cell--end {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 0 6px 6px 0;
+}
+
+.perf-panel__date-picker-cell--solo {
+  background: #c878c8 !important;
+  color: #fff !important;
+  border-radius: 6px;
+}
+
+.perf-panel__date-picker-cell--in-range {
+  background: rgba(200, 120, 200, 0.15);
+}
+
+.perf-panel__date-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.perf-panel__date-picker-btn {
+  padding: 4px 14px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-main-background, #fff);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--color-text-primary, #1a1a2e);
+}
+
+.perf-panel__date-picker-btn:hover {
+  background: var(--color-background-hover, #f3f4f6);
+}
+
+.perf-panel__date-picker-btn--apply {
+  background: #c878c8;
+  color: #fff;
+  border-color: #c878c8;
+}
+
+.perf-panel__date-picker-btn--apply:hover {
+  background: #b060b0;
 }
 
 /* Grids */
