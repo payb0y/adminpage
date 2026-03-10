@@ -64,7 +64,10 @@
             class="public-links-admin__field public-links-admin__field--datetime"
           >
             <label for="pl-expires">Expires at (optional)</label>
-            <div class="public-links-admin__datetime-wrap">
+            <div
+              class="public-links-admin__datetime-wrap"
+              @click="openDatePicker"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="15"
@@ -84,9 +87,11 @@
               </svg>
               <input
                 id="pl-expires"
+                ref="dateInput"
                 v-model="newExpiresAt"
                 type="datetime-local"
                 step="60"
+                @click.stop
               />
               <button
                 v-if="newExpiresAt"
@@ -136,50 +141,26 @@
           >
             <td>{{ link.label || "—" }}</td>
             <td class="public-links-admin__url-cell">
-              <code>{{ buildUrl(link.token) }}</code>
-              <button
-                class="public-links-admin__copy-icon"
+              <code
+                class="public-links-admin__url-link"
                 :class="{
-                  'public-links-admin__copy-icon--copied':
+                  'public-links-admin__url-link--copied':
                     copiedLinkId === link.id,
                 }"
-                :title="copiedLinkId === link.id ? 'Copied!' : 'Copy link URL'"
+                :title="
+                  copiedLinkId === link.id ? 'Copied!' : 'Click to copy URL'
+                "
                 @click="copyLink(link.id, link.token)"
               >
-                <svg
-                  v-if="copiedLinkId !== link.id"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="public-links-admin__copy-svg"
+                <span class="public-links-admin__url-text">{{
+                  buildUrl(link.token)
+                }}</span>
+                <span
+                  v-if="copiedLinkId === link.id"
+                  class="public-links-admin__url-copied-badge"
+                  >Copied!</span
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path
-                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                  />
-                </svg>
-                <svg
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="public-links-admin__check-svg"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
+              </code>
             </td>
             <td>
               <span
@@ -293,6 +274,20 @@ export default {
         alert(e.response?.data?.error || "Failed to revoke link");
       } finally {
         this.revoking = null;
+      }
+    },
+
+    openDatePicker() {
+      const input = this.$refs.dateInput;
+      if (input) {
+        input.focus();
+        if (typeof input.showPicker === "function") {
+          try {
+            input.showPicker();
+          } catch (e) {
+            /* ignore */
+          }
+        }
       }
     },
 
@@ -452,6 +447,7 @@ export default {
   border-radius: 8px;
   background: var(--color-main-background, #fff);
   transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
 }
 
 .public-links-admin__datetime-wrap:hover {
@@ -576,76 +572,58 @@ export default {
 }
 
 .public-links-admin__url-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 220px;
+  max-width: 260px;
   overflow: hidden;
 }
 
-.public-links-admin__url-cell code {
+.public-links-admin__url-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   color: var(--color-text-secondary, #6b7280);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  max-width: 100%;
+}
+
+.public-links-admin__url-link:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #2766e5;
+}
+
+.public-links-admin__url-link--copied {
+  background: #d1fae5;
+  border-color: #34d399;
+  color: #059669;
+}
+
+.public-links-admin__url-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ─── Copy button (always visible) ─── */
-.public-links-admin__copy-icon {
-  border: 1px solid var(--color-border, #e5e7eb);
-  background: var(--bg-card, #fff);
-  color: var(--color-text-secondary, #6b7280);
-  cursor: pointer;
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
+.public-links-admin__url-copied-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  animation: publicLinksCopiedFade 0.3s ease-out;
 }
 
-.public-links-admin__copy-icon:hover {
-  background: #eef2ff;
-  border-color: #2766e5;
-  color: #2766e5;
-}
-
-.public-links-admin__copy-icon--copied {
-  background: #d1fae5;
-  border-color: #34d399;
-  color: #059669;
-}
-
-.public-links-admin__copy-icon--copied:hover {
-  background: #d1fae5;
-  border-color: #34d399;
-  color: #059669;
-}
-
-/* Copy icon SVG animation */
-.public-links-admin__copy-svg {
-  transition: opacity 0.15s, transform 0.15s;
-}
-
-.public-links-admin__check-svg {
-  animation: publicLinksCheckPop 0.3s ease-out;
-}
-
-@keyframes publicLinksCheckPop {
+@keyframes publicLinksCopiedFade {
   0% {
-    transform: scale(0.5);
     opacity: 0;
-  }
-  60% {
-    transform: scale(1.2);
-    opacity: 1;
+    transform: translateX(-4px);
   }
   100% {
-    transform: scale(1);
     opacity: 1;
+    transform: translateX(0);
   }
 }
 
