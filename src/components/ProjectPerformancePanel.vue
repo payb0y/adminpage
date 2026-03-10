@@ -173,7 +173,12 @@
       </div>
 
       <!-- TOP ROW: Progress + Productivity -->
-      <div class="perf-panel__top-grid">
+      <div
+        :class="[
+          'perf-panel__top-grid',
+          { 'perf-panel__top-grid--single': !showMemberPerformance },
+        ]"
+      >
         <!-- Project Progress Comparison -->
         <div
           class="perf-panel__card perf-panel__card--clickable"
@@ -2094,6 +2099,10 @@ export default {
   gap: var(--spacing-md, 16px);
   margin-bottom: var(--spacing-md, 16px);
   padding: 0 var(--spacing-lg, 24px);
+}
+
+.perf-panel__top-grid--single {
+  grid-template-columns: 1fr;
 }
 
 .perf-panel__bottom-grid {
