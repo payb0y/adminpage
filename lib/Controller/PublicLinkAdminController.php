@@ -38,7 +38,7 @@ class PublicLinkAdminController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    public function list(): JSONResponse {
+    public function index(): JSONResponse {
         $uid = $this->userSession->getUser()->getUID();
         $orgId = $this->orgOverviewService->resolveOrgId($uid);
 

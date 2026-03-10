@@ -13,7 +13,7 @@ return [
 
         // Admin public-link management routes
         ['name' => 'public_link_admin#create', 'url' => '/api/admin/public-links', 'verb' => 'POST'],
-        ['name' => 'public_link_admin#list', 'url' => '/api/admin/public-links', 'verb' => 'GET'],
+        ['name' => 'public_link_admin#index', 'url' => '/api/admin/public-links', 'verb' => 'GET'],
         ['name' => 'public_link_admin#revoke', 'url' => '/api/admin/public-links/{id}', 'verb' => 'DELETE'],
     ],
 ];
