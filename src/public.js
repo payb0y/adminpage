@@ -1,6 +1,5 @@
 import Vue from "vue";
-import Dashboard from "./components/Dashboard.vue";
-import PublicLinksAdmin from "./components/PublicLinksAdmin.vue";
+import PublicDashboard from "./components/PublicDashboard.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
@@ -13,6 +12,8 @@ Vue.mixin({
 const mountEl = document.getElementById("adminpage-root");
 
 if (mountEl) {
+  const token = mountEl.dataset.token;
+
   const app = new Vue({
     el: mountEl,
     data() {
@@ -20,13 +21,23 @@ if (mountEl) {
         dashboardData: null,
         loading: true,
         error: null,
+        expired: false,
       };
     },
     render(h) {
       if (this.loading) {
         return h("div", { class: "adminpage-loading" }, [
           h("div", { class: "adminpage-loading__spinner" }),
-          h("p", "Loading dashboard data..."),
+          h("p", "Loading dashboard…"),
+        ]);
+      }
+      if (this.expired) {
+        return h("div", { class: "adminpage-expired" }, [
+          h("h2", "Link Unavailable"),
+          h(
+            "p",
+            "This public dashboard link is invalid, has expired, or has been revoked.",
+          ),
         ]);
       }
       if (this.error) {
@@ -34,7 +45,7 @@ if (mountEl) {
           h("p", `Error loading data: ${this.error}`),
         ]);
       }
-      return h(Dashboard, {
+      return h(PublicDashboard, {
         props: {
           data: this.dashboardData,
         },
@@ -46,28 +57,20 @@ if (mountEl) {
     methods: {
       async fetchData() {
         try {
-          const url = generateUrl("/apps/adminpage/api/data");
+          const url = generateUrl(`/apps/adminpage/api/public/${token}`);
           const response = await axios.get(url);
           this.dashboardData = response.data;
         } catch (e) {
-          console.error("Failed to load dashboard data", e);
-          this.error = e.message || "Unknown error";
+          if (e.response && e.response.status === 403) {
+            this.expired = true;
+          } else {
+            console.error("Failed to load public dashboard data", e);
+            this.error = e.message || "Unknown error";
+          }
         } finally {
           this.loading = false;
         }
       },
-    },
-  });
-}
-
-/* ── Admin settings: Public Links management ── */
-const adminLinksEl = document.getElementById("adminpage-admin-public-links");
-
-if (adminLinksEl) {
-  new Vue({
-    el: adminLinksEl,
-    render(h) {
-      return h(PublicLinksAdmin);
     },
   });
 }
