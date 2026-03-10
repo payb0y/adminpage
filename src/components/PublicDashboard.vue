@@ -107,6 +107,12 @@ body.nc-guest-page #app-content:has(.public-dashboard) {
   --radius-card: 12px;
   --color-text-primary: #1a1a2e;
   --color-text-secondary: #6b7280;
+  --color-main-background: #ffffff;
+  --color-background-hover: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-text-maxcontrast: #1a1a2e;
+  --color-text-light: #6b7280;
+  color-scheme: light;
 
   background-color: var(--bg-page);
   max-width: 1200px;
