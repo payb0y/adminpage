@@ -12,8 +12,8 @@ return [
         ['name' => 'public_dashboard#getData', 'url' => '/api/public/{token}', 'verb' => 'GET'],
 
         // Admin public-link management routes
-        ['name' => 'publicLinks#create', 'url' => '/api/admin/public-links', 'verb' => 'POST'],
-        ['name' => 'publicLinks#index', 'url' => '/api/admin/public-links', 'verb' => 'GET'],
-        ['name' => 'publicLinks#revoke', 'url' => '/api/admin/public-links/{id}', 'verb' => 'DELETE'],
+        ['name' => 'publicLinks#create', 'url' => '/api/public-links', 'verb' => 'POST'],
+        ['name' => 'publicLinks#index', 'url' => '/api/public-links', 'verb' => 'GET'],
+        ['name' => 'publicLinks#revoke', 'url' => '/api/public-links/{id}', 'verb' => 'DELETE'],
     ],
 ];

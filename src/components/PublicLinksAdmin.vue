@@ -160,7 +160,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const url = generateUrl("/apps/adminpage/api/admin/public-links");
+        const url = generateUrl("/apps/adminpage/api/public-links");
         const response = await axios.get(url);
         this.links = response.data;
       } catch (e) {
@@ -177,7 +177,7 @@ export default {
       this.justCreatedUrl = null;
       this.copied = false;
       try {
-        const url = generateUrl("/apps/adminpage/api/admin/public-links");
+        const url = generateUrl("/apps/adminpage/api/public-links");
         const params = {};
         if (this.newLabel) params.label = this.newLabel;
         if (this.newExpiresAt)
@@ -203,7 +203,7 @@ export default {
         return;
       this.revoking = id;
       try {
-        const url = generateUrl(`/apps/adminpage/api/admin/public-links/${id}`);
+        const url = generateUrl(`/apps/adminpage/api/public-links/${id}`);
         await axios.delete(url);
         await this.fetchLinks();
       } catch (e) {
