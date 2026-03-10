@@ -1,6 +1,7 @@
 <template>
   <section class="public-links-admin">
-    <div class="public-links-admin__header">
+    <!-- ── Collapsible Header ── -->
+    <div class="public-links-admin__header" @click="collapsed = !collapsed">
       <h3 class="public-links-admin__title">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -22,146 +23,200 @@
         </svg>
         Public Dashboard Links
       </h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="public-links-admin__chevron"
+        :class="{ 'public-links-admin__chevron--rotated': collapsed }"
+      >
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
+    </div>
+
+    <div v-show="!collapsed" class="public-links-admin__body">
       <p class="public-links-admin__desc">
         Share a read-only view of KPIs and project performance with anyone — no
         login required.
       </p>
-    </div>
 
-    <div class="public-links-admin__create-card">
-      <div class="public-links-admin__form-row">
-        <div class="public-links-admin__field public-links-admin__field--label">
-          <label for="pl-label">Label (optional)</label>
-          <input
-            id="pl-label"
-            v-model="newLabel"
-            type="text"
-            placeholder="e.g. Client review"
-          />
+      <div class="public-links-admin__create-card">
+        <div class="public-links-admin__form-row">
+          <div
+            class="public-links-admin__field public-links-admin__field--label"
+          >
+            <label for="pl-label">Label (optional)</label>
+            <input
+              id="pl-label"
+              v-model="newLabel"
+              type="text"
+              placeholder="e.g. Client review"
+            />
+          </div>
+
+          <div
+            class="public-links-admin__field public-links-admin__field--datetime"
+          >
+            <label for="pl-expires">Expires at (optional)</label>
+            <div class="public-links-admin__datetime-wrap">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="public-links-admin__datetime-icon"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <input
+                id="pl-expires"
+                v-model="newExpiresAt"
+                type="datetime-local"
+                step="60"
+              />
+              <button
+                v-if="newExpiresAt"
+                class="public-links-admin__datetime-clear"
+                title="Clear date"
+                @click.stop="newExpiresAt = ''"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <button
+            class="public-links-admin__btn public-links-admin__btn--create"
+            :disabled="creating"
+            @click="createLink"
+          >
+            {{ creating ? "Creating…" : "+ Create Link" }}
+          </button>
         </div>
-
-        <div
-          class="public-links-admin__field public-links-admin__field--datetime"
-        >
-          <label for="pl-expires">Expires at (optional)</label>
-          <input
-            id="pl-expires"
-            v-model="newExpiresAt"
-            type="datetime-local"
-            step="60"
-          />
-        </div>
-
-        <button
-          class="public-links-admin__btn public-links-admin__btn--create"
-          :disabled="creating"
-          @click="createLink"
-        >
-          {{ creating ? "Creating…" : "+ Create Link" }}
-        </button>
       </div>
-    </div>
 
-    <div v-if="loading" class="public-links-admin__state">Loading links…</div>
-    <div v-else-if="error" class="public-links-admin__error">{{ error }}</div>
-    <div v-else-if="links.length === 0" class="public-links-admin__state">
-      No public links yet. Create one above.
-    </div>
-    <table v-else class="public-links-admin__table">
-      <thead>
-        <tr>
-          <th>Label</th>
-          <th>URL</th>
-          <th>Status</th>
-          <th>Expires</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="link in links"
-          :key="link.id"
-          :class="{
-            'public-links-admin__row--disabled': !link.enabled || link.expired,
-          }"
-        >
-          <td>{{ link.label || "—" }}</td>
-          <td class="public-links-admin__url-cell">
-            <code>{{ buildUrl(link.token) }}</code>
-            <button
-              class="public-links-admin__copy-icon"
-              :title="copiedLinkId === link.id ? 'Copied' : 'Copy link URL'"
-              @click="copyLink(link.id, link.token)"
-            >
-              <svg
-                v-if="copiedLinkId !== link.id"
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+      <div v-if="loading" class="public-links-admin__state">Loading links…</div>
+      <div v-else-if="error" class="public-links-admin__error">{{ error }}</div>
+      <div v-else-if="links.length === 0" class="public-links-admin__state">
+        No public links yet. Create one above.
+      </div>
+      <table v-else class="public-links-admin__table">
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Expires</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="link in links"
+            :key="link.id"
+            :class="{
+              'public-links-admin__row--disabled':
+                !link.enabled || link.expired,
+            }"
+          >
+            <td>{{ link.label || "—" }}</td>
+            <td class="public-links-admin__url-cell">
+              <code>{{ buildUrl(link.token) }}</code>
+              <button
+                class="public-links-admin__copy-icon"
+                :class="{
+                  'public-links-admin__copy-icon--copied':
+                    copiedLinkId === link.id,
+                }"
+                :title="copiedLinkId === link.id ? 'Copied!' : 'Copy link URL'"
+                @click="copyLink(link.id, link.token)"
               >
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path
-                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                />
-              </svg>
-              <svg
+                <svg
+                  v-if="copiedLinkId !== link.id"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="public-links-admin__copy-svg"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path
+                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                  />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="public-links-admin__check-svg"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+            </td>
+            <td>
+              <span
+                v-if="!link.enabled"
+                class="public-links-admin__badge public-links-admin__badge--revoked"
+                >Revoked</span
+              >
+              <span
+                v-else-if="link.expired"
+                class="public-links-admin__badge public-links-admin__badge--expired"
+                >Expired</span
+              >
+              <span
                 v-else
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                class="public-links-admin__badge public-links-admin__badge--active"
+                >Active</span
               >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-          </td>
-          <td>
-            <span
-              v-if="!link.enabled"
-              class="public-links-admin__badge public-links-admin__badge--revoked"
-              >Revoked</span
-            >
-            <span
-              v-else-if="link.expired"
-              class="public-links-admin__badge public-links-admin__badge--expired"
-              >Expired</span
-            >
-            <span
-              v-else
-              class="public-links-admin__badge public-links-admin__badge--active"
-              >Active</span
-            >
-          </td>
-          <td>
-            {{ link.expires_at ? formatDateTime(link.expires_at) : "Never" }}
-          </td>
-          <td>{{ formatDateTime(link.created_at) }}</td>
-          <td>
-            <button
-              v-if="link.enabled && !link.expired"
-              class="public-links-admin__btn public-links-admin__btn--revoke"
-              :disabled="revoking === link.id"
-              @click="revokeLink(link.id)"
-            >
-              {{ revoking === link.id ? "Revoking…" : "Revoke" }}
-            </button>
-            <span v-else class="public-links-admin__inactive">—</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            </td>
+            <td>
+              {{ link.expires_at ? formatDateTime(link.expires_at) : "Never" }}
+            </td>
+            <td>{{ formatDateTime(link.created_at) }}</td>
+            <td>
+              <button
+                v-if="link.enabled && !link.expired"
+                class="public-links-admin__btn public-links-admin__btn--revoke"
+                :disabled="revoking === link.id"
+                @click="revokeLink(link.id)"
+              >
+                {{ revoking === link.id ? "Revoking…" : "Revoke" }}
+              </button>
+              <span v-else class="public-links-admin__inactive">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </template>
 
@@ -173,6 +228,7 @@ export default {
   name: "PublicLinksAdmin",
   data() {
     return {
+      collapsed: false,
       links: [],
       loading: true,
       error: null,
@@ -287,14 +343,24 @@ export default {
   background: var(--bg-card, #ffffff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  border: 1px solid var(--color-border, #e5e7eb);
-  margin-top: 24px;
+  margin-bottom: var(--spacing-xl, 32px);
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ─── Collapsible Header ─── */
 .public-links-admin__header {
-  padding: 18px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.public-links-admin__header:hover {
+  background: #fafbfd;
 }
 
 .public-links-admin__title {
@@ -302,23 +368,44 @@ export default {
   align-items: center;
   gap: 8px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
   margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.public-links-admin__title svg {
+  color: #4a90d9;
+}
+
+.public-links-admin__chevron {
+  color: var(--color-text-muted, #9ca3af);
+  transition: transform 0.3s;
+}
+
+.public-links-admin__chevron--rotated {
+  transform: rotate(180deg);
+}
+
+/* ─── Body ─── */
+.public-links-admin__body {
+  padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
 }
 
 .public-links-admin__desc {
   color: var(--color-text-secondary, #6b7280);
   font-size: 13px;
-  margin: 8px 0 0;
+  margin: 0 0 16px;
 }
 
+/* ─── Create Card ─── */
 .public-links-admin__create-card {
-  margin: 0 20px 16px;
   padding: 14px;
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
   background: #fafbfc;
+  margin-bottom: 16px;
 }
 
 .public-links-admin__form-row {
@@ -347,7 +434,7 @@ export default {
   color: var(--color-text-secondary, #6b7280);
 }
 
-.public-links-admin__field input {
+.public-links-admin__field input[type="text"] {
   padding: 8px 10px;
   border: 1px solid var(--color-border, #d1d5db);
   border-radius: 6px;
@@ -355,6 +442,70 @@ export default {
   background: #fff;
 }
 
+/* ─── DateTime picker (matching perf-panel style) ─── */
+.public-links-admin__datetime-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--color-main-background, #fff);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.public-links-admin__datetime-wrap:hover {
+  border-color: #2766e5;
+  box-shadow: 0 1px 4px rgba(39, 102, 229, 0.1);
+}
+
+.public-links-admin__datetime-icon {
+  color: #2766e5;
+  flex-shrink: 0;
+}
+
+.public-links-admin__datetime-wrap input[type="datetime-local"] {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary, #1a1a2e);
+  outline: none;
+  padding: 0;
+  margin: 0;
+  min-width: 170px;
+  cursor: pointer;
+}
+
+.public-links-admin__datetime-wrap
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.public-links-admin__datetime-wrap
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.public-links-admin__datetime-clear {
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.public-links-admin__datetime-clear:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ─── Buttons ─── */
 .public-links-admin__btn {
   padding: 7px 16px;
   border: 1px solid transparent;
@@ -391,9 +542,9 @@ export default {
   cursor: not-allowed;
 }
 
+/* ─── Table ─── */
 .public-links-admin__table {
-  margin: 0 20px 20px;
-  width: calc(100% - 40px);
+  width: 100%;
   border-collapse: collapse;
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--color-border, #e5e7eb);
@@ -440,25 +591,65 @@ export default {
   white-space: nowrap;
 }
 
+/* ─── Copy button (always visible) ─── */
 .public-links-admin__copy-icon {
-  border: none;
-  background: transparent;
-  color: #6b7280;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--bg-card, #fff);
+  color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .public-links-admin__copy-icon:hover {
   background: #eef2ff;
+  border-color: #2766e5;
   color: #2766e5;
 }
 
+.public-links-admin__copy-icon--copied {
+  background: #d1fae5;
+  border-color: #34d399;
+  color: #059669;
+}
+
+.public-links-admin__copy-icon--copied:hover {
+  background: #d1fae5;
+  border-color: #34d399;
+  color: #059669;
+}
+
+/* Copy icon SVG animation */
+.public-links-admin__copy-svg {
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.public-links-admin__check-svg {
+  animation: publicLinksCheckPop 0.3s ease-out;
+}
+
+@keyframes publicLinksCheckPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ─── Badges ─── */
 .public-links-admin__badge {
   display: inline-block;
   padding: 2px 8px;
@@ -482,8 +673,8 @@ export default {
   color: #92400e;
 }
 
+/* ─── States ─── */
 .public-links-admin__state {
-  margin: 0 20px 20px;
   padding: 24px;
   text-align: center;
   color: var(--color-text-secondary, #6b7280);
@@ -494,7 +685,6 @@ export default {
 }
 
 .public-links-admin__error {
-  margin: 0 20px 20px;
   padding: 16px;
   background: #fee2e2;
   color: #b91c1c;
@@ -506,21 +696,14 @@ export default {
   color: #d1d5db;
 }
 
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
   .public-links-admin__header {
-    padding: 14px 14px 8px;
+    padding: 14px 14px;
   }
 
-  .public-links-admin__create-card,
-  .public-links-admin__table,
-  .public-links-admin__state,
-  .public-links-admin__error {
-    margin-left: 14px;
-    margin-right: 14px;
-  }
-
-  .public-links-admin__table {
-    width: calc(100% - 28px);
+  .public-links-admin__body {
+    padding: 0 14px 14px;
   }
 
   .public-links-admin__form-row {
