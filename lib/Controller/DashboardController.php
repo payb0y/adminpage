@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OCA\AdminPage\Controller;
 
+use DateTime;
 use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\DeckService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
+use OCA\AdminPage\Service\PublicTokenService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
@@ -23,6 +25,7 @@ class DashboardController extends Controller {
     private AlertService $alertService;
     private KpiService $kpiService;
     private OrgOverviewService $orgOverviewService;
+    private PublicTokenService $publicTokenService;
     private IUserSession $userSession;
 
     public function __construct(
@@ -34,6 +37,7 @@ class DashboardController extends Controller {
         AlertService $alertService,
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
+        PublicTokenService $publicTokenService,
         IUserSession $userSession
     ) {
         parent::__construct($appName, $request);
@@ -43,6 +47,7 @@ class DashboardController extends Controller {
         $this->alertService = $alertService;
         $this->kpiService = $kpiService;
         $this->orgOverviewService = $orgOverviewService;
+        $this->publicTokenService = $publicTokenService;
         $this->userSession = $userSession;
     }
 
@@ -133,5 +138,58 @@ class DashboardController extends Controller {
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function listPublicLinks(): JSONResponse {
+        $uid = $this->userSession->getUser()->getUID();
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'No organization found'], 404);
+        }
+
+        $links = $this->publicTokenService->listTokens($orgId);
+        return new JSONResponse($links);
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function createPublicLink(): JSONResponse {
+        $uid = $this->userSession->getUser()->getUID();
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'No organization found'], 404);
+        }
+
+        $label = $this->request->getParam('label', null);
+        $expiresAtStr = $this->request->getParam('expiresAt', null);
+
+        $expiresAt = null;
+        if ($expiresAtStr) {
+            try {
+                $expiresAt = new DateTime($expiresAtStr);
+            } catch (\Exception $e) {
+                return new JSONResponse(['error' => 'Invalid date format'], 400);
+            }
+        }
+
+        $link = $this->publicTokenService->createToken($orgId, $uid, $label, $expiresAt);
+        return new JSONResponse($link, 201);
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function revokePublicLink(int $id): JSONResponse {
+        $this->publicTokenService->revokeToken($id);
+        return new JSONResponse(['status' => 'revoked']);
     }
 }
