@@ -13,7 +13,7 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use OCP\IUserSession;
 
-class PublicLinkAdminController extends Controller {
+class PublicLinksController extends Controller {
 
     private PublicTokenService $publicTokenService;
     private OrgOverviewService $orgOverviewService;
