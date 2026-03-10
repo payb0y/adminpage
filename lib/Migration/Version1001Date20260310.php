@@ -37,9 +37,10 @@ class Version1001Date20260310 extends SimpleMigrationStep {
                 'length' => 255,
                 'default' => null,
             ]);
-            $table->addColumn('enabled', Types::BOOLEAN, [
+            $table->addColumn('enabled', Types::SMALLINT, [
                 'notnull' => true,
-                'default' => true,
+                'default' => 1,
+                'unsigned' => true,
             ]);
             $table->addColumn('expires_at', Types::DATETIME, [
                 'notnull' => false,
