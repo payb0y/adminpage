@@ -6,4 +6,3 @@
  */
 ?>
 <div id="adminpage-root"></div>
-<div id="adminpage-admin-public-links"></div>

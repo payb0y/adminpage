@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Dashboard from "./components/Dashboard.vue";
-import PublicLinksAdmin from "./components/PublicLinksAdmin.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
@@ -56,18 +55,6 @@ if (mountEl) {
           this.loading = false;
         }
       },
-    },
-  });
-}
-
-/* ── Admin settings: Public Links management ── */
-const adminLinksEl = document.getElementById("adminpage-admin-public-links");
-
-if (adminLinksEl) {
-  new Vue({
-    el: adminLinksEl,
-    render(h) {
-      return h(PublicLinksAdmin);
     },
   });
 }

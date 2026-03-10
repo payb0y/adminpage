@@ -61,6 +61,9 @@
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
       />
+
+      <!-- ── Public Dashboard Links Management ── -->
+      <PublicLinksAdmin />
     </template>
   </div>
 </template>
@@ -72,6 +75,7 @@ import ResourcesKpiCard from "./ResourcesKpiCard.vue";
 import TimelineKpiCard from "./TimelineKpiCard.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
+import PublicLinksAdmin from "./PublicLinksAdmin.vue";
 
 export default {
   name: "Dashboard",
@@ -82,6 +86,7 @@ export default {
     TimelineKpiCard,
     ProjectPerformancePanel,
     OrgInsightsPanel,
+    PublicLinksAdmin,
   },
   props: {
     data: {
