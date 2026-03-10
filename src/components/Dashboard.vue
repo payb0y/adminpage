@@ -153,6 +153,20 @@ export default {
   background-color: #f0f1f5 !important;
   min-height: 100vh;
 }
+
+/* Force light-mode for all Nextcloud CSS vars inside the dashboard
+   so date-pickers, dropdowns, etc. never inherit dark-mode colours */
+.adminpage-dashboard {
+  --color-main-background: #ffffff;
+  --color-main-text: #1a1a2e;
+  --color-background-hover: #f3f4f6;
+  --color-background-dark: #ededed;
+  --color-border: #e5e7eb;
+  --color-border-dark: #d1d5db;
+  --color-primary-element: #2766e5;
+  --color-primary-element-text: #ffffff;
+  --color-text-maxcontrast: #6b7280;
+}
 </style>
 
 <style scoped>
