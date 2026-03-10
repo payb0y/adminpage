@@ -234,6 +234,7 @@
 
         <!-- Member Performance -->
         <div
+          v-if="showMemberPerformance"
           class="perf-panel__card perf-panel__card--clickable"
           @click="openModal('member')"
         >
@@ -1041,6 +1042,10 @@ export default {
     memberPerformance: {
       type: Array,
       required: true,
+    },
+    showMemberPerformance: {
+      type: Boolean,
+      default: true,
     },
     taskDelayProjects: {
       type: Array,

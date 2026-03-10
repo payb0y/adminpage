@@ -22,6 +22,7 @@
       ref="perfPanel"
       :project-progress="data.projectProgress"
       :member-performance="[]"
+      :show-member-performance="false"
       :task-delay-projects="data.taskDelayProjects"
       :task-completion-projects="data.taskCompletionProjects"
       :performance-details="data.performanceDetails || null"
