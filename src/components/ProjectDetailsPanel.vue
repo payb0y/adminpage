@@ -259,7 +259,10 @@
       </div>
 
       <!-- ── #2 & #3: Row 2 — Donut (no table) + Due Dates + Team Workload ── -->
-      <div class="proj-details__row proj-details__row--three">
+      <div
+        class="proj-details__row"
+        :class="showTeamWorkload ? 'proj-details__row--three' : 'proj-details__row--two'"
+      >
         <!-- Task Distribution by Stack (donut only, no table) -->
         <div class="proj-details__card">
           <h4 class="proj-details__card-title">Task Distribution</h4>
@@ -311,7 +314,7 @@
         </div>
 
         <!-- #2: Team Workload (separated assignees with progress bars) -->
-        <div class="proj-details__card">
+        <div v-if="showTeamWorkload" class="proj-details__card">
           <h4 class="proj-details__card-title">Team Workload</h4>
           <div
             v-if="selectedProject.assignees.length > 0"
@@ -508,7 +511,7 @@
                 </option>
               </select>
             </div>
-            <div class="proj-details__tb-filter">
+            <div v-if="showAssignees" class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Assignee</label>
               <select
                 v-model="tbFilterAssignee"
@@ -684,7 +687,7 @@
                     }}</span>
                   </th>
                   <th>Labels</th>
-                  <th>Assignees</th>
+                  <th v-if="showAssignees">Assignees</th>
                   <th
                     class="proj-details__th-sort"
                     :class="{
@@ -713,7 +716,7 @@
               </thead>
               <tbody>
                 <tr v-if="filteredTasks.length === 0">
-                  <td colspan="7" class="proj-details__tb-empty">
+                  <td :colspan="showAssignees ? 7 : 6" class="proj-details__tb-empty">
                     No tasks match the current filters
                   </td>
                 </tr>
@@ -744,7 +747,7 @@
                       >&mdash;</span
                     >
                   </td>
-                  <td>
+                  <td v-if="showAssignees">
                     <span v-if="task.assignees.length">{{
                       task.assignees.join(", ")
                     }}</span>
@@ -829,6 +832,14 @@ export default {
       default: function () {
         return [];
       },
+    },
+    showTeamWorkload: {
+      type: Boolean,
+      default: true,
+    },
+    showAssignees: {
+      type: Boolean,
+      default: true,
     },
   },
   data: function () {

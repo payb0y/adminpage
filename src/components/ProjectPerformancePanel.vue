@@ -560,7 +560,12 @@
         <div class="perf-panel__card">
           <h3 class="perf-panel__card-title">Per Project Details</h3>
           <div class="perf-panel__card-title-underline"></div>
-          <ProjectDetailsPanel ref="detailsPanel" :projects="projectDetails" />
+          <ProjectDetailsPanel
+            ref="detailsPanel"
+            :projects="projectDetails"
+            :show-team-workload="showTeamWorkload"
+            :show-assignees="showAssignees"
+          />
         </div>
       </div>
     </div>
@@ -1076,6 +1081,14 @@ export default {
       default: function () {
         return [];
       },
+    },
+    showTeamWorkload: {
+      type: Boolean,
+      default: true,
+    },
+    showAssignees: {
+      type: Boolean,
+      default: true,
     },
   },
   data: function () {
