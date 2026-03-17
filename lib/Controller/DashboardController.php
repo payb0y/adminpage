@@ -192,4 +192,13 @@ class DashboardController extends Controller {
         $this->publicTokenService->revokeToken($id);
         return new JSONResponse(['status' => 'revoked']);
     }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function deletePublicLink(int $id): JSONResponse {
+        $this->publicTokenService->deleteToken($id);
+        return new JSONResponse(['status' => 'deleted']);
+    }
 }

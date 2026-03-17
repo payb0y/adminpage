@@ -15,5 +15,6 @@ return [
         ['name' => 'dashboard#listPublicLinks', 'url' => '/api/public-links', 'verb' => 'GET'],
         ['name' => 'dashboard#createPublicLink', 'url' => '/api/public-links', 'verb' => 'POST'],
         ['name' => 'dashboard#revokePublicLink', 'url' => '/api/public-links/{id}', 'verb' => 'DELETE'],
+        ['name' => 'dashboard#deletePublicLink', 'url' => '/api/public-links/{id}/delete', 'verb' => 'POST'],
     ],
 ];

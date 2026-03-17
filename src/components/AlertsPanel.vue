@@ -369,7 +369,7 @@ export default {
   },
   data() {
     return {
-      collapsed: false,
+      collapsed: true,
       expandedUnassigned: {},
       expandedNoDueDate: {},
     };

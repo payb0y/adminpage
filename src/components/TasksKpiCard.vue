@@ -491,6 +491,8 @@ export default {
   color: #92400e;
   cursor: pointer;
   transition: background 0.15s;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tasks-kpi__oldest:hover {
@@ -504,23 +506,30 @@ export default {
 }
 
 .tasks-kpi__oldest-text {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.4;
   color: #92400e;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tasks-kpi__oldest-text strong {
   font-weight: 600;
   color: #7c2d12;
+  font-size: 10px;
 }
 
 .tasks-kpi__oldest-age {
   font-weight: 500;
+  font-size: 10px;
   color: #dc2626;
 }
 
 .tasks-kpi__oldest-project {
   color: #b45309;
   font-style: italic;
+  font-size: 10px;
 }
 </style>

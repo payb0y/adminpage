@@ -162,7 +162,7 @@ export default {
   },
   data: function () {
     return {
-      collapsed: false,
+      collapsed: true,
     };
   },
 };

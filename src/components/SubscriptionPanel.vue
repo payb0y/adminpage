@@ -93,26 +93,6 @@
           </div>
         </div>
 
-        <!-- Tasks Done -->
-        <div class="sub-panel__meter">
-          <div class="sub-panel__meter-header">
-            <span class="sub-panel__meter-label">Tasks Done</span>
-            <span class="sub-panel__meter-value"
-              >{{ usageSummary.doneTasks
-              }}<span class="sub-panel__meter-max"
-                >/{{ usageSummary.totalTasks }}</span
-              ></span
-            >
-          </div>
-          <div class="sub-panel__bar">
-            <div
-              class="sub-panel__bar-fill sub-panel__bar-fill--ok"
-              :style="
-                fillStyle(usageSummary.doneTasks, usageSummary.totalTasks)
-              "
-            ></div>
-          </div>
-        </div>
       </div>
 
       <!-- ── Plan Detail Grid ── -->
@@ -214,7 +194,7 @@ export default {
   },
   data: function () {
     return {
-      collapsed: false,
+      collapsed: true,
     };
   },
   computed: {
@@ -320,7 +300,7 @@ export default {
 /* ─── Usage Meters ─── */
 .sub-panel__meters {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md, 16px);
   margin-bottom: var(--spacing-lg, 24px);
 }

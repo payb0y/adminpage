@@ -1093,7 +1093,7 @@ export default {
   },
   data: function () {
     return {
-      collapsed: false,
+      collapsed: true,
       delayIndex: 0,
       completionIndex: 0,
       modal: null,

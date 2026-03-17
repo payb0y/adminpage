@@ -114,10 +114,24 @@
         </div>
       </div>
 
+      <!-- Status Filter -->
+      <div v-if="!loading && links.length > 0" class="public-links-admin__filter-row">
+        <label class="public-links-admin__filter-label">Filter by status</label>
+        <select v-model="statusFilter" class="public-links-admin__filter-select">
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="revoked">Revoked</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+
       <div v-if="loading" class="public-links-admin__state">Loading links…</div>
       <div v-else-if="error" class="public-links-admin__error">{{ error }}</div>
       <div v-else-if="links.length === 0" class="public-links-admin__state">
         No public links yet. Create one above.
+      </div>
+      <div v-else-if="filteredLinks.length === 0" class="public-links-admin__state">
+        No links match the selected filter.
       </div>
       <table v-else class="public-links-admin__table">
         <thead>
@@ -132,7 +146,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="link in links"
+            v-for="link in filteredLinks"
             :key="link.id"
             :class="{
               'public-links-admin__row--disabled':
@@ -183,7 +197,7 @@
               {{ link.expires_at ? formatDateTime(link.expires_at) : "Never" }}
             </td>
             <td>{{ formatDateTime(link.created_at) }}</td>
-            <td>
+            <td class="public-links-admin__actions-cell">
               <button
                 v-if="link.enabled && !link.expired"
                 class="public-links-admin__btn public-links-admin__btn--revoke"
@@ -192,7 +206,13 @@
               >
                 {{ revoking === link.id ? "Revoking…" : "Revoke" }}
               </button>
-              <span v-else class="public-links-admin__inactive">—</span>
+              <button
+                class="public-links-admin__btn public-links-admin__btn--delete"
+                :disabled="deleting === link.id"
+                @click="deleteLink(link.id)"
+              >
+                {{ deleting === link.id ? "Deleting…" : "Delete" }}
+              </button>
             </td>
           </tr>
         </tbody>
@@ -209,7 +229,7 @@ export default {
   name: "PublicLinksAdmin",
   data() {
     return {
-      collapsed: false,
+      collapsed: true,
       links: [],
       loading: true,
       error: null,
@@ -217,8 +237,21 @@ export default {
       newExpiresAt: "",
       creating: false,
       revoking: null,
+      deleting: null,
       copiedLinkId: null,
+      statusFilter: "",
     };
+  },
+  computed: {
+    filteredLinks() {
+      if (!this.statusFilter) return this.links;
+      return this.links.filter((link) => {
+        if (this.statusFilter === "active") return link.enabled && !link.expired;
+        if (this.statusFilter === "revoked") return !link.enabled;
+        if (this.statusFilter === "expired") return link.enabled && link.expired;
+        return true;
+      });
+    },
   },
   mounted() {
     this.fetchLinks();
@@ -274,6 +307,22 @@ export default {
         alert(e.response?.data?.error || "Failed to revoke link");
       } finally {
         this.revoking = null;
+      }
+    },
+
+    async deleteLink(id) {
+      if (!confirm("Permanently delete this link? This cannot be undone."))
+        return;
+      this.deleting = id;
+      try {
+        const url = generateUrl(`/apps/adminpage/api/public-links/${id}/delete`);
+        await axios.post(url);
+        await this.fetchLinks();
+      } catch (e) {
+        console.error("Failed to delete link", e);
+        alert(e.response?.data?.error || "Failed to delete link");
+      } finally {
+        this.deleting = null;
       }
     },
 
@@ -668,6 +717,58 @@ export default {
   color: #b91c1c;
   border-radius: 8px;
   font-size: 13px;
+}
+
+/* ─── Filter Row ─── */
+.public-links-admin__filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.public-links-admin__filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.public-links-admin__filter-select {
+  padding: 5px 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.public-links-admin__filter-select:focus {
+  border-color: #2766e5;
+}
+
+/* ─── Actions Cell ─── */
+.public-links-admin__actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.public-links-admin__btn--delete {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
+.public-links-admin__btn--delete:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+.public-links-admin__btn--delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .public-links-admin__inactive {

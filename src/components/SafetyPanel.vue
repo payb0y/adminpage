@@ -126,7 +126,7 @@ export default {
 	},
 	data() {
 		return {
-			collapsed: false,
+			collapsed: true,
 		}
 	},
 	methods: {
