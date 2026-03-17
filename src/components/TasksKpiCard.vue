@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <!-- Right column: Legend + Oldest task -->
+      <!-- Right column: Legend -->
       <div class="tasks-kpi__details">
         <div class="tasks-kpi__legend">
           <div
@@ -78,44 +78,44 @@
             <span class="tasks-kpi__legend-value">{{ seg.value }}</span>
           </div>
         </div>
-
-        <!-- Oldest task -->
-        <div
-          v-if="oldestTask"
-          class="tasks-kpi__oldest"
-          :title="
-            (oldestTask.fullTitle || oldestTask.taskTitle) +
-            ' — Opened ' +
-            oldestTask.createdAt
-          "
-          @click.stop="$emit('goto-oldest-task', oldestTask)"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span class="tasks-kpi__oldest-text">
-            Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
-            <span class="tasks-kpi__oldest-age"
-              >({{ formatAge(oldestTask.ageDays) }})</span
-            >
-            <span class="tasks-kpi__oldest-project"
-              >in {{ oldestTask.projectName }}</span
-            >
-          </span>
-        </div>
       </div>
+    </div>
+
+    <!-- Oldest task — full-width footer -->
+    <div
+      v-if="oldestTask"
+      class="tasks-kpi__oldest"
+      :title="
+        (oldestTask.fullTitle || oldestTask.taskTitle) +
+        ' — Opened ' +
+        oldestTask.createdAt
+      "
+      @click.stop="$emit('goto-oldest-task', oldestTask)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span class="tasks-kpi__oldest-text">
+        Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
+        <span class="tasks-kpi__oldest-age"
+          >({{ formatAge(oldestTask.ageDays) }})</span
+        >
+        <span class="tasks-kpi__oldest-project"
+          >in {{ oldestTask.projectName }}</span
+        >
+      </span>
     </div>
   </div>
 </template>
@@ -480,10 +480,10 @@ export default {
   color: var(--color-text-primary, #1a1a2e);
 }
 
-/* ── Oldest task ── */
+/* ── Oldest task (full-width footer) ── */
 .tasks-kpi__oldest {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 6px;
   padding: 8px 10px;
   background: #fef3f2;
@@ -493,6 +493,7 @@ export default {
   transition: background 0.15s;
   min-width: 0;
   overflow: hidden;
+  margin-top: auto;
 }
 
 .tasks-kpi__oldest:hover {

@@ -1699,22 +1699,34 @@ export default {
       });
     },
     filterProjectsByStatus: function (statusLabel) {
-      if (this.$refs.detailsPanel) {
-        this.$refs.detailsPanel.applyProjectFilter(statusLabel);
-      }
+      this.collapsed = false;
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.detailsPanel) {
+          self.$refs.detailsPanel.applyProjectFilter(statusLabel);
+        }
+      });
     },
     filterTasks: function (filterType, filterValue) {
-      if (this.$refs.detailsPanel) {
-        this.$refs.detailsPanel.applyTaskFilter(filterType, filterValue);
-      }
+      this.collapsed = false;
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.detailsPanel) {
+          self.$refs.detailsPanel.applyTaskFilter(filterType, filterValue);
+        }
+      });
     },
     gotoOldestTask: function (oldestTask) {
-      if (this.$refs.detailsPanel) {
-        this.$refs.detailsPanel.selectProjectAndFilterTask(
-          oldestTask.projectId,
-          oldestTask.fullTitle || oldestTask.taskTitle,
-        );
-      }
+      this.collapsed = false;
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.detailsPanel) {
+          self.$refs.detailsPanel.selectProjectAndFilterTask(
+            oldestTask.projectId,
+            oldestTask.fullTitle || oldestTask.taskTitle,
+          );
+        }
+      });
     },
     goToProjectDetails: function (proj) {
       this.closeModal();
