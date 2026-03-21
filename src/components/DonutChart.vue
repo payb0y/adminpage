@@ -52,6 +52,13 @@ export default {
     },
   },
   mounted() {
+    // #region agent log
+    var _canvas = this.$refs.chartCanvas;
+    var _canvasW = _canvas ? _canvas.offsetWidth : -1;
+    var _canvasH = _canvas ? _canvas.offsetHeight : -1;
+    var _parentVisible = this.$el ? this.$el.offsetParent !== null : false;
+    fetch('http://127.0.0.1:7242/ingest/5d5d5d76-2b81-4acd-b83a-c4d324211cfe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DonutChart.vue:mounted',message:'DonutChart mounted',data:{hasData:this.hasData,chartDataValues:this.chartData.data,canvasExists:!!_canvas,canvasWidth:_canvasW,canvasHeight:_canvasH,parentVisible:_parentVisible},timestamp:Date.now(),hypothesisId:'H1,H2,H3'})}).catch(function(){});
+    // #endregion
     if (this.hasData) {
       this.renderChart();
     }
@@ -63,6 +70,13 @@ export default {
   },
   methods: {
     renderChart() {
+      // #region agent log
+      var _rc = this.$refs.chartCanvas;
+      var _rcW = _rc ? _rc.offsetWidth : -1;
+      var _rcH = _rc ? _rc.offsetHeight : -1;
+      var _rcParent = this.$el ? this.$el.offsetParent !== null : false;
+      fetch('http://127.0.0.1:7242/ingest/5d5d5d76-2b81-4acd-b83a-c4d324211cfe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DonutChart.vue:renderChart',message:'renderChart called',data:{canvasExists:!!_rc,canvasWidth:_rcW,canvasHeight:_rcH,parentVisible:_rcParent,chartDataValues:this.chartData.data},timestamp:Date.now(),hypothesisId:'H2,H4'})}).catch(function(){});
+      // #endregion
       const ctx = this.$refs.chartCanvas.getContext("2d");
       const total = this.chartData.data.reduce((a, b) => a + b, 0);
 
