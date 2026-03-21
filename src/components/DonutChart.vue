@@ -56,6 +56,25 @@ export default {
       this.renderChart();
     }
   },
+  watch: {
+    chartData: {
+      handler: function () {
+        if (this.chart) {
+          this.chart.destroy();
+          this.chart = null;
+        }
+        if (this.hasData) {
+          var self = this;
+          this.$nextTick(function () {
+            if (self.$refs.chartCanvas) {
+              self.renderChart();
+            }
+          });
+        }
+      },
+      deep: true,
+    },
+  },
   beforeDestroy() {
     if (this.chart) {
       this.chart.destroy();
