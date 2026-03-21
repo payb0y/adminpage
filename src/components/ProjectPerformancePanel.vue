@@ -467,34 +467,40 @@
             </div>
             <!-- Chart + Toggle -->
             <div class="perf-panel__chart-area">
-              <div class="perf-panel__chart-toggle">
-                <button
-                  class="perf-panel__chart-toggle-btn"
-                  :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'donut' }"
-                  title="Percentage view"
-                  @click.stop="delayChartMode = 'donut'"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-                </button>
-                <button
-                  class="perf-panel__chart-toggle-btn"
-                  :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'bar' }"
-                  title="Count view"
-                  @click.stop="delayChartMode = 'bar'"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                </button>
+              <template v-if="filteredDelayProjects.length > 0">
+                <div class="perf-panel__chart-toggle">
+                  <button
+                    class="perf-panel__chart-toggle-btn"
+                    :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'donut' }"
+                    title="Percentage view"
+                    @click.stop="delayChartMode = 'donut'"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                  </button>
+                  <button
+                    class="perf-panel__chart-toggle-btn"
+                    :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'bar' }"
+                    title="Count view"
+                    @click.stop="delayChartMode = 'bar'"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  </button>
+                </div>
+                <DonutChart
+                  v-if="delayChartMode === 'donut'"
+                  :key="'donut-' + delayIndex"
+                  :chart-data="activeDelayProject.chart"
+                />
+                <BarChart
+                  v-else
+                  :key="'bar-' + delayIndex"
+                  :chart-data="activeDelayBarChart"
+                />
+              </template>
+              <div v-else class="perf-panel__chart-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="perf-panel__chart-empty-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <span class="perf-panel__chart-empty-text">No projects match the current filters</span>
               </div>
-              <DonutChart
-                v-if="delayChartMode === 'donut'"
-                :key="'donut-' + delayIndex"
-                :chart-data="activeDelayProject.chart"
-              />
-              <BarChart
-                v-else
-                :key="'bar-' + delayIndex"
-                :chart-data="activeDelayBarChart"
-              />
             </div>
           </div>
         </div>
@@ -613,10 +619,15 @@
             <!-- Chart -->
             <div class="perf-panel__chart-area">
               <AreaChart
+                v-if="filteredCompletionProjects.length > 0"
                 :key="'area-' + completionIndex"
                 :labels="activeCompletionProject.weeks"
                 :data="activeCompletionProject.data"
               />
+              <div v-else class="perf-panel__chart-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="perf-panel__chart-empty-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <span class="perf-panel__chart-empty-text">No projects match the current filters</span>
+              </div>
             </div>
           </div>
         </div>
@@ -2761,6 +2772,30 @@ export default {
   background: #fff;
   color: #c878c8;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Chart empty state */
+.perf-panel__chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 220px;
+  border: 2px dashed var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.perf-panel__chart-empty-icon {
+  color: #d1d5db;
+}
+
+.perf-panel__chart-empty-text {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-align: center;
 }
 
 /* Drill icon always visible (not hidden by card hover) */
