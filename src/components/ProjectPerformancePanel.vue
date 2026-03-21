@@ -488,12 +488,12 @@
                 </div>
                 <DonutChart
                   v-if="delayChartMode === 'donut'"
-                  :key="'donut-' + delayIndex"
+                  :key="'donut-' + delayIndex + '-' + delayChartRenderKey"
                   :chart-data="activeDelayProject.chart"
                 />
                 <BarChart
                   v-else
-                  :key="'bar-' + delayIndex"
+                  :key="'bar-' + delayIndex + '-' + delayChartRenderKey"
                   :chart-data="activeDelayBarChart"
                 />
               </template>
@@ -1187,6 +1187,7 @@ export default {
       completionStatusFilter: "",
       completionRateFilter: "",
       delayChartMode: "donut",
+      delayChartRenderKey: 0,
       // Date range filter
       perfDateFrom: "",
       perfDateTo: "",
@@ -1747,6 +1748,14 @@ export default {
     },
   },
   watch: {
+    collapsed: function (isCollapsed) {
+      var self = this;
+      if (!isCollapsed) {
+        this.$nextTick(function () {
+          self.delayChartRenderKey++;
+        });
+      }
+    },
     filteredDelayProjects: function (list) {
       if (list.length > 0) {
         var found = false;
