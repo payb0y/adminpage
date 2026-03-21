@@ -45,46 +45,89 @@
     </div>
 
     <div v-show="embedded || !collapsed">
-      <!-- Date Range Filter -->
+      <!-- Filters Row -->
       <div class="perf-panel__date-filter-row">
-        <div class="perf-panel__date-filter-inner">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="perf-panel__date-icon"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <div
-            class="perf-panel__date-range"
-            @click="showDatePicker = !showDatePicker"
-          >
-            <span class="perf-panel__date-range-value">{{
-              perfDateFrom || "Start date"
-            }}</span>
-            <span class="perf-panel__date-range-arrow">→</span>
-            <span class="perf-panel__date-range-value">{{
-              perfDateTo || "End date"
-            }}</span>
+        <div class="perf-panel__filters-bar">
+          <div class="perf-panel__date-filter-inner">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="perf-panel__date-icon"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <div
+              class="perf-panel__date-range"
+              @click="showDatePicker = !showDatePicker"
+            >
+              <span class="perf-panel__date-range-value">{{
+                perfDateFrom || "Start date"
+              }}</span>
+              <span class="perf-panel__date-range-arrow">→</span>
+              <span class="perf-panel__date-range-value">{{
+                perfDateTo || "End date"
+              }}</span>
+            </div>
+            <button
+              v-if="perfDateFrom || perfDateTo"
+              class="perf-panel__date-range-clear"
+              title="Clear dates"
+              @click.stop="clearPerfDates"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            v-if="perfDateFrom || perfDateTo"
-            class="perf-panel__date-range-clear"
-            title="Clear dates"
-            @click.stop="clearPerfDates"
-          >
-            ✕
-          </button>
+          <div class="perf-panel__completion-filter">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="perf-panel__filter-icon"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <span
+              class="perf-panel__cr-badge"
+              :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '' }"
+              @click="completionRateFilter = ''"
+            >All</span>
+            <span
+              class="perf-panel__cr-badge perf-panel__cr-badge--red"
+              :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '0-25' }"
+              @click="completionRateFilter = '0-25'"
+            >0–25%</span>
+            <span
+              class="perf-panel__cr-badge perf-panel__cr-badge--orange"
+              :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '25-50' }"
+              @click="completionRateFilter = '25-50'"
+            >25–50%</span>
+            <span
+              class="perf-panel__cr-badge perf-panel__cr-badge--blue"
+              :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '50-75' }"
+              @click="completionRateFilter = '50-75'"
+            >50–75%</span>
+            <span
+              class="perf-panel__cr-badge perf-panel__cr-badge--green"
+              :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '75-100' }"
+              @click="completionRateFilter = '75-100'"
+            >75–100%</span>
+          </div>
         </div>
         <div
           v-if="showDatePicker"
@@ -228,11 +271,11 @@
             </div>
           </div>
           <div
-            v-if="effectiveProjectProgress.length > progressPreviewLimit"
+            v-if="crFilteredProjectProgress.length > progressPreviewLimit"
             class="perf-panel__bar-hint"
           >
             Showing {{ previewProjectProgress.length }} of
-            {{ effectiveProjectProgress.length }} projects (click for full
+            {{ crFilteredProjectProgress.length }} projects (click for full
             details)
           </div>
         </div>
@@ -1105,6 +1148,7 @@ export default {
       completionSearch: "",
       delayStatusFilter: "",
       completionStatusFilter: "",
+      completionRateFilter: "",
       // Date range filter
       perfDateFrom: "",
       perfDateTo: "",
@@ -1292,8 +1336,33 @@ export default {
       }
       return result;
     },
+    hasCompletionRateFilter: function () {
+      return !!this.completionRateFilter;
+    },
+    crFilteredProjectProgress: function () {
+      var list = this.effectiveProjectProgress;
+      if (!this.hasCompletionRateFilter) return list;
+      var result = [];
+      for (var i = 0; i < list.length; i++) {
+        if (this.passesCompletionFilter(list[i].progress)) {
+          result.push(list[i]);
+        }
+      }
+      return result;
+    },
+    completionRateAllowedNames: function () {
+      if (!this.hasCompletionRateFilter) return null;
+      var allowed = {};
+      var list = this.effectiveProjectProgress;
+      for (var i = 0; i < list.length; i++) {
+        if (this.passesCompletionFilter(list[i].progress)) {
+          allowed[list[i].name] = true;
+        }
+      }
+      return allowed;
+    },
     previewProjectProgress: function () {
-      return this.effectiveProjectProgress
+      return this.crFilteredProjectProgress
         .slice()
         .sort(function (a, b) {
           return (b.progress || 0) - (a.progress || 0);
@@ -1315,6 +1384,7 @@ export default {
     filteredDelayProjects: function () {
       var q = (this.delaySearch || "").toLowerCase();
       var statusFilter = this.delayStatusFilter;
+      var allowed = this.completionRateAllowedNames;
       var result = [];
       for (var i = 0; i < this.effectiveDelayProjects.length; i++) {
         var proj = this.effectiveDelayProjects[i];
@@ -1324,6 +1394,9 @@ export default {
         if (statusFilter && proj.status !== statusFilter) {
           continue;
         }
+        if (allowed && !allowed[proj.name]) {
+          continue;
+        }
         result.push({ name: proj.name, originalIndex: i });
       }
       return result;
@@ -1331,6 +1404,7 @@ export default {
     filteredCompletionProjects: function () {
       var q = (this.completionSearch || "").toLowerCase();
       var statusFilter = this.completionStatusFilter;
+      var allowed = this.completionRateAllowedNames;
       var result = [];
       for (var i = 0; i < this.effectiveCompletionProjects.length; i++) {
         var proj = this.effectiveCompletionProjects[i];
@@ -1338,6 +1412,9 @@ export default {
           continue;
         }
         if (statusFilter && proj.status !== statusFilter) {
+          continue;
+        }
+        if (allowed && !allowed[proj.name]) {
           continue;
         }
         result.push({ name: proj.name, originalIndex: i });
@@ -1510,6 +1587,12 @@ export default {
     },
     sortedProgressDetails: function () {
       var list = this.dateFilteredProgressDetails.slice();
+      if (this.hasCompletionRateFilter) {
+        var self = this;
+        list = list.filter(function (p) {
+          return self.passesCompletionFilter(p.progress);
+        });
+      }
       if (this.progressSortBy === "asc") {
         list.sort(function (a, b) {
           return a.progress - b.progress;
@@ -1523,6 +1606,12 @@ export default {
     },
     sortedDelayDetails: function () {
       var list = this.dateFilteredDelayDetails.slice();
+      var allowed = this.completionRateAllowedNames;
+      if (allowed) {
+        list = list.filter(function (p) {
+          return !!allowed[p.name];
+        });
+      }
       var sortBy = this.delaySortBy;
       if (sortBy === "latest") {
         list.sort(function (a, b) {
@@ -1553,6 +1642,12 @@ export default {
     },
     sortedCompletionDetails: function () {
       var list = this.dateFilteredCompletionDetails.slice();
+      var allowed = this.completionRateAllowedNames;
+      if (allowed) {
+        list = list.filter(function (p) {
+          return !!allowed[p.name];
+        });
+      }
       var sortBy = this.completionSortBy;
       if (sortBy === "asc") {
         list.sort(function (a, b) {
@@ -1737,6 +1832,15 @@ export default {
         }
       });
     },
+    passesCompletionFilter: function (progress) {
+      var f = this.completionRateFilter;
+      if (!f) return true;
+      if (f === "0-25") return progress >= 0 && progress <= 25;
+      if (f === "25-50") return progress > 25 && progress <= 50;
+      if (f === "50-75") return progress > 50 && progress <= 75;
+      if (f === "75-100") return progress > 75 && progress <= 100;
+      return true;
+    },
     /* ── Date range picker helpers ── */
     perfPad: function (n) {
       return n < 10 ? "0" + n : "" + n;
@@ -1900,7 +2004,7 @@ export default {
   transform: rotate(180deg);
 }
 
-/* ── Date Range Filter ── */
+/* ── Filters Row ── */
 .perf-panel__date-filter-row {
   display: flex;
   flex-direction: column;
@@ -1909,6 +2013,92 @@ export default {
   padding: 4px var(--spacing-lg, 24px) 14px;
   margin-bottom: 0;
   position: relative;
+}
+
+.perf-panel__filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Completion Rate Filter ── */
+.perf-panel__completion-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--color-main-background, #fff);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.perf-panel__completion-filter:hover {
+  border-color: #c878c8;
+  box-shadow: 0 1px 4px rgba(200, 120, 200, 0.1);
+}
+
+.perf-panel__filter-icon {
+  color: #c878c8;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+.perf-panel__cr-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  background: #f5f6fa;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  user-select: none;
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+}
+
+.perf-panel__cr-badge:hover {
+  background: #edeef2;
+}
+
+.perf-panel__cr-badge--active {
+  font-weight: 600;
+  border-color: currentColor;
+}
+
+.perf-panel__cr-badge--red {
+  color: #dc2626;
+}
+.perf-panel__cr-badge--red.perf-panel__cr-badge--active {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.perf-panel__cr-badge--orange {
+  color: #d97706;
+}
+.perf-panel__cr-badge--orange.perf-panel__cr-badge--active {
+  background: #fffbeb;
+  border-color: #d97706;
+}
+
+.perf-panel__cr-badge--blue {
+  color: #2563eb;
+}
+.perf-panel__cr-badge--blue.perf-panel__cr-badge--active {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+.perf-panel__cr-badge--green {
+  color: #16a34a;
+}
+.perf-panel__cr-badge--green.perf-panel__cr-badge--active {
+  background: #f0fdf4;
+  border-color: #16a34a;
 }
 
 .perf-panel__date-filter-inner {
