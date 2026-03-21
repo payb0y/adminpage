@@ -465,11 +465,35 @@
                 </div>
               </div>
             </div>
-            <!-- Chart -->
+            <!-- Chart + Toggle -->
             <div class="perf-panel__chart-area">
+              <div class="perf-panel__chart-toggle">
+                <button
+                  class="perf-panel__chart-toggle-btn"
+                  :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'donut' }"
+                  title="Percentage view"
+                  @click.stop="delayChartMode = 'donut'"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                </button>
+                <button
+                  class="perf-panel__chart-toggle-btn"
+                  :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'bar' }"
+                  title="Count view"
+                  @click.stop="delayChartMode = 'bar'"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </button>
+              </div>
               <DonutChart
+                v-if="delayChartMode === 'donut'"
                 :key="'donut-' + delayIndex"
                 :chart-data="activeDelayProject.chart"
+              />
+              <BarChart
+                v-else
+                :key="'bar-' + delayIndex"
+                :chart-data="activeDelayBarChart"
               />
             </div>
           </div>
@@ -1057,6 +1081,7 @@
 
 <script>
 import DonutChart from "./DonutChart.vue";
+import BarChart from "./BarChart.vue";
 import AreaChart from "./AreaChart.vue";
 import ProjectDetailsPanel from "./ProjectDetailsPanel.vue";
 
@@ -1064,6 +1089,7 @@ export default {
   name: "ProjectPerformancePanel",
   components: {
     DonutChart,
+    BarChart,
     AreaChart,
     ProjectDetailsPanel,
   },
@@ -1149,6 +1175,7 @@ export default {
       delayStatusFilter: "",
       completionStatusFilter: "",
       completionRateFilter: "",
+      delayChartMode: "donut",
       // Date range filter
       perfDateFrom: "",
       perfDateTo: "",
@@ -1432,6 +1459,40 @@ export default {
           },
         }
       );
+    },
+    activeDelayBarChart: function () {
+      var colors = ["#2ec4b6", "#f4a261", "#e63946"];
+      var labels = ["On-time", "Delayed", "Blocked"];
+      var empty = { labels: labels, data: [0, 0, 0], colors: colors };
+      var activeProj = this.effectiveDelayProjects[this.delayIndex];
+      if (!activeProj) return empty;
+      var list = this.details.delayDetails || [];
+      var projDetail = null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].name === activeProj.name) {
+          projDetail = list[i];
+          break;
+        }
+      }
+      if (!projDetail) return empty;
+      var tasks = projDetail.tasks || [];
+      var from = this.hasDateFilter ? this.perfDateFrom : "";
+      var to = this.hasDateFilter ? this.perfDateTo : "";
+      var onTime = 0;
+      var delayed = 0;
+      var blocked = 0;
+      for (var j = 0; j < tasks.length; j++) {
+        var t = tasks[j];
+        if (from || to) {
+          var ca = (t.createdAt || "").substring(0, 10);
+          if (from && ca < from) continue;
+          if (to && ca > to) continue;
+        }
+        if (t.category === "delayed") delayed++;
+        else if (t.category === "blocked") blocked++;
+        else onTime++;
+      }
+      return { labels: labels, data: [onTime, delayed, blocked], colors: colors };
     },
     activeCompletionProject: function () {
       return (
@@ -2661,6 +2722,45 @@ export default {
 .perf-panel__chart-area {
   flex: 1;
   min-width: 0;
+  position: relative;
+}
+
+/* Chart Toggle */
+.perf-panel__chart-toggle {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+  background: #f0f1f5;
+  border-radius: 8px;
+  padding: 3px;
+  width: fit-content;
+  margin-left: auto;
+}
+
+.perf-panel__chart-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.perf-panel__chart-toggle-btn:hover {
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.perf-panel__chart-toggle-btn--active {
+  background: #fff;
+  color: #c878c8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* Drill icon always visible (not hidden by card hover) */
