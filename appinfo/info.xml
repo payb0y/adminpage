@@ -5,7 +5,7 @@
     <name>Admin Page</name>
     <summary>Custom admin analytics dashboard</summary>
     <description><![CDATA[A modern analytics dashboard for Nextcloud administrators providing operational, financial, commercial, and safety insights.]]></description>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <licence>agpl</licence>
     <author mail="admin@example.com">Admin Page Developer</author>
     <namespace>AdminPage</namespace>
