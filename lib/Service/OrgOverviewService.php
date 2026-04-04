@@ -49,6 +49,18 @@ class OrgOverviewService {
     // Org resolution
     // ─────────────────────────────────────────────────────────────────────
 
+    public function resolveOrgName(string $uid): ?string {
+        $orgId = $this->resolveOrgId($uid);
+        if ($orgId === null) {
+            return null;
+        }
+        $sql = "SELECT name FROM *PREFIX*organizations WHERE id = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$orgId]);
+        $row = $stmt->fetch();
+        return $row ? $row['name'] : null;
+    }
+
     public function resolveOrgId(string $uid): ?int {
         // 1. Owner
         $sql = "SELECT id FROM *PREFIX*organizations WHERE admin_uid = ? LIMIT 1";

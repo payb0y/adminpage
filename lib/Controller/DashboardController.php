@@ -201,4 +201,41 @@ class DashboardController extends Controller {
         $this->publicTokenService->deleteToken($id);
         return new JSONResponse(['status' => 'deleted']);
     }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getBackupJobs(): JSONResponse {
+        try {
+            $user = $this->userSession->getUser();
+            $uid = $user ? $user->getUID() : '';
+            $orgName = $this->orgOverviewService->resolveOrgName($uid);
+
+            if ($orgName === null) {
+                return new JSONResponse(['error' => 'No organization found'], 404);
+            }
+
+            $relative = '/ocs/v2.php/apps/organization/backups/jobs/' . urlencode($orgName);
+            $url = $this->urlGenerator->getAbsoluteURL($relative);
+
+            $cookies = $this->request->getHeader('Cookie');
+
+            $client = $this->clientService->newClient();
+            $response = $client->get($url, [
+                'headers' => [
+                    'OCS-APIRequest' => 'true',
+                    'Accept' => 'application/json',
+                    'Cookie' => $cookies,
+                ],
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return new JSONResponse($data);
+        } catch (\Exception $e) {
+            return new JSONResponse([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

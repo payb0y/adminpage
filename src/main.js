@@ -54,6 +54,17 @@ if (mountEl) {
         } finally {
           this.loading = false;
         }
+
+        this.fetchBackupJobs();
+      },
+      async fetchBackupJobs() {
+        try {
+          const url = generateUrl("/apps/adminpage/api/backup-jobs");
+          const response = await axios.get(url);
+          console.log("Backup jobs:", response.data);
+        } catch (e) {
+          console.error("Failed to load backup jobs", e);
+        }
       },
     },
   });
