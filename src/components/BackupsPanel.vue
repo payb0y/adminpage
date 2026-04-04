@@ -361,6 +361,13 @@ export default {
 .backups-panel__filter-group {
   display: flex;
   gap: 5px;
+  padding-right: 12px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.backups-panel__filter-group:last-child {
+  border-right: none;
+  padding-right: 0;
 }
 
 .backups-panel__filter-badge {
