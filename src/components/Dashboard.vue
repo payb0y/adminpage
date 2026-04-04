@@ -60,6 +60,7 @@
         :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
+        :backup-jobs="backupJobs"
       />
 
       <!-- ── Public Dashboard Links Management ── -->
@@ -92,6 +93,12 @@ export default {
     data: {
       type: Object,
       required: true,
+    },
+    backupJobs: {
+      type: Array,
+      default: function () {
+        return [];
+      },
     },
   },
   computed: {

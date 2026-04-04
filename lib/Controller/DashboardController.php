@@ -210,11 +210,6 @@ class DashboardController extends Controller {
         try {
             $user = $this->userSession->getUser();
             $uid = $user ? $user->getUID() : '';
-            $orgName = $this->orgOverviewService->resolveOrgName($uid);
-
-            if ($orgName === null) {
-                return new JSONResponse(['error' => 'No organization found'], 404);
-            }
 
             $relative = '/ocs/v2.php/apps/organization/backups/jobs/my-organization';
             $url = $this->urlGenerator->getAbsoluteURL($relative);

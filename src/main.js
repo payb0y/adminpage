@@ -17,6 +17,7 @@ if (mountEl) {
     data() {
       return {
         dashboardData: null,
+        backupJobs: [],
         loading: true,
         error: null,
       };
@@ -36,6 +37,7 @@ if (mountEl) {
       return h(Dashboard, {
         props: {
           data: this.dashboardData,
+          backupJobs: this.backupJobs,
         },
       });
     },
@@ -61,7 +63,8 @@ if (mountEl) {
         try {
           const url = generateUrl("/apps/adminpage/api/backup-jobs");
           const response = await axios.get(url);
-          console.log("Backup jobs:", response.data);
+          var ocsData = response.data && response.data.ocs && response.data.ocs.data;
+          this.backupJobs = (ocsData && ocsData.jobs) || [];
         } catch (e) {
           console.error("Failed to load backup jobs", e);
         }

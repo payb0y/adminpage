@@ -118,6 +118,33 @@
           :usage-summary="usageSummary"
         />
       </div>
+
+      <!-- ── Divider ── -->
+      <div class="insights-panel__divider"></div>
+
+      <!-- ── Sub-section: Backups ── -->
+      <div class="insights-panel__section">
+        <div class="insights-panel__section-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </svg>
+          Backups
+          <span v-if="backupJobs.length" class="insights-panel__badge">{{ backupJobs.length }}</span>
+        </div>
+        <BackupsPanel :embedded="true" :jobs="backupJobs" />
+      </div>
     </div>
   </section>
 </template>
@@ -126,6 +153,7 @@
 import OrganizationPanel from "./OrganizationPanel.vue";
 import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
+import BackupsPanel from "./BackupsPanel.vue";
 
 export default {
   name: "OrgInsightsPanel",
@@ -133,6 +161,7 @@ export default {
     OrganizationPanel,
     MembersPanel,
     SubscriptionPanel,
+    BackupsPanel,
   },
   props: {
     profile: {
@@ -157,6 +186,12 @@ export default {
       type: Object,
       default: function () {
         return {};
+      },
+    },
+    backupJobs: {
+      type: Array,
+      default: function () {
+        return [];
       },
     },
   },
