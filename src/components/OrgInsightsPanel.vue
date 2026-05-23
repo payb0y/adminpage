@@ -145,6 +145,34 @@
         </div>
         <BackupsPanel :embedded="true" :jobs="backupJobs" />
       </div>
+
+      <!-- ── Divider ── -->
+      <div class="insights-panel__divider"></div>
+
+      <!-- ── Sub-section: Upcoming Events ── -->
+      <div class="insights-panel__section">
+        <div class="insights-panel__section-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Upcoming events
+          <span v-if="upcomingEvents.length" class="insights-panel__badge">{{ upcomingEvents.length }}</span>
+        </div>
+        <UpcomingEventsPanel :embedded="true" :events="upcomingEvents" />
+      </div>
     </div>
   </section>
 </template>
@@ -154,6 +182,7 @@ import OrganizationPanel from "./OrganizationPanel.vue";
 import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
+import UpcomingEventsPanel from "./UpcomingEventsPanel.vue";
 
 export default {
   name: "OrgInsightsPanel",
@@ -162,6 +191,7 @@ export default {
     MembersPanel,
     SubscriptionPanel,
     BackupsPanel,
+    UpcomingEventsPanel,
   },
   props: {
     profile: {
@@ -189,6 +219,12 @@ export default {
       },
     },
     backupJobs: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
+    upcomingEvents: {
       type: Array,
       default: function () {
         return [];

@@ -61,6 +61,7 @@
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
         :backup-jobs="backupJobs"
+        :upcoming-events="upcomingEvents"
       />
 
       <!-- ── Public Dashboard Links Management ── -->
@@ -95,6 +96,12 @@ export default {
       required: true,
     },
     backupJobs: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
+    upcomingEvents: {
       type: Array,
       default: function () {
         return [];
