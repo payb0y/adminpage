@@ -18,6 +18,7 @@ if (mountEl) {
       return {
         dashboardData: null,
         backupJobs: [],
+        upcomingEvents: [],
         loading: true,
         error: null,
       };
@@ -38,6 +39,7 @@ if (mountEl) {
         props: {
           data: this.dashboardData,
           backupJobs: this.backupJobs,
+          upcomingEvents: this.upcomingEvents,
         },
       });
     },
@@ -58,6 +60,7 @@ if (mountEl) {
         }
 
         this.fetchBackupJobs();
+        this.fetchUpcomingEvents();
       },
       async fetchBackupJobs() {
         try {
@@ -67,6 +70,15 @@ if (mountEl) {
           this.backupJobs = (ocsData && ocsData.jobs) || [];
         } catch (e) {
           console.error("Failed to load backup jobs", e);
+        }
+      },
+      async fetchUpcomingEvents() {
+        try {
+          const url = generateUrl("/apps/adminpage/api/upcoming-events");
+          const response = await axios.get(url);
+          this.upcomingEvents = (response.data && response.data.events) || [];
+        } catch (e) {
+          console.error("Failed to load upcoming events", e);
         }
       },
     },
