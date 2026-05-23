@@ -473,7 +473,7 @@ class DeckService {
         return [
             'progressDetails'   => $this->buildProgressDetails($projectMap),
             'memberDetails'     => $this->buildMemberDetails($taskRows, $cardAssignees, $projectMap),
-            'delayDetails'      => $this->buildDelayDetails($projectMap),
+            'delayDetails'      => $this->buildDelayDetails($projectMap, $cardAssignees),
             'completionDetails' => $this->buildCompletionDetails($projectMap),
         ];
     }
@@ -565,7 +565,7 @@ class DeckService {
     /**
      * Delay detail: per-project task-level on-time / delayed / blocked breakdown.
      */
-    private function buildDelayDetails(array $projectMap): array {
+    private function buildDelayDetails(array $projectMap, array $cardAssignees = []): array {
         $result = [];
         foreach ($projectMap as $proj) {
             $tasks = [];
@@ -573,6 +573,8 @@ class DeckService {
                 if ($t['task_status'] === 'deleted') {
                     continue;
                 }
+
+                $assignees = $cardAssignees[(int)$t['task_id']] ?? [];
 
                 $category = 'on-time';
                 $daysOverdue = null;
@@ -609,6 +611,7 @@ class DeckService {
                     'category'     => $category,
                     'days_overdue' => $daysOverdue,
                     'createdAt'    => $createdAt,
+                    'assignees'    => $assignees,
                 ];
             }
             // Compute average days active for non-deleted tasks

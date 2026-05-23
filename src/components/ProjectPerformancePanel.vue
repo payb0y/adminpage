@@ -923,6 +923,7 @@
                     <thead>
                       <tr>
                         <th>Task</th>
+                        <th>Assigned</th>
                         <th>Stack</th>
                         <th>Status</th>
                         <th>Category</th>
@@ -933,6 +934,21 @@
                     <tbody>
                       <tr v-for="(task, ti) in proj.tasks" :key="'mdlt-' + ti">
                         <td>{{ task.title }}</td>
+                        <td>
+                          <template
+                            v-if="task.assignees && task.assignees.length"
+                          >
+                            <span
+                              v-for="(uid, ai) in task.assignees"
+                              :key="'asg-' + ti + '-' + ai"
+                              class="perf-modal__assignee-badge"
+                              >{{ uid }}</span
+                            >
+                          </template>
+                          <span v-else class="perf-modal__assignee-none"
+                            >Unassigned</span
+                          >
+                        </td>
                         <td>
                           <span class="perf-modal__stack-badge">{{
                             task.stack
@@ -3172,6 +3188,23 @@ export default {
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
+}
+
+.perf-modal__assignee-badge {
+  display: inline-block;
+  font-size: 11px;
+  background: #eef2ff;
+  color: #4f46e5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  margin: 1px 3px 1px 0;
+}
+
+.perf-modal__assignee-none {
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
 }
 
 /* Empty states */
