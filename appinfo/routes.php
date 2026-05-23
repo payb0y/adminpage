@@ -6,6 +6,7 @@ return [
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
         ['name' => 'dashboard#getData', 'url' => '/api/data', 'verb' => 'GET'],
         ['name' => 'dashboard#getUpcomingTasks', 'url' => '/api/upcoming-tasks', 'verb' => 'GET'],
+        ['name' => 'dashboard#getUpcomingEvents', 'url' => '/api/upcoming-events', 'verb' => 'GET'],
         ['name' => 'dashboard#getBackupJobs', 'url' => '/api/backup-jobs', 'verb' => 'GET'],
 
         // Public dashboard routes

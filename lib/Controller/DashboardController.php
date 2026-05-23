@@ -6,6 +6,7 @@ namespace OCA\AdminPage\Controller;
 
 use DateTime;
 use OCA\AdminPage\Service\AlertService;
+use OCA\AdminPage\Service\CalendarService;
 use OCA\AdminPage\Service\DeckService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
@@ -23,6 +24,7 @@ class DashboardController extends Controller {
     private IURLGenerator $urlGenerator;
     private DeckService $deckService;
     private AlertService $alertService;
+    private CalendarService $calendarService;
     private KpiService $kpiService;
     private OrgOverviewService $orgOverviewService;
     private PublicTokenService $publicTokenService;
@@ -35,6 +37,7 @@ class DashboardController extends Controller {
         IURLGenerator $urlGenerator,
         DeckService $deckService,
         AlertService $alertService,
+        CalendarService $calendarService,
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
         PublicTokenService $publicTokenService,
@@ -45,6 +48,7 @@ class DashboardController extends Controller {
         $this->urlGenerator = $urlGenerator;
         $this->deckService = $deckService;
         $this->alertService = $alertService;
+        $this->calendarService = $calendarService;
         $this->kpiService = $kpiService;
         $this->orgOverviewService = $orgOverviewService;
         $this->publicTokenService = $publicTokenService;
@@ -138,6 +142,26 @@ class DashboardController extends Controller {
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     *
+     * @return JSONResponse
+     */
+    public function getUpcomingEvents(): JSONResponse {
+        $user = $this->userSession->getUser();
+        $uid  = $user ? $user->getUID() : '';
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+
+        if ($orgId === null) {
+            return new JSONResponse(['events' => []]);
+        }
+
+        return new JSONResponse([
+            'events' => $this->calendarService->getUpcomingEvents($orgId),
+        ]);
     }
 
     /**
