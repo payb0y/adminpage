@@ -191,7 +191,6 @@ class CalendarService {
 
     /**
      * Parse one calendar object, expand recurrences into the window, return the next occurrence.
-     * Implemented in Task 2.
      *
      * @param array<string, mixed> $row
      * @param array<int, array{displayname: string, color: ?string, owner: string}> $calendars
@@ -205,6 +204,78 @@ class CalendarService {
         \DateTimeImmutable $now,
         \DateTimeImmutable $windowEnd
     ): ?array {
-        return null;
+        $calId = (int)$row['calendarid'];
+        $cal = $calendars[$calId] ?? null;
+        if ($cal === null) {
+            return null;
+        }
+
+        try {
+            $vobject = Reader::read($row['calendardata']);
+            // expand() is non-mutating in sabre/vobject 4.x: it returns a NEW VCalendar
+            // containing the concrete occurrences within [now, windowEnd]. Non-recurring
+            // events are simply filtered by range.
+            $expanded = $vobject->expand($now, $windowEnd);
+        } catch (\Throwable $e) {
+            // Malformed blob — skip this object rather than break the whole list.
+            return null;
+        }
+
+        if ($expanded === null) {
+            return null;
+        }
+
+        $nowTs = $now->getTimestamp();
+        $best  = null; // earliest occurrence with start >= now
+
+        // select('VEVENT') returns every VEVENT component (iterating $expanded->VEVENT
+        // would walk the first component's properties instead of sibling occurrences).
+        foreach ($expanded->select('VEVENT') as $vevent) {
+            if (!isset($vevent->DTSTART)) {
+                continue;
+            }
+            try {
+                $startTs = $vevent->DTSTART->getDateTime()->getTimestamp();
+            } catch (\Throwable $e) {
+                continue;
+            }
+            if ($startTs < $nowTs) {
+                continue;
+            }
+            if ($best !== null && $startTs >= $best['start']) {
+                continue;
+            }
+
+            $endTs = null;
+            if (isset($vevent->DTEND)) {
+                try {
+                    $endTs = $vevent->DTEND->getDateTime()->getTimestamp();
+                } catch (\Throwable $e) {
+                    $endTs = null;
+                }
+            }
+
+            $title = isset($vevent->SUMMARY) ? trim((string)$vevent->SUMMARY) : '';
+            if ($title === '') {
+                $title = 'Busy';
+            }
+            $location = isset($vevent->LOCATION) ? trim((string)$vevent->LOCATION) : '';
+
+            $best = [
+                'id'            => (int)$row['id'],
+                'uid'           => (string)$row['uid'],
+                'title'         => $title,
+                'start'         => $startTs,
+                'end'           => $endTs,
+                'allDay'        => !$vevent->DTSTART->hasTime(),
+                'member'        => $cal['owner'],
+                'memberName'    => $displayNames[$cal['owner']] ?? $cal['owner'],
+                'calendar'      => $cal['displayname'],
+                'calendarColor' => $cal['color'],
+                'location'      => $location !== '' ? $location : null,
+            ];
+        }
+
+        return $best;
     }
 }
