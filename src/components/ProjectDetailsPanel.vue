@@ -404,6 +404,231 @@
         </div>
       </div>
 
+      <!-- ── Row 2c — Team Members (list + add + inline DRASCI edit) ── -->
+      <div class="proj-details__row">
+        <div class="proj-details__card proj-details__card--full">
+          <div class="proj-details__card-header">
+            <h4 class="proj-details__card-title">
+              Team Members
+              <span class="proj-details__count">{{
+                projectMemberCount(selectedProject.id)
+              }}</span>
+            </h4>
+            <button
+              type="button"
+              class="proj-details__add-toggle"
+              @click="toggleProjectAddPanel(selectedProject.id)"
+            >
+              <span aria-hidden="true">{{
+                isAddPanelOpen(selectedProject.id) ? "×" : "+"
+              }}</span>
+              {{ isAddPanelOpen(selectedProject.id) ? "Close" : "Add" }}
+            </button>
+          </div>
+
+          <!-- Add panel -->
+          <div
+            v-if="isAddPanelOpen(selectedProject.id)"
+            class="proj-details__add-form"
+          >
+            <input
+              type="search"
+              class="proj-details__add-form-input"
+              :value="getAddPanelState(selectedProject.id).search"
+              @input="
+                getAddPanelState(selectedProject.id).search = $event.target.value
+              "
+              placeholder="Search org members…"
+            />
+            <div
+              v-if="getAddPanelState(selectedProject.id).error"
+              class="proj-details__add-form-error"
+            >
+              {{ getAddPanelState(selectedProject.id).error }}
+            </div>
+            <ul
+              v-if="availableMembersForProject(selectedProject).length"
+              class="proj-details__add-form-results"
+            >
+              <li
+                v-for="u in availableMembersForProject(selectedProject)"
+                :key="'avail-' + selectedProject.id + '-' + (u.userId || u.id)"
+                class="proj-details__add-form-result"
+              >
+                <div class="proj-details__add-form-result-info">
+                  <span class="proj-details__add-form-result-name">{{
+                    u.displayName || u.userId || u.id
+                  }}</span>
+                  <span class="proj-details__add-form-result-meta">
+                    <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId || u.id }}
+                  </span>
+                </div>
+                <select
+                  :value="rowRoleFor(selectedProject.id, u.userId || u.id)"
+                  class="proj-details__add-form-role"
+                  :aria-label="
+                    'DRASCI role for ' + (u.displayName || u.userId || u.id)
+                  "
+                  @change="
+                    setRowRole(
+                      selectedProject.id,
+                      u.userId || u.id,
+                      $event.target.value
+                    )
+                  "
+                >
+                  <option value="">DRASCI role…</option>
+                  <option
+                    v-for="opt in drasciOptions()"
+                    :key="'r-' + opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="proj-details__add-form-add-btn"
+                  :disabled="
+                    getAddPanelState(selectedProject.id).addingUid !== null ||
+                    !rowRoleFor(selectedProject.id, u.userId || u.id)
+                  "
+                  :title="
+                    rowRoleFor(selectedProject.id, u.userId || u.id)
+                      ? ''
+                      : 'Choose a DRASCI role first'
+                  "
+                  :aria-label="'Add ' + (u.displayName || u.userId || u.id)"
+                  @click="addProjectMember(selectedProject.id, u.userId || u.id)"
+                >
+                  <span
+                    v-if="
+                      getAddPanelState(selectedProject.id).addingUid ===
+                      (u.userId || u.id)
+                    "
+                    class="proj-details__spinner"
+                    aria-hidden="true"
+                  ></span>
+                  <span v-else aria-hidden="true">+</span>
+                </button>
+              </li>
+            </ul>
+            <div v-else class="proj-details__add-form-state">
+              <template
+                v-if="getAddPanelState(selectedProject.id).search.trim()"
+              >No matches.</template>
+              <template v-else
+                >All organization members are already on this project.</template
+              >
+            </div>
+          </div>
+
+          <!-- Loading / error / empty -->
+          <div
+            v-if="projectMembersLoading[selectedProject.id]"
+            class="proj-details__members-state"
+          >Loading…</div>
+          <div
+            v-else-if="projectMembersError[selectedProject.id]"
+            class="proj-details__members-state proj-details__members-state--error"
+          >{{ projectMembersError[selectedProject.id] }}</div>
+
+          <!-- Member list -->
+          <ul
+            v-else-if="hasMembers(selectedProject.id)"
+            class="proj-details__members"
+          >
+            <li
+              v-for="m in projectMembersById[selectedProject.id]"
+              :key="'pm-' + selectedProject.id + '-' + m.userId"
+              class="proj-details__member"
+            >
+              <span class="proj-details__member-avatar">{{
+                (m.displayName || m.userId).charAt(0).toUpperCase()
+              }}</span>
+              <div class="proj-details__member-info">
+                <span class="proj-details__member-name">{{
+                  m.displayName || m.userId
+                }}</span>
+                <a
+                  v-if="m.email"
+                  :href="'mailto:' + m.email"
+                  class="proj-details__member-email"
+                >{{ m.email }}</a>
+                <span
+                  v-else
+                  class="proj-details__member-email proj-details__member-email--muted"
+                >No email</span>
+              </div>
+              <template
+                v-if="
+                  editRoleState[selectedProject.id] &&
+                  editRoleState[selectedProject.id].editingUid === m.userId
+                "
+              >
+                <select
+                  class="proj-details__member-drasci-select"
+                  :value="m.drasciRole || ''"
+                  :disabled="editRoleState[selectedProject.id].saving"
+                  @change="
+                    saveMemberRole(
+                      selectedProject.id,
+                      m.userId,
+                      $event.target.value
+                    )
+                  "
+                >
+                  <option value="" disabled>Pick role…</option>
+                  <option
+                    v-for="opt in drasciOptions()"
+                    :key="'er-' + opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="proj-details__member-drasci-cancel"
+                  @click="cancelEditRole(selectedProject.id)"
+                  aria-label="Cancel"
+                >×</button>
+                <span
+                  v-if="editRoleState[selectedProject.id].error"
+                  class="proj-details__member-error"
+                >{{ editRoleState[selectedProject.id].error }}</span>
+              </template>
+              <span
+                v-else
+                class="proj-details__member-drasci"
+                :class="
+                  'proj-details__member-drasci--' + (m.drasciRole || 'unassigned')
+                "
+                role="button"
+                tabindex="0"
+                :title="'Click to change DRASCI role'"
+                @click="beginEditRole(selectedProject.id, m.userId)"
+                @keydown.enter.prevent="beginEditRole(selectedProject.id, m.userId)"
+              >{{ m.drasciRoleLabel || drasciLabelFromRole(m.drasciRole) }}</span>
+              <span
+                class="proj-details__member-role"
+                :class="
+                  m.isOwner
+                    ? 'proj-details__member-role--owner'
+                    : 'proj-details__member-role--member'
+                "
+              >
+                <span v-if="m.isOwner" aria-hidden="true">★</span>
+                {{ m.isOwner ? "Owner" : "Member" }}
+              </span>
+            </li>
+          </ul>
+          <div v-else class="proj-details__members-state">
+            No team members assigned to this project.
+          </div>
+        </div>
+      </div>
+
       <!-- ── #1: Row 3 — Gantt Timeline ── -->
       <div v-if="selectedProject.timeline.length > 0" class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
@@ -909,6 +1134,11 @@ export default {
       addPanelByProject: {},       // projectId → {open, search, rowRoles, addingUid, error}
       editRoleState: {},           // projectId → {editingUid, saving, error}
     };
+  },
+  mounted: function () {
+    if (this.selectedProjectId) {
+      this.ensureProjectMembersLoaded(this.selectedProjectId);
+    }
   },
   watch: {
     selectedProjectId: function (newId) {
