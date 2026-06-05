@@ -291,6 +291,14 @@
 </template>
 
 <script>
+import axios from "@nextcloud/axios";
+import { generateOcsUrl } from "@nextcloud/router";
+
+const OCS_HEADERS = {
+  "OCS-APIRequest": "true",
+  Accept: "application/json",
+};
+
 export default {
   name: "MembersPanel",
   props: {
@@ -304,6 +312,22 @@ export default {
         return [];
       },
     },
+    orgId: {
+      type: Number,
+      default: null,
+    },
+    adminUid: {
+      type: String,
+      default: null,
+    },
+    currentUid: {
+      type: String,
+      default: null,
+    },
+    ownerUid: {
+      type: String,
+      default: null,
+    },
   },
   data: function () {
     return {
@@ -313,7 +337,43 @@ export default {
       roleFilter: "",
       currentPage: 1,
       pageSize: 5,
+      addMode: false,
+      addTab: "existing",
+      addSearchTerm: "",
+      addSearchResults: [],
+      addSearchLoading: false,
+      addError: null,
+      addingUid: null,
+      newUser: {
+        uid: "",
+        displayName: "",
+        email: "",
+        password: "",
+        autoGenerate: true,
+      },
+      newUserFieldErrors: {},
+      newUserBlurred: {},
+      newUserSubmitting: false,
+      newUserError: null,
+      newUserShowPassword: false,
+      createdUser: null,
+      revealCreatedPassword: false,
+      copyFlags: {},
+      toast: null,
     };
+  },
+  created: function () {
+    this._addSearchDebounce = null;
+    this._addSearchToken = 0;
+    this._toastTimer = null;
+    this._copyTimers = {};
+  },
+  beforeDestroy: function () {
+    if (this._addSearchDebounce) clearTimeout(this._addSearchDebounce);
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    Object.keys(this._copyTimers || {}).forEach((k) => {
+      clearTimeout(this._copyTimers[k]);
+    });
   },
   computed: {
     filteredMembers: function () {
@@ -351,6 +411,26 @@ export default {
       var start = (this.currentPage - 1) * this.pageSize;
       return this.filteredMembers.slice(start, start + this.pageSize);
     },
+    canAdd: function () {
+      return (
+        !!this.currentUid &&
+        !!this.adminUid &&
+        this.currentUid === this.adminUid
+      );
+    },
+    newUserFormValid: function () {
+      var nu = this.newUser;
+      var uid = (nu.uid || "").trim();
+      var display = (nu.displayName || "").trim();
+      var email = (nu.email || "").trim();
+      if (!uid || !/^[A-Za-z0-9._@-]+$/.test(uid)) return false;
+      if (!display) return false;
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+      if (!nu.autoGenerate) {
+        if (!nu.password || nu.password.length < 10) return false;
+      }
+      return true;
+    },
   },
   watch: {
     search: function () {
@@ -359,6 +439,11 @@ export default {
     filteredMembers: function () {
       if (this.currentPage > this.totalPages) {
         this.currentPage = this.totalPages;
+      }
+    },
+    addTab: function (val) {
+      if (val === "new" && this.newUser.autoGenerate && !this.newUser.password) {
+        this.newUser.password = this.generatePassword();
       }
     },
   },
@@ -385,6 +470,256 @@ export default {
       if (pct >= 75) return "members-panel__tasks-fill--high";
       if (pct >= 40) return "members-panel__tasks-fill--mid";
       return "members-panel__tasks-fill--low";
+    },
+    isOwner: function (member) {
+      return !!this.ownerUid && member && member.userId === this.ownerUid;
+    },
+    openAddMode: function () {
+      this.addMode = true;
+      this.addSearchTerm = "";
+      this.addSearchResults = [];
+      this.addError = null;
+      this.addingUid = null;
+      this.$nextTick(() => {
+        const el = this.$el.querySelector(".members-panel__add-form-input");
+        if (el && el.focus) el.focus();
+      });
+    },
+    closeAddMode: function () {
+      this.addMode = false;
+      if (this._addSearchDebounce) clearTimeout(this._addSearchDebounce);
+      this.addSearchTerm = "";
+      this.addSearchResults = [];
+      this.addSearchLoading = false;
+      this.addError = null;
+      this.addingUid = null;
+      this.addTab = "existing";
+      this.createdUser = null;
+      this.revealCreatedPassword = false;
+      this.resetNewUserForm();
+    },
+    onAddSearchInput: function (ev) {
+      this.addSearchTerm = ev.target.value;
+      if (this._addSearchDebounce) clearTimeout(this._addSearchDebounce);
+      if (this.addSearchTerm.trim().length < 2) {
+        this.addSearchResults = [];
+        this.addSearchLoading = false;
+        return;
+      }
+      this._addSearchDebounce = setTimeout(() => this.runAddSearch(), 300);
+    },
+    runAddSearch: async function () {
+      const term = this.addSearchTerm.trim();
+      if (term.length < 2) return;
+      const token = ++this._addSearchToken;
+      this.addSearchLoading = true;
+      this.addError = null;
+      try {
+        const res = await axios.get(
+          generateOcsUrl(
+            "/apps/organization/organizations/" + this.orgId + "/available-users"
+          ),
+          {
+            params: { search: term, format: "json" },
+            headers: OCS_HEADERS,
+          }
+        );
+        if (token !== this._addSearchToken) return;
+        const data =
+          (res.data && res.data.ocs && res.data.ocs.data) || res.data || {};
+        this.addSearchResults = data.users || [];
+      } catch (e) {
+        if (token !== this._addSearchToken) return;
+        const code = (e && e.response && e.response.status) || "network";
+        this.addError = "Search failed (" + code + ")";
+        this.addSearchResults = [];
+      } finally {
+        if (token === this._addSearchToken) {
+          this.addSearchLoading = false;
+        }
+      }
+    },
+    addMember: async function (uid) {
+      if (this.addingUid !== null) return;
+      this.addingUid = uid;
+      this.addError = null;
+      try {
+        await axios.post(
+          generateOcsUrl(
+            "/apps/organization/organizations/" + this.orgId + "/members"
+          ),
+          null,
+          {
+            params: { userId: uid, format: "json" },
+            headers: OCS_HEADERS,
+          }
+        );
+        var msg = "Added " + uid;
+        this.closeAddMode();
+        this.showToast(msg);
+        this.$emit("reload");
+      } catch (e) {
+        const code = (e && e.response && e.response.status) || "network";
+        this.addError = "Failed to add (" + code + ")";
+      } finally {
+        this.addingUid = null;
+      }
+    },
+    generatePassword: function () {
+      var alphabet =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_=+";
+      var len = 20;
+      var out = "";
+      var arr = new Uint32Array(len);
+      window.crypto.getRandomValues(arr);
+      for (var i = 0; i < len; i++) {
+        out += alphabet.charAt(arr[i] % alphabet.length);
+      }
+      return out;
+    },
+    onAutoGenerateChange: function () {
+      if (this.newUser.autoGenerate) {
+        this.newUser.password = this.generatePassword();
+      }
+    },
+    markBlurred: function (field) {
+      this.$set(this.newUserBlurred, field, true);
+      this.validateNewUser();
+    },
+    validateNewUser: function () {
+      var errs = {};
+      var nu = this.newUser;
+      var uid = nu.uid.trim();
+      if (!uid) {
+        errs.uid = "Required";
+      } else if (!/^[A-Za-z0-9._@-]+$/.test(uid)) {
+        errs.uid = "Use letters, digits, or . _ @ - (no spaces).";
+      }
+      if (!nu.displayName.trim()) {
+        errs.displayName = "Required";
+      }
+      var email = nu.email.trim();
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errs.email = "Invalid email address.";
+      }
+      if (!nu.autoGenerate) {
+        if (!nu.password) {
+          errs.password = "Required";
+        } else if (nu.password.length < 10) {
+          errs.password = "At least 10 characters.";
+        }
+      }
+      this.newUserFieldErrors = errs;
+      return Object.keys(errs).length === 0;
+    },
+    submitNewUser: async function () {
+      this.newUserBlurred = {
+        uid: true,
+        displayName: true,
+        email: true,
+        password: true,
+      };
+      if (!this.validateNewUser()) return;
+      if (this.newUserSubmitting) return;
+
+      var nu = this.newUser;
+      var params = {
+        userId: nu.uid.trim(),
+        password: nu.password,
+        format: "json",
+      };
+      if (nu.displayName.trim()) params.displayName = nu.displayName.trim();
+      if (nu.email.trim()) params.email = nu.email.trim();
+
+      this.newUserSubmitting = true;
+      this.newUserError = null;
+      try {
+        await axios.post(
+          generateOcsUrl(
+            "/apps/organization/organizations/" + this.orgId + "/users"
+          ),
+          null,
+          { params: params, headers: OCS_HEADERS }
+        );
+        if (nu.autoGenerate) {
+          this.createdUser = { uid: params.userId, password: nu.password };
+          this.revealCreatedPassword = false;
+          this.$emit("reload");
+        } else {
+          var msg = "User " + params.userId + " created and added";
+          this.closeAddMode();
+          this.showToast(msg);
+          this.$emit("reload");
+        }
+      } catch (e) {
+        this.newUserError = this.extractServerError(
+          e,
+          "Couldn't create user. Please try again."
+        );
+      } finally {
+        this.newUserSubmitting = false;
+      }
+    },
+    extractServerError: function (err, fallback) {
+      if (!err) return fallback;
+      if (!err.response) return "Couldn't reach the server. Try again.";
+      var ocsMsg =
+        err.response.data &&
+        err.response.data.ocs &&
+        err.response.data.ocs.meta &&
+        err.response.data.ocs.meta.message;
+      if (ocsMsg) return ocsMsg;
+      return fallback + " (HTTP " + err.response.status + ")";
+    },
+    confirmCreatedUser: function () {
+      var uid = this.createdUser ? this.createdUser.uid : null;
+      this.closeAddMode();
+      if (uid) this.showToast("User " + uid + " created and added");
+    },
+    resetNewUserForm: function () {
+      this.newUser = {
+        uid: "",
+        displayName: "",
+        email: "",
+        password: "",
+        autoGenerate: true,
+      };
+      this.newUserFieldErrors = {};
+      this.newUserBlurred = {};
+      this.newUserError = null;
+      this.newUserShowPassword = false;
+      this.copyFlags = {};
+    },
+    copyToClipboard: function (text, key) {
+      var setFlag = (val) => {
+        this.$set(this.copyFlags, key, val);
+      };
+      var schedule = () => {
+        if (this._copyTimers[key]) clearTimeout(this._copyTimers[key]);
+        this._copyTimers[key] = setTimeout(() => {
+          setFlag(false);
+        }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            setFlag(true);
+            schedule();
+          })
+          .catch(() => {
+            setFlag(false);
+          });
+      } else {
+        setFlag(false);
+      }
+    },
+    showToast: function (message) {
+      if (this._toastTimer) clearTimeout(this._toastTimer);
+      this.toast = { message: message };
+      this._toastTimer = setTimeout(() => {
+        this.toast = null;
+      }, 3000);
     },
   },
 };
