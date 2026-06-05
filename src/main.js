@@ -41,6 +41,11 @@ if (mountEl) {
           backupJobs: this.backupJobs,
           upcomingEvents: this.upcomingEvents,
         },
+        on: {
+          reload: () => {
+            this.fetchData();
+          },
+        },
       });
     },
     mounted() {
