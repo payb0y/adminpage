@@ -841,6 +841,12 @@ export default {
       type: Boolean,
       default: true,
     },
+    orgMembers: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
   },
   data: function () {
     return {

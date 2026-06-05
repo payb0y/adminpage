@@ -643,6 +643,7 @@
             :projects="projectDetails"
             :show-team-workload="showTeamWorkload"
             :show-assignees="showAssignees"
+            :org-members="orgMembers"
           />
         </div>
       </div>
@@ -1185,6 +1186,12 @@ export default {
     showAssignees: {
       type: Boolean,
       default: true,
+    },
+    orgMembers: {
+      type: Array,
+      default: function () {
+        return [];
+      },
     },
   },
   data: function () {

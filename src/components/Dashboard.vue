@@ -52,6 +52,7 @@
         :task-completion-projects="data.taskCompletionProjects"
         :performance-details="data.performanceDetails"
         :project-details="data.projectDetails || []"
+        :org-members="(data.orgOverview && data.orgOverview.members) || []"
       />
 
       <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->
