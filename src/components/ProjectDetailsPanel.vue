@@ -806,6 +806,25 @@
 <script>
 import DonutChart from "./DonutChart.vue";
 import TimelineChart from "./TimelineChart.vue";
+import axios from "@nextcloud/axios";
+import { generateUrl } from "@nextcloud/router";
+
+// projectcreatoraio uses plain app routes but its controllers still require
+// the OCS-APIRequest header (see ProjectApiController.php).
+const PCAIO_HEADERS = {
+  "OCS-APIRequest": "true",
+  Accept: "application/json",
+  "Content-Type": "application/json",
+};
+
+const DRASCI_OPTIONS = [
+  { value: "driver", label: "Driver" },
+  { value: "responsible", label: "Responsible" },
+  { value: "accountable", label: "Accountable" },
+  { value: "supportive", label: "Supportive" },
+  { value: "consulted", label: "Consulted" },
+  { value: "informed", label: "Informed" },
+];
 
 export default {
   name: "ProjectDetailsPanel",
@@ -883,11 +902,18 @@ export default {
       tbPageSize: 15,
       tbSortKey: "",
       tbSortDir: "asc",
+      // Project team members (lazy per-project)
+      projectMembersById: {},      // projectId → array of {userId, displayName, email, drasciRole, drasciRoleLabel, isOwner}
+      projectMembersLoading: {},   // projectId → bool
+      projectMembersError: {},     // projectId → string|null
+      addPanelByProject: {},       // projectId → {open, search, rowRoles, addingUid, error}
+      editRoleState: {},           // projectId → {editingUid, saving, error}
     };
   },
   watch: {
-    selectedProjectId: function () {
+    selectedProjectId: function (newId) {
       this.resetFilters();
+      if (newId) this.ensureProjectMembersLoaded(newId);
     },
     tbFilterName: function () {
       this.tbPage = 1;
@@ -1386,6 +1412,244 @@ export default {
         month: "short",
         year: "numeric",
       });
+    },
+    drasciOptions: function () {
+      return DRASCI_OPTIONS;
+    },
+    drasciLabelFromRole: function (role) {
+      if (!role) return "Unassigned";
+      for (var i = 0; i < DRASCI_OPTIONS.length; i++) {
+        if (DRASCI_OPTIONS[i].value === role) return DRASCI_OPTIONS[i].label;
+      }
+      return "Unassigned";
+    },
+    hasMembers: function (projectId) {
+      var list = this.projectMembersById[projectId];
+      return !!list && list.length > 0;
+    },
+    projectMemberCount: function (projectId) {
+      var list = this.projectMembersById[projectId];
+      return list ? list.length : 0;
+    },
+    isAddPanelOpen: function (projectId) {
+      var s = this.addPanelByProject[projectId];
+      return !!(s && s.open);
+    },
+    getAddPanelState: function (projectId) {
+      if (!this.addPanelByProject[projectId]) {
+        this.$set(this.addPanelByProject, projectId, {
+          open: false,
+          search: "",
+          rowRoles: {},
+          addingUid: null,
+          error: null,
+        });
+      }
+      return this.addPanelByProject[projectId];
+    },
+    toggleProjectAddPanel: function (projectId) {
+      var s = this.getAddPanelState(projectId);
+      if (s.open) {
+        this.closeProjectAddPanel(projectId);
+      } else {
+        s.open = true;
+        s.search = "";
+        s.rowRoles = {};
+        s.error = null;
+      }
+    },
+    closeProjectAddPanel: function (projectId) {
+      var s = this.getAddPanelState(projectId);
+      s.open = false;
+      s.search = "";
+      s.rowRoles = {};
+      s.error = null;
+    },
+    setRowRole: function (projectId, uid, role) {
+      var s = this.getAddPanelState(projectId);
+      this.$set(s.rowRoles, uid, role);
+    },
+    rowRoleFor: function (projectId, uid) {
+      var s = this.addPanelByProject[projectId];
+      return (s && s.rowRoles && s.rowRoles[uid]) || "";
+    },
+    availableMembersForProject: function (project) {
+      var existing = {};
+      var existingList = this.projectMembersById[project.id] || [];
+      for (var i = 0; i < existingList.length; i++) {
+        var m = existingList[i];
+        var uid = m.userId || m.id;
+        if (uid) existing[uid] = true;
+      }
+      var state = this.addPanelByProject[project.id];
+      var q = state ? (state.search || "").trim().toLowerCase() : "";
+      var out = [];
+      var src = this.orgMembers || [];
+      for (var j = 0; j < src.length; j++) {
+        var om = src[j];
+        var omUid = om.userId || om.id;
+        if (!omUid || existing[omUid]) continue;
+        if (q) {
+          var name = (om.displayName || "").toLowerCase();
+          var omU = (omUid || "").toLowerCase();
+          var email = (om.email || "").toLowerCase();
+          if (
+            name.indexOf(q) === -1 &&
+            omU.indexOf(q) === -1 &&
+            email.indexOf(q) === -1
+          ) {
+            continue;
+          }
+        }
+        out.push(om);
+      }
+      out.sort(function (a, b) {
+        var an = (a.displayName || a.userId || a.id || "").toLowerCase();
+        var bn = (b.displayName || b.userId || b.id || "").toLowerCase();
+        if (an < bn) return -1;
+        if (an > bn) return 1;
+        return 0;
+      });
+      return out;
+    },
+    ensureProjectMembersLoaded: function (projectId) {
+      if (!projectId) return;
+      if (this.projectMembersLoading[projectId]) return;
+      if (this.projectMembersById[projectId]) return; // already loaded
+      this.fetchProjectMembers(projectId);
+    },
+    fetchProjectMembers: async function (projectId) {
+      if (!projectId) return;
+      this.$set(this.projectMembersLoading, projectId, true);
+      this.$set(this.projectMembersError, projectId, null);
+      try {
+        const res = await axios.get(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members"
+          ),
+          { headers: PCAIO_HEADERS }
+        );
+        const list = (res.data && res.data.members) || [];
+        const norm = [];
+        for (var i = 0; i < list.length; i++) {
+          var m = list[i];
+          norm.push({
+            userId: m.userId || m.id || "",
+            displayName: m.displayName || m.userId || m.id || "",
+            email: m.email || "",
+            drasciRole: m.drasciRole || "",
+            drasciRoleLabel: m.drasciRoleLabel || "",
+            isOwner: !!m.isOwner,
+          });
+        }
+        this.$set(this.projectMembersById, projectId, norm);
+      } catch (e) {
+        this.$set(
+          this.projectMembersError,
+          projectId,
+          this.extractProjectMembersError(e, "Couldn't load team members.")
+        );
+      } finally {
+        this.$set(this.projectMembersLoading, projectId, false);
+      }
+    },
+    addProjectMember: async function (projectId, uid) {
+      var s = this.getAddPanelState(projectId);
+      if (s.addingUid !== null) return;
+      var role = (s.rowRoles && s.rowRoles[uid]) || "";
+      if (!role) {
+        s.error = "Choose a DRASCI role before adding.";
+        return;
+      }
+      s.addingUid = uid;
+      s.error = null;
+      try {
+        await axios.post(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" + projectId + "/members"
+          ),
+          { userId: uid, drasciRole: role },
+          { headers: PCAIO_HEADERS }
+        );
+        this.closeProjectAddPanel(projectId);
+        this.$delete(this.projectMembersById, projectId);
+        await this.fetchProjectMembers(projectId);
+      } catch (e) {
+        s.error = this.extractProjectMembersError(
+          e,
+          "Couldn't add team member."
+        );
+      } finally {
+        s.addingUid = null;
+      }
+    },
+    beginEditRole: function (projectId, uid) {
+      this.$set(this.editRoleState, projectId, {
+        editingUid: uid,
+        saving: false,
+        error: null,
+      });
+    },
+    cancelEditRole: function (projectId) {
+      this.$set(this.editRoleState, projectId, {
+        editingUid: null,
+        saving: false,
+        error: null,
+      });
+    },
+    saveMemberRole: async function (projectId, uid, role) {
+      var st = this.editRoleState[projectId] || {};
+      if (!role || st.saving) return;
+      this.$set(this.editRoleState, projectId, {
+        editingUid: uid,
+        saving: true,
+        error: null,
+      });
+      try {
+        await axios.put(
+          generateUrl(
+            "/apps/projectcreatoraio/api/v1/projects/" +
+              projectId +
+              "/members/" +
+              encodeURIComponent(uid) +
+              "/role"
+          ),
+          { drasciRole: role },
+          { headers: PCAIO_HEADERS }
+        );
+        this.$set(this.editRoleState, projectId, {
+          editingUid: null,
+          saving: false,
+          error: null,
+        });
+        this.$delete(this.projectMembersById, projectId);
+        await this.fetchProjectMembers(projectId);
+      } catch (e) {
+        this.$set(this.editRoleState, projectId, {
+          editingUid: uid,
+          saving: false,
+          error: this.extractProjectMembersError(
+            e,
+            "Couldn't update role."
+          ),
+        });
+      }
+    },
+    extractProjectMembersError: function (err, fallback) {
+      if (!err) return fallback;
+      if (!err.response) return "Couldn't reach the server. Try again.";
+      var status = err.response.status;
+      if (status === 403) return "No access to this project.";
+      if (status === 404) return "Project no longer exists.";
+      if (status === 400) return "Invalid request.";
+      if (status >= 500) return "Server error. Try again.";
+      var ocsMsg =
+        err.response.data &&
+        err.response.data.ocs &&
+        err.response.data.ocs.meta &&
+        err.response.data.ocs.meta.message;
+      if (ocsMsg) return ocsMsg;
+      return fallback + " (HTTP " + status + ")";
     },
   },
 };
