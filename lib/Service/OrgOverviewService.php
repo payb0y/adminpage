@@ -63,25 +63,13 @@ class OrgOverviewService {
     }
 
     public function resolveOrgId(string $uid): ?int {
-        // 1. Owner
+        // adminpage is admin-only: resolve strictly via organization ownership.
+        // Plain members (no admin_uid match) intentionally get null → empty state.
         $sql = "SELECT id FROM *PREFIX*organizations WHERE admin_uid = ? LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$uid]);
         $row = $stmt->fetch();
-        if ($row) {
-            return (int)$row['id'];
-        }
-
-        // 2. Member with admin role
-        $sql2 = "SELECT organization_id FROM *PREFIX*organization_members WHERE user_uid = ? LIMIT 1";
-        $stmt2 = $this->db->prepare($sql2);
-        $stmt2->execute([$uid]);
-        $row2 = $stmt2->fetch();
-        if ($row2) {
-            return (int)$row2['organization_id'];
-        }
-
-        return null;
+        return $row ? (int)$row['id'] : null;
     }
 
     // ─────────────────────────────────────────────────────────────────────
