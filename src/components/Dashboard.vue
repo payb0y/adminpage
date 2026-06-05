@@ -18,10 +18,10 @@
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       </div>
-      <h2 class="adminpage-dashboard__empty-title">No Organization Found</h2>
+      <h2 class="adminpage-dashboard__empty-title">Admin access required</h2>
       <p class="adminpage-dashboard__empty-text">
-        Your account is not associated with any organization.<br />
-        Please contact your administrator.
+        You're not an admin of any organization.<br />
+        Only organization owners can access this dashboard.
       </p>
     </div>
 
