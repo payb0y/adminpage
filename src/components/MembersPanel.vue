@@ -46,6 +46,11 @@
     </div>
 
     <div v-show="embedded || !collapsed" class="members-panel__body">
+      <div v-if="toast" class="members-panel__toast">
+        <span aria-hidden="true">✓</span>
+        <span>{{ toast.message }}</span>
+      </div>
+
       <!-- Filters -->
       <div class="members-panel__filters">
         <input
@@ -87,6 +92,284 @@
             >Member</span
           >
         </div>
+        <button
+          v-if="canAdd"
+          type="button"
+          class="members-panel__add-toggle"
+          @click="openAddMode"
+        >+ Add member</button>
+      </div>
+
+      <div v-if="addMode" class="members-panel__add-form">
+        <div class="members-panel__add-form-header">
+          <span class="members-panel__add-form-title">Add member</span>
+          <button
+            type="button"
+            class="members-panel__add-form-close"
+            @click="closeAddMode"
+            aria-label="Close add form"
+          >×</button>
+        </div>
+
+        <!-- Credentials reveal card (shown after auto-generated password create) -->
+        <div v-if="createdUser" class="members-panel__reveal">
+          <div class="members-panel__reveal-heading">
+            <span class="members-panel__reveal-check" aria-hidden="true">✓</span>
+            User created and added
+          </div>
+          <div class="members-panel__reveal-row">
+            <span class="members-panel__reveal-label">UID</span>
+            <span class="members-panel__reveal-value">{{ createdUser.uid }}</span>
+            <button
+              type="button"
+              class="members-panel__reveal-btn"
+              @click="copyToClipboard(createdUser.uid, 'uid')"
+            >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
+          </div>
+          <div class="members-panel__reveal-row">
+            <span class="members-panel__reveal-label">Password</span>
+            <span class="members-panel__reveal-value">
+              <template v-if="revealCreatedPassword">{{ createdUser.password }}</template>
+              <template v-else>{{ "•".repeat(createdUser.password.length) }}</template>
+            </span>
+            <button
+              type="button"
+              class="members-panel__reveal-btn"
+              @click="revealCreatedPassword = !revealCreatedPassword"
+            >{{ revealCreatedPassword ? "Hide" : "Show" }}</button>
+            <button
+              type="button"
+              class="members-panel__reveal-btn"
+              @click="copyToClipboard(createdUser.password, 'password')"
+            >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
+          </div>
+          <div class="members-panel__reveal-row members-panel__reveal-row--full">
+            <button
+              type="button"
+              class="members-panel__reveal-btn members-panel__reveal-btn--wide"
+              @click="copyToClipboard(createdUser.uid + ' / ' + createdUser.password, 'both')"
+            >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
+          </div>
+          <p class="members-panel__reveal-warning">
+            Share these credentials with the user now — the password won't be visible again.
+          </p>
+          <div class="members-panel__reveal-actions">
+            <button
+              type="button"
+              class="members-panel__btn members-panel__btn--primary"
+              @click="confirmCreatedUser"
+            >Done</button>
+          </div>
+        </div>
+
+        <!-- Tabbed add UI (hidden while reveal card is showing) -->
+        <template v-else>
+          <div class="members-panel__add-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              class="members-panel__add-tab"
+              :class="{ 'members-panel__add-tab--active': addTab === 'existing' }"
+              :aria-selected="addTab === 'existing'"
+              @click="addTab = 'existing'"
+            >Existing user</button>
+            <button
+              type="button"
+              role="tab"
+              class="members-panel__add-tab"
+              :class="{ 'members-panel__add-tab--active': addTab === 'new' }"
+              :aria-selected="addTab === 'new'"
+              @click="addTab = 'new'"
+            >New user</button>
+          </div>
+
+          <!-- Existing user tab -->
+          <div v-if="addTab === 'existing'">
+            <input
+              type="search"
+              class="members-panel__add-form-input"
+              :value="addSearchTerm"
+              @input="onAddSearchInput($event)"
+              placeholder="Search by name, email, or UID (min 2 characters)…"
+            />
+            <div v-if="addError" class="members-panel__add-form-error">
+              {{ addError }}
+            </div>
+            <div v-if="addSearchLoading" class="members-panel__add-form-state">
+              Searching…
+            </div>
+            <div
+              v-else-if="addSearchTerm.trim().length >= 2 && addSearchResults.length === 0"
+              class="members-panel__add-form-state"
+            >
+              No users match.
+            </div>
+            <ul
+              v-else-if="addSearchResults.length > 0"
+              class="members-panel__add-form-results"
+            >
+              <li
+                v-for="u in addSearchResults"
+                :key="'avail-' + u.uid"
+                class="members-panel__add-form-result"
+              >
+                <div class="members-panel__add-form-result-info">
+                  <span class="members-panel__add-form-result-name">{{ u.displayName || u.uid }}</span>
+                  <span class="members-panel__add-form-result-meta">
+                    <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.uid }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="members-panel__add-form-add-btn"
+                  :disabled="addingUid !== null"
+                  :aria-label="'Add ' + (u.displayName || u.uid)"
+                  @click="addMember(u.uid)"
+                >
+                  <span
+                    v-if="addingUid === u.uid"
+                    class="members-panel__spinner"
+                    aria-hidden="true"
+                  ></span>
+                  <span v-else aria-hidden="true">+</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- New user tab -->
+          <div v-else-if="addTab === 'new'">
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-uid">
+                UID <span class="members-panel__field-required">*</span>
+              </label>
+              <input
+                id="newuser-uid"
+                type="text"
+                class="members-panel__add-form-input"
+                v-model="newUser.uid"
+                autocomplete="off"
+                spellcheck="false"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('uid')"
+              />
+              <div
+                v-if="newUserBlurred.uid && newUserFieldErrors.uid"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.uid }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-display">
+                Display name <span class="members-panel__field-required">*</span>
+              </label>
+              <input
+                id="newuser-display"
+                type="text"
+                class="members-panel__add-form-input"
+                v-model="newUser.displayName"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('displayName')"
+              />
+              <div
+                v-if="newUserBlurred.displayName && newUserFieldErrors.displayName"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.displayName }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-email">Email</label>
+              <input
+                id="newuser-email"
+                type="email"
+                class="members-panel__add-form-input"
+                v-model="newUser.email"
+                autocomplete="off"
+                :disabled="newUserSubmitting"
+                @blur="markBlurred('email')"
+              />
+              <div
+                v-if="newUserBlurred.email && newUserFieldErrors.email"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.email }}</div>
+            </div>
+
+            <div class="members-panel__field">
+              <label class="members-panel__field-label" for="newuser-password">
+                Password <span class="members-panel__field-required">*</span>
+              </label>
+              <div class="members-panel__password-row">
+                <input
+                  id="newuser-password"
+                  :type="newUserShowPassword ? 'text' : 'password'"
+                  class="members-panel__add-form-input members-panel__password-input"
+                  v-model="newUser.password"
+                  :readonly="newUser.autoGenerate"
+                  :disabled="newUserSubmitting"
+                  autocomplete="new-password"
+                  @blur="markBlurred('password')"
+                />
+                <button
+                  type="button"
+                  class="members-panel__icon-btn"
+                  :aria-label="newUserShowPassword ? 'Hide password' : 'Show password'"
+                  :title="newUserShowPassword ? 'Hide password' : 'Show password'"
+                  :disabled="newUserSubmitting"
+                  @click="newUserShowPassword = !newUserShowPassword"
+                >{{ newUserShowPassword ? "🙈" : "👁" }}</button>
+                <button
+                  v-if="newUser.autoGenerate"
+                  type="button"
+                  class="members-panel__icon-btn"
+                  aria-label="Regenerate password"
+                  title="Regenerate password"
+                  :disabled="newUserSubmitting"
+                  @click="newUser.password = generatePassword()"
+                >↻</button>
+              </div>
+              <label class="members-panel__autogen">
+                <input
+                  type="checkbox"
+                  v-model="newUser.autoGenerate"
+                  :disabled="newUserSubmitting"
+                  @change="onAutoGenerateChange"
+                />
+                Auto-generate
+              </label>
+              <div
+                v-if="newUserBlurred.password && newUserFieldErrors.password"
+                class="members-panel__field-error"
+              >{{ newUserFieldErrors.password }}</div>
+            </div>
+
+            <div
+              v-if="newUserError"
+              class="members-panel__add-form-error"
+            >{{ newUserError }}</div>
+
+            <div class="members-panel__form-actions">
+              <button
+                type="button"
+                class="members-panel__btn members-panel__btn--ghost"
+                :disabled="newUserSubmitting"
+                @click="closeAddMode"
+              >Cancel</button>
+              <button
+                type="button"
+                class="members-panel__btn members-panel__btn--primary"
+                :disabled="newUserSubmitting || !newUserFormValid"
+                @click="submitNewUser"
+              >
+                <span
+                  v-if="newUserSubmitting"
+                  class="members-panel__spinner members-panel__spinner--inline"
+                  aria-hidden="true"
+                ></span>
+                Create &amp; add member
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
 
       <div v-if="filteredMembers.length === 0" class="members-panel__empty">
