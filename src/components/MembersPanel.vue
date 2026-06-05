@@ -316,7 +316,42 @@
                   :title="newUserShowPassword ? 'Hide password' : 'Show password'"
                   :disabled="newUserSubmitting"
                   @click="newUserShowPassword = !newUserShowPassword"
-                >{{ newUserShowPassword ? "🙈" : "👁" }}</button>
+                >
+                  <svg
+                    v-if="newUserShowPassword"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                  <svg
+                    v-else
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
                 <button
                   v-if="newUser.autoGenerate"
                   type="button"
@@ -325,7 +360,25 @@
                   title="Regenerate password"
                   :disabled="newUserSubmitting"
                   @click="newUser.password = generatePassword()"
-                >↻</button>
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+                    <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+                  </svg>
+                </button>
               </div>
               <label class="members-panel__autogen">
                 <input
@@ -397,7 +450,37 @@
               {{ member.title ? member.title : member.email }}
             </span>
           </div>
-          <div class="members-panel__right">
+          <div
+            v-if="confirmRemoveUid === member.userId"
+            class="members-panel__right members-panel__right--confirm"
+            @click.stop
+          >
+            <span class="members-panel__confirm-text">Remove?</span>
+            <span
+              v-if="removeError"
+              class="members-panel__confirm-error"
+            >{{ removeError }}</span>
+            <button
+              type="button"
+              class="members-panel__confirm-btn members-panel__confirm-btn--danger"
+              :disabled="removingUid === member.userId"
+              @click.stop="confirmRemove(member.userId)"
+            >
+              <span
+                v-if="removingUid === member.userId"
+                class="members-panel__spinner members-panel__spinner--inline"
+                aria-hidden="true"
+              ></span>
+              Confirm
+            </button>
+            <button
+              type="button"
+              class="members-panel__confirm-btn"
+              :disabled="removingUid === member.userId"
+              @click.stop="cancelRemove()"
+            >Cancel</button>
+          </div>
+          <div v-else class="members-panel__right">
             <!-- Task mini-stats -->
             <span
               v-if="member.assignedTasks > 0"
@@ -419,6 +502,32 @@
             >
               {{ member.role }}
             </span>
+            <button
+              v-if="canAdd && !isOwner(member)"
+              type="button"
+              class="members-panel__remove-btn"
+              title="Remove member"
+              @click.stop="requestRemove(member.userId)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -627,6 +736,9 @@ export default {
       addSearchLoading: false,
       addError: null,
       addingUid: null,
+      confirmRemoveUid: null,
+      removingUid: null,
+      removeError: null,
       newUser: {
         uid: "",
         displayName: "",
@@ -846,6 +958,38 @@ export default {
         this.addError = "Failed to add (" + code + ")";
       } finally {
         this.addingUid = null;
+      }
+    },
+    requestRemove: function (uid) {
+      this.confirmRemoveUid = uid;
+      this.removeError = null;
+    },
+    cancelRemove: function () {
+      this.confirmRemoveUid = null;
+      this.removeError = null;
+    },
+    confirmRemove: async function (uid) {
+      if (this.removingUid !== null) return;
+      this.removingUid = uid;
+      this.removeError = null;
+      try {
+        await axios.delete(
+          generateOcsUrl(
+            "/apps/organization/organizations/" + this.orgId + "/members/" + encodeURIComponent(uid)
+          ),
+          {
+            params: { format: "json" },
+            headers: OCS_HEADERS,
+          }
+        );
+        this.confirmRemoveUid = null;
+        this.showToast("Removed " + uid);
+        this.$emit("reload");
+      } catch (e) {
+        const code = (e && e.response && e.response.status) || "network";
+        this.removeError = "Failed to remove (" + code + ")";
+      } finally {
+        this.removingUid = null;
       }
     },
     generatePassword: function () {
@@ -1830,5 +1974,73 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: 12px;
+}
+
+/* ───────── Remove member ───────── */
+.members-panel__remove-btn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid #fde8e8;
+  background: #fff;
+  color: #b91c1c;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.members-panel__remove-btn:hover:not(:disabled) {
+  background: #fde8e8;
+  border-color: #b91c1c;
+}
+.members-panel__remove-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.members-panel__right--confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.members-panel__confirm-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+.members-panel__confirm-error {
+  font-size: 11px;
+  color: #b91c1c;
+}
+.members-panel__confirm-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.members-panel__confirm-btn:hover:not(:disabled) {
+  background: #f0f1f5;
+}
+.members-panel__confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.members-panel__confirm-btn--danger {
+  background: #b91c1c;
+  color: #fff;
+  border-color: #b91c1c;
+}
+.members-panel__confirm-btn--danger:hover:not(:disabled) {
+  background: #991b1b;
 }
 </style>
