@@ -1475,4 +1475,360 @@ export default {
     flex-wrap: wrap;
   }
 }
+
+/* ───────── Toast ───────── */
+.members-panel__toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #166534;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* ───────── Add toggle button ───────── */
+.members-panel__add-toggle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #4a90d9;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: auto;
+}
+.members-panel__add-toggle:hover {
+  background: #357ec7;
+}
+
+/* ───────── Add form container ───────── */
+.members-panel__add-form {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 8px 0 16px;
+}
+.members-panel__add-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.members-panel__add-form-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.members-panel__add-form-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+}
+.members-panel__add-form-close:hover {
+  color: #1a1a2e;
+}
+
+/* ───────── Add tabs ───────── */
+.members-panel__add-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.members-panel__add-tab {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.members-panel__add-tab:hover {
+  color: #1a1a2e;
+}
+.members-panel__add-tab--active {
+  color: #1e4a8a;
+  border-bottom-color: #1e4a8a;
+}
+
+/* ───────── Add form inputs / results ───────── */
+.members-panel__add-form-input {
+  width: 100%;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  outline: none;
+  box-sizing: border-box;
+}
+.members-panel__add-form-input:focus {
+  border-color: #4a90d9;
+}
+.members-panel__add-form-error {
+  font-size: 12px;
+  color: #b91c1c;
+  margin-top: 6px;
+}
+.members-panel__add-form-state {
+  font-size: 12px;
+  color: #6b7280;
+  padding: 8px 0;
+}
+.members-panel__add-form-results {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.members-panel__add-form-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.members-panel__add-form-result:last-child {
+  border-bottom: none;
+}
+.members-panel__add-form-result-info {
+  flex: 1;
+  min-width: 0;
+}
+.members-panel__add-form-result-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.members-panel__add-form-result-meta {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+}
+.members-panel__add-form-add-btn {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.members-panel__add-form-add-btn:hover:not(:disabled) {
+  background: #357ec7;
+}
+.members-panel__add-form-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ───────── Spinner ───────── */
+.members-panel__spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: members-panel-spin 0.7s linear infinite;
+}
+.members-panel__spinner--inline {
+  margin-right: 6px;
+  border-color: currentColor;
+  border-top-color: transparent;
+}
+@keyframes members-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ───────── New user form fields ───────── */
+.members-panel__field {
+  margin-bottom: 10px;
+}
+.members-panel__field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.members-panel__field-required {
+  color: #b91c1c;
+}
+.members-panel__field-error {
+  font-size: 11px;
+  color: #b91c1c;
+  margin-top: 4px;
+}
+
+/* ───────── Password row ───────── */
+.members-panel__password-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.members-panel__password-input {
+  flex: 1;
+}
+.members-panel__icon-btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #4a90d9;
+}
+.members-panel__icon-btn:hover:not(:disabled) {
+  background: #e8f0fe;
+}
+.members-panel__icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.members-panel__autogen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/* ───────── Action buttons ───────── */
+.members-panel__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.members-panel__btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.members-panel__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.members-panel__btn--primary {
+  background: #4a90d9;
+  color: #fff;
+}
+.members-panel__btn--primary:hover:not(:disabled) {
+  background: #357ec7;
+}
+.members-panel__btn--ghost {
+  background: #fff;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+.members-panel__btn--ghost:hover:not(:disabled) {
+  background: #f0f1f5;
+}
+
+/* ───────── Reveal card ───────── */
+.members-panel__reveal {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.members-panel__reveal-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #166534;
+  margin-bottom: 10px;
+}
+.members-panel__reveal-check {
+  font-size: 16px;
+}
+.members-panel__reveal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.members-panel__reveal-row--full {
+  justify-content: flex-end;
+}
+.members-panel__reveal-label {
+  flex: 0 0 80px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.members-panel__reveal-value {
+  flex: 1;
+  font-family: "SF Mono", Monaco, "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  color: #1a1a2e;
+  word-break: break-all;
+}
+.members-panel__reveal-btn {
+  font-size: 11px;
+  font-weight: 600;
+  background: #fff;
+  color: #166534;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.members-panel__reveal-btn:hover {
+  background: #d1fae5;
+}
+.members-panel__reveal-btn--wide {
+  padding: 4px 12px;
+}
+.members-panel__reveal-warning {
+  font-size: 11px;
+  color: #92400e;
+  margin: 8px 0 0;
+}
+.members-panel__reveal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
 </style>
