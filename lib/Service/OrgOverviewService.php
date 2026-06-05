@@ -42,6 +42,7 @@ class OrgOverviewService {
             'members'      => $this->getMembers($orgId),
             'projects'     => $this->getProjects($orgId),
             'usageSummary' => $this->getUsageSummary($orgId),
+            'currentUid'   => $uid,
         ];
     }
 
