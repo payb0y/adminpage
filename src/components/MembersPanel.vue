@@ -1840,8 +1840,8 @@ export default {
 }
 .members-panel__icon-btn {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 8px;
@@ -1849,8 +1849,14 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  padding: 0;
   color: #4a90d9;
+}
+.members-panel__icon-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex-shrink: 0;
 }
 .members-panel__icon-btn:hover:not(:disabled) {
   background: #e8f0fe;
@@ -1979,8 +1985,8 @@ export default {
 /* ───────── Remove member ───────── */
 .members-panel__remove-btn {
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   border: 1px solid #fde8e8;
   background: #fff;
@@ -1989,7 +1995,14 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   transition: all 0.15s;
+}
+.members-panel__remove-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
 }
 .members-panel__remove-btn:hover:not(:disabled) {
   background: #fde8e8;
