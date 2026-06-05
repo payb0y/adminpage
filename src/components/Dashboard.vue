@@ -62,6 +62,10 @@
         :usage-summary="data.orgOverview.usageSummary || {}"
         :backup-jobs="backupJobs"
         :upcoming-events="upcomingEvents"
+        :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
+        :admin-uid="(data.orgOverview.profile && data.orgOverview.profile.adminUid) || null"
+        :current-uid="data.orgOverview.currentUid || null"
+        @reload="$emit('reload')"
       />
 
       <!-- ── Public Dashboard Links Management ── -->

@@ -87,7 +87,15 @@
           Team Members
           <span class="insights-panel__badge">{{ members.length }}</span>
         </div>
-        <MembersPanel :embedded="true" :members="members" />
+        <MembersPanel
+          :embedded="true"
+          :members="members"
+          :org-id="orgId"
+          :admin-uid="adminUid"
+          :current-uid="currentUid"
+          :owner-uid="adminUid"
+          @reload="$emit('reload')"
+        />
       </div>
 
       <!-- ── Divider ── -->
@@ -229,6 +237,18 @@ export default {
       default: function () {
         return [];
       },
+    },
+    orgId: {
+      type: Number,
+      default: null,
+    },
+    adminUid: {
+      type: String,
+      default: null,
+    },
+    currentUid: {
+      type: String,
+      default: null,
     },
   },
   data: function () {
