@@ -138,6 +138,17 @@
                 selectedProject.description
               }}</span>
             </div>
+            <div
+              class="proj-details__info-item"
+              v-if="
+                selectedProject.location && selectedProject.location !== ','
+              "
+            >
+              <span class="proj-details__info-label">Project Location</span>
+              <span class="proj-details__info-value">{{
+                selectedProject.location
+              }}</span>
+            </div>
             <div class="proj-details__info-item">
               <span class="proj-details__info-label">Created</span>
               <span class="proj-details__info-value">{{
@@ -223,17 +234,6 @@
               <span class="proj-details__info-label">Client Address</span>
               <span class="proj-details__info-value proj-details__info-value--multiline">{{
                 selectedProject.clientAddress
-              }}</span>
-            </div>
-            <div
-              class="proj-details__info-item"
-              v-if="
-                selectedProject.location && selectedProject.location !== ','
-              "
-            >
-              <span class="proj-details__info-label">Project Location</span>
-              <span class="proj-details__info-value">{{
-                selectedProject.location
               }}</span>
             </div>
           </div>
