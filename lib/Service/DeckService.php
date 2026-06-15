@@ -855,6 +855,7 @@ class DeckService {
                 'clientName'      => $p['client_name'] ?? '',
                 'clientEmail'     => $p['client_email'] ?? '',
                 'clientPhone'     => $p['client_phone'] ?? '',
+                'clientAddress'   => $p['client_address'] ?? '',
                 'location'        => trim(($p['loc_street'] ?? '') . ', ' . ($p['loc_city'] ?? '') . ' ' . ($p['loc_zip'] ?? ''), ', '),
                 'createdAt'       => $p['created_at'] ?? '',
                 'updatedAt'       => $p['updated_at'] ?? '',
@@ -888,7 +889,7 @@ class DeckService {
     private function fetchProjectsWithMeta(int $orgId): array {
         $sql = "
             SELECT cp.id, cp.name, cp.number, cp.type, cp.status, cp.description,
-                   cp.client_name, cp.client_email, cp.client_phone,
+                   cp.client_name, cp.client_email, cp.client_phone, cp.client_address,
                    cp.loc_street, cp.loc_city, cp.loc_zip,
                    cp.board_id, cp.folder_id, cp.white_board_id,
                    cp.created_at, cp.updated_at

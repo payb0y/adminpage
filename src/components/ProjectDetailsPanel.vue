@@ -218,11 +218,20 @@
             </div>
             <div
               class="proj-details__info-item"
+              v-if="selectedProject.clientAddress"
+            >
+              <span class="proj-details__info-label">Client Address</span>
+              <span class="proj-details__info-value proj-details__info-value--multiline">{{
+                selectedProject.clientAddress
+              }}</span>
+            </div>
+            <div
+              class="proj-details__info-item"
               v-if="
                 selectedProject.location && selectedProject.location !== ','
               "
             >
-              <span class="proj-details__info-label">Location</span>
+              <span class="proj-details__info-label">Project Location</span>
               <span class="proj-details__info-value">{{
                 selectedProject.location
               }}</span>
@@ -2158,6 +2167,10 @@ export default {
   font-size: 13px;
   color: var(--color-text-primary, #1a1a2e);
   word-break: break-word;
+}
+
+.proj-details__info-value--multiline {
+  white-space: pre-line;
 }
 
 .proj-details__info-link {
