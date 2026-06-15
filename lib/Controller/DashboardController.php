@@ -8,6 +8,7 @@ use DateTime;
 use OCA\AdminPage\Service\AlertService;
 use OCA\AdminPage\Service\CalendarService;
 use OCA\AdminPage\Service\DeckService;
+use OCA\AdminPage\Service\GeocodeService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
 use OCA\AdminPage\Service\PublicTokenService;
@@ -25,6 +26,7 @@ class DashboardController extends Controller {
     private DeckService $deckService;
     private AlertService $alertService;
     private CalendarService $calendarService;
+    private GeocodeService $geocodeService;
     private KpiService $kpiService;
     private OrgOverviewService $orgOverviewService;
     private PublicTokenService $publicTokenService;
@@ -38,6 +40,7 @@ class DashboardController extends Controller {
         DeckService $deckService,
         AlertService $alertService,
         CalendarService $calendarService,
+        GeocodeService $geocodeService,
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
         PublicTokenService $publicTokenService,
@@ -49,6 +52,7 @@ class DashboardController extends Controller {
         $this->deckService = $deckService;
         $this->alertService = $alertService;
         $this->calendarService = $calendarService;
+        $this->geocodeService = $geocodeService;
         $this->kpiService = $kpiService;
         $this->orgOverviewService = $orgOverviewService;
         $this->publicTokenService = $publicTokenService;
@@ -162,6 +166,45 @@ class DashboardController extends Controller {
         return new JSONResponse([
             'events' => $this->calendarService->getUpcomingEvents($orgId),
         ]);
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     *
+     * @param int $projectId
+     * @return JSONResponse
+     */
+    public function getProjectGeocode(int $projectId): JSONResponse {
+        $user = $this->userSession->getUser();
+        $uid  = $user ? $user->getUID() : '';
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'no_org'], 403);
+        }
+
+        $result = $this->geocodeService->geocodeProject($orgId, $projectId);
+
+        switch ($result['status']) {
+            case 'no_org_match':
+                return new JSONResponse(['error' => 'not_in_org'], 403);
+            case 'no_address':
+                return new JSONResponse(['reason' => 'no_address'], 404);
+            case 'not_found':
+                return new JSONResponse(['reason' => 'not_found'], 404);
+            case 'unavailable':
+                return new JSONResponse(['error' => 'geocoding_unavailable'], 503);
+            case 'ok':
+                return new JSONResponse([
+                    'lat'         => $result['lat'],
+                    'lng'         => $result['lng'],
+                    'displayName' => $result['displayName'] ?? null,
+                    'source'      => $result['source'] ?? 'nominatim',
+                    'fromCache'   => $result['fromCache'] ?? false,
+                ]);
+            default:
+                return new JSONResponse(['error' => 'internal'], 500);
+        }
     }
 
     /**
