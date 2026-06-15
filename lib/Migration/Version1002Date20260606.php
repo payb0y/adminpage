@@ -48,7 +48,10 @@ class Version1002Date20260606 extends SimpleMigrationStep {
                 'unsigned' => true,
             ]);
 
-            $table->setPrimaryKey(['addr_hash']);
+            // Explicit short name — Nextcloud enforces a 30-char limit on
+            // index identifiers, and the auto-generated PK name for this
+            // table exceeds it.
+            $table->setPrimaryKey(['addr_hash'], 'adminpage_geocache_pk');
         }
 
         return $schema;
