@@ -267,6 +267,28 @@
         </div>
       </div>
 
+      <!-- ── Row 1b — Project Location Map ── -->
+      <div class="proj-details__row">
+        <div class="proj-details__card proj-details__card--full">
+          <div class="proj-details__card-header">
+            <h4 class="proj-details__card-title">Project Location</h4>
+          </div>
+          <ProjectMap
+            v-if="geocodeStatus[selectedProject.id] === 'loaded' && geocodeByProject[selectedProject.id]"
+            :lat="Number(geocodeByProject[selectedProject.id].lat)"
+            :lng="Number(geocodeByProject[selectedProject.id].lng)"
+            :display-name="geocodeByProject[selectedProject.id].displayName || null"
+          />
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'loading'" class="proj-details__map-state">Loading map…</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'no_address'" class="proj-details__map-state">No address available for this project.</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'not_found'" class="proj-details__map-state">Couldn't locate this address on the map.</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'unavailable'" class="proj-details__map-state proj-details__map-state--error">
+            {{ geocodeError[selectedProject.id] || "Map unavailable." }}
+          </div>
+          <div v-else class="proj-details__map-state">Loading map…</div>
+        </div>
+      </div>
+
       <!-- ── #2 & #3: Row 2 — Donut (no table) + Due Dates + Team Workload ── -->
       <div
         class="proj-details__row"
@@ -1040,6 +1062,7 @@
 <script>
 import DonutChart from "./DonutChart.vue";
 import TimelineChart from "./TimelineChart.vue";
+import ProjectMap from "./ProjectMap.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
@@ -1062,7 +1085,7 @@ const DRASCI_OPTIONS = [
 
 export default {
   name: "ProjectDetailsPanel",
-  components: { DonutChart, TimelineChart },
+  components: { DonutChart, TimelineChart, ProjectMap },
   directives: {
     "click-outside": {
       bind: function (el, binding) {
@@ -1142,17 +1165,25 @@ export default {
       projectMembersError: {},     // projectId → string|null
       addPanelByProject: {},       // projectId → {open, search, rowRoles, addingUid, error}
       editRoleState: {},           // projectId → {editingUid, saving, error}
+      // Project map (lazy per-project)
+      geocodeByProject: {},        // projectId → { lat, lng, displayName, source, addrHash, fromCache }
+      geocodeStatus: {},           // projectId → 'loading' | 'loaded' | 'no_address' | 'not_found' | 'unavailable'
+      geocodeError: {},            // projectId → string|null
     };
   },
   mounted: function () {
     if (this.selectedProjectId) {
       this.ensureProjectMembersLoaded(this.selectedProjectId);
+      this.fetchProjectGeocode(this.selectedProjectId);
     }
   },
   watch: {
     selectedProjectId: function (newId) {
       this.resetFilters();
-      if (newId) this.ensureProjectMembersLoaded(newId);
+      if (newId) {
+        this.ensureProjectMembersLoaded(newId);
+        this.fetchProjectGeocode(newId);
+      }
     },
     tbFilterName: function () {
       this.tbPage = 1;
@@ -1889,6 +1920,40 @@ export default {
         err.response.data.ocs.meta.message;
       if (ocsMsg) return ocsMsg;
       return fallback + " (HTTP " + status + ")";
+    },
+    fetchProjectGeocode: async function (projectId) {
+      if (!projectId) return;
+      if (this.geocodeStatus[projectId] === 'loading') return;
+      this.$set(this.geocodeStatus, projectId, 'loading');
+      this.$set(this.geocodeError, projectId, null);
+      try {
+        const res = await axios.get(
+          generateUrl(
+            "/apps/adminpage/api/projects/" + projectId + "/geocode"
+          )
+        );
+        const d = (res && res.data) || {};
+        if (d.lat != null && d.lng != null) {
+          this.$set(this.geocodeByProject, projectId, d);
+          this.$set(this.geocodeStatus, projectId, 'loaded');
+        } else {
+          this.$set(this.geocodeStatus, projectId, 'not_found');
+        }
+      } catch (e) {
+        const code = (e && e.response && e.response.status) || 0;
+        const reason = (e && e.response && e.response.data && e.response.data.reason) || '';
+        if (code === 404 && reason === 'no_address') {
+          this.$set(this.geocodeStatus, projectId, 'no_address');
+        } else if (code === 404 && reason === 'not_found') {
+          this.$set(this.geocodeStatus, projectId, 'not_found');
+        } else if (code === 503) {
+          this.$set(this.geocodeStatus, projectId, 'unavailable');
+          this.$set(this.geocodeError, projectId, "Geocoding service unavailable.");
+        } else {
+          this.$set(this.geocodeStatus, projectId, 'unavailable');
+          this.$set(this.geocodeError, projectId, "Couldn't load map.");
+        }
+      }
     },
   },
 };
@@ -3275,6 +3340,17 @@ export default {
   padding: 12px 0;
 }
 .proj-details__members-state--error {
+  color: #b91c1c;
+}
+
+/* ───────── Project Map states ───────── */
+.proj-details__map-state {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 24px 0;
+}
+.proj-details__map-state--error {
   color: #b91c1c;
 }
 </style>
