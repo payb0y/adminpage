@@ -40,21 +40,17 @@ export default {
     },
   },
   async mounted() {
-    // Magic comments give the lazy chunks short, stable filenames
-    // (e.g. adminpage-leaflet.js) instead of webpack's verbose
-    // auto-generated `vendors-node_modules_leaflet_…` names, which some
-    // Nextcloud setups have trouble serving.
-    const Lmod = await import(/* webpackChunkName: "leaflet" */ "leaflet");
-    await import(/* webpackChunkName: "leaflet-css" */ "leaflet/dist/leaflet.css");
+    const Lmod = await import("leaflet");
+    await import("leaflet/dist/leaflet.css");
 
     const iconUrl = (
-      await import(/* webpackChunkName: "leaflet-marker" */ "leaflet/dist/images/marker-icon.png")
+      await import("leaflet/dist/images/marker-icon.png")
     ).default;
     const iconRetinaUrl = (
-      await import(/* webpackChunkName: "leaflet-marker" */ "leaflet/dist/images/marker-icon-2x.png")
+      await import("leaflet/dist/images/marker-icon-2x.png")
     ).default;
     const shadowUrl = (
-      await import(/* webpackChunkName: "leaflet-marker" */ "leaflet/dist/images/marker-shadow.png")
+      await import("leaflet/dist/images/marker-shadow.png")
     ).default;
 
     const L = Lmod.default || Lmod;
