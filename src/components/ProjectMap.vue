@@ -11,6 +11,20 @@
 </template>
 
 <script>
+// Static imports — Leaflet is bundled into the main chunk that Nextcloud
+// already serves correctly. We tried dynamic imports first but the production
+// host couldn't serve the lazy chunk files (deploy pipeline didn't sync
+// them), and even renaming the chunks didn't help. Static imports trade
+// ~40kb gzipped on the main bundle for total deploy reliability.
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Inline SVG marker pin (Feather-style "map-pin"). Using L.divIcon avoids
+// shipping marker-icon.png / marker-icon-2x.png / marker-shadow.png as
+// separate webpack-emitted asset files, which would have the same
+// "file-not-on-server" problem the lazy chunks had.
+const MARKER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#fff" stroke="#7f1d1d"/></svg>';
+
 export default {
   name: "ProjectMap",
   props: {
@@ -20,8 +34,6 @@ export default {
   },
   data() {
     return {
-      // Stored as plain (non-reactive) refs to avoid Vue trying to observe
-      // Leaflet's internals.
       _map: null,
     };
   },
@@ -39,26 +51,7 @@ export default {
       );
     },
   },
-  async mounted() {
-    const Lmod = await import("leaflet");
-    await import("leaflet/dist/leaflet.css");
-
-    const iconUrl = (
-      await import("leaflet/dist/images/marker-icon.png")
-    ).default;
-    const iconRetinaUrl = (
-      await import("leaflet/dist/images/marker-icon-2x.png")
-    ).default;
-    const shadowUrl = (
-      await import("leaflet/dist/images/marker-shadow.png")
-    ).default;
-
-    const L = Lmod.default || Lmod;
-
-    // Webpack mangles the default icon URLs Leaflet ships with; restate them.
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl });
-
+  mounted() {
     this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true }).setView(
       [this.lat, this.lng],
       16
@@ -69,7 +62,14 @@ export default {
         '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
     }).addTo(this._map);
 
-    const marker = L.marker([this.lat, this.lng]).addTo(this._map);
+    const icon = L.divIcon({
+      className: "project-map__marker",
+      html: MARKER_SVG,
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -24],
+    });
+    const marker = L.marker([this.lat, this.lng], { icon }).addTo(this._map);
     if (this.displayName) {
       marker.bindPopup(this.displayName);
     }
@@ -104,5 +104,15 @@ export default {
 }
 .project-map__link:hover {
   text-decoration: underline;
+}
+</style>
+
+<style>
+/* Unscoped: Leaflet generates the marker element inside a non-Vue subtree, so
+   scoped class names don't reach it. We only need to drop the default
+   background that Leaflet's default marker stylesheet sets. */
+.project-map__marker {
+  background: transparent !important;
+  border: none !important;
 }
 </style>
