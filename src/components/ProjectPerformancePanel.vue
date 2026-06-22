@@ -1927,6 +1927,18 @@ export default {
         }
       });
     },
+    selectProject: function (projectId) {
+      this.collapsed = false;
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.detailsPanel && typeof self.$refs.detailsPanel.setSelectedProject === "function") {
+          self.$refs.detailsPanel.setSelectedProject(projectId);
+        }
+        if (self.$el && self.$el.scrollIntoView) {
+          self.$el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    },
     goToProjectDetails: function (proj) {
       this.closeModal();
       var self = this;

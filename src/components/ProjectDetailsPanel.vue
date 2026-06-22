@@ -1955,6 +1955,10 @@ export default {
         }
       }
     },
+    setSelectedProject: function (projectId) {
+      if (projectId == null) return;
+      this.selectedProjectId = String(projectId);
+    },
   },
 };
 </script>
