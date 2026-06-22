@@ -20,6 +20,16 @@ class GeocodeService {
     private const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
     private const HTTP_TIMEOUT_SECONDS = 10;
 
+    /** Mirrors DeckService::statusLabel — kept local so this service stays free of inter-service deps. */
+    private const STATUS_LABELS = [
+        0 => 'Active',
+        1 => 'Waiting on Customer',
+        2 => 'On Hold',
+    ];
+
+    private const MAX_FRESH_GEOCODES_PER_REQUEST = 10;
+    private const NOMINATIM_SPACING_USEC = 1_100_000; // 1.1s between requests
+
     private IDBConnection $db;
     private IClientService $clientService;
     private IAppManager $appManager;
@@ -71,8 +81,7 @@ class GeocodeService {
             return ['status' => 'no_address'];
         }
 
-        $normalized = strtolower($street) . '|' . strtolower($city) . '|' . strtolower($zip);
-        $addrHash = hash('sha256', $normalized);
+        $addrHash = $this->hashAddress($street, $city, $zip);
 
         $cached = $this->lookupCache($addrHash);
         if ($cached !== null) {
@@ -182,13 +191,20 @@ class GeocodeService {
         return implode(', ', $parts);
     }
 
+    private function hashAddress(?string $street, ?string $city, ?string $zip): string {
+        $normalized = strtolower(trim((string)$street))
+            . '|' . strtolower(trim((string)$city))
+            . '|' . strtolower(trim((string)$zip));
+        return hash('sha256', $normalized);
+    }
+
     /**
      * @return array|null
      *   - associative ['lat'=>..., 'lng'=>..., 'display_name'=>...] on a hit
      *   - [] (empty array) when Nominatim returned no match
      *   - null on transient failure (timeout / non-2xx / unparseable response)
      */
-    private function callNominatim(string $query) {
+    protected function callNominatim(string $query) {
         $userAgent = sprintf(
             'Nextcloud-AdminPage/%s (%s)',
             $this->appManager->getAppVersion('adminpage'),
@@ -256,5 +272,243 @@ class GeocodeService {
             return $trusted[0];
         }
         return 'unknown-host';
+    }
+
+    /**
+     * Geocodes every project in an organization, reusing the address cache.
+     * On-demand geocoding is capped to MAX_FRESH_GEOCODES_PER_REQUEST per call,
+     * with NOMINATIM_SPACING_USEC sleep between successive Nominatim hits.
+     * Anything beyond the cap is returned with geocodeStatus='pending' and will
+     * be resolved on a subsequent call.
+     */
+    public function geocodeOrgProjects(int $orgId): array {
+        $sql = "
+            SELECT cp.id, cp.name, cp.number, cp.status,
+                   cp.loc_street, cp.loc_city, cp.loc_zip,
+                   cp.board_id
+            FROM *PREFIX*custom_projects cp
+            WHERE cp.organization_id = ?
+            ORDER BY cp.id
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $orgId, \PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll();
+        if (empty($rows)) {
+            return ['projects' => [], 'geocodingInFlight' => 0];
+        }
+
+        $boardIds = [];
+        foreach ($rows as $r) {
+            $bid = (int)$r['board_id'];
+            if ($bid > 0) {
+                $boardIds[] = $bid;
+            }
+        }
+        $boardIds = array_values(array_unique($boardIds));
+        $taskStatsByBoard = $this->fetchTaskStatsForBoards($boardIds);
+        $assigneesByBoard = $this->fetchAssigneesForBoards($boardIds);
+
+        $hashes = [];
+        $hashSet = [];
+        foreach ($rows as $r) {
+            $street = trim((string)($r['loc_street'] ?? ''));
+            $city   = trim((string)($r['loc_city']   ?? ''));
+            $zip    = trim((string)($r['loc_zip']    ?? ''));
+            if ($street === '' && $city === '' && $zip === '') {
+                $hashes[(int)$r['id']] = null;
+                continue;
+            }
+            $h = $this->hashAddress($street, $city, $zip);
+            $hashes[(int)$r['id']] = $h;
+            $hashSet[$h] = true;
+        }
+        $cache = $this->lookupCacheBatch(array_keys($hashSet));
+
+        $projects = [];
+        $missQueue = [];
+        foreach ($rows as $r) {
+            $pid = (int)$r['id'];
+            $bid = (int)$r['board_id'];
+            $status = (int)$r['status'];
+            $stats = $taskStatsByBoard[$bid] ?? ['totalTasks' => 0, 'doneTasks' => 0, 'overdueTasks' => 0];
+            $completion = $stats['totalTasks'] > 0
+                ? (int)round($stats['doneTasks'] / $stats['totalTasks'] * 100)
+                : 0;
+            $project = [
+                'id'            => $pid,
+                'name'          => (string)$r['name'],
+                'number'        => (string)($r['number'] ?? ''),
+                'status'        => $status,
+                'statusLabel'   => self::STATUS_LABELS[$status] ?? 'Active',
+                'completionPct' => $completion,
+                'totalTasks'    => (int)$stats['totalTasks'],
+                'doneTasks'    => (int)$stats['doneTasks'],
+                'overdueTasks'  => (int)$stats['overdueTasks'],
+                'assignees'     => $assigneesByBoard[$bid] ?? [],
+                'lat'           => null,
+                'lng'           => null,
+                'displayName'   => null,
+                'geocodeStatus' => 'pending',
+            ];
+
+            $h = $hashes[$pid];
+            if ($h === null) {
+                $project['geocodeStatus'] = 'no_address';
+                $projects[] = $project;
+                continue;
+            }
+            if (isset($cache[$h])) {
+                $row = $cache[$h];
+                if ($row['lat'] === null || $row['lng'] === null) {
+                    $project['geocodeStatus'] = 'not_found';
+                } else {
+                    $project['lat']         = (float)$row['lat'];
+                    $project['lng']         = (float)$row['lng'];
+                    $project['displayName'] = $row['display_name'];
+                    $project['geocodeStatus'] = 'ok';
+                }
+                $projects[] = $project;
+                continue;
+            }
+
+            $missQueue[count($projects)] = [
+                'hash'   => $h,
+                'street' => trim((string)($r['loc_street'] ?? '')),
+                'city'   => trim((string)($r['loc_city']   ?? '')),
+                'zip'    => trim((string)($r['loc_zip']    ?? '')),
+            ];
+            $projects[] = $project;
+        }
+
+        $processed = 0;
+        $first = true;
+        foreach ($missQueue as $idx => $miss) {
+            if ($processed >= self::MAX_FRESH_GEOCODES_PER_REQUEST) {
+                break;
+            }
+            if (!$first) {
+                usleep(self::NOMINATIM_SPACING_USEC);
+            }
+            $first = false;
+
+            $q = $this->buildQueryString($miss['street'], $miss['city'], $miss['zip']);
+            $hit = $this->callNominatim($q);
+            $processed++;
+
+            if ($hit === null) {
+                continue;
+            }
+            if ($hit === []) {
+                $this->insertCache($miss['hash'], null, null, null, 'nominatim');
+                $projects[$idx]['geocodeStatus'] = 'not_found';
+                continue;
+            }
+            $lat = (float)$hit['lat'];
+            $lng = (float)$hit['lng'];
+            $displayName = $hit['display_name'] ?? null;
+            $this->insertCache($miss['hash'], $lat, $lng, $displayName, 'nominatim');
+            $projects[$idx]['lat']           = $lat;
+            $projects[$idx]['lng']           = $lng;
+            $projects[$idx]['displayName']   = $displayName;
+            $projects[$idx]['geocodeStatus'] = 'ok';
+        }
+
+        $pending = 0;
+        foreach ($projects as $p) {
+            if ($p['geocodeStatus'] === 'pending') {
+                $pending++;
+            }
+        }
+        return ['projects' => $projects, 'geocodingInFlight' => $pending];
+    }
+
+    /**
+     * @param string[] $hashes
+     * @return array<string, array> hash => row{lat,lng,display_name,source}
+     */
+    private function lookupCacheBatch(array $hashes): array {
+        if (empty($hashes)) return [];
+        $placeholders = implode(',', array_fill(0, count($hashes), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT addr_hash, lat, lng, display_name, source
+             FROM *PREFIX*adminpage_geocode_cache
+             WHERE addr_hash IN ({$placeholders})"
+        );
+        foreach ($hashes as $i => $h) {
+            $stmt->bindValue($i + 1, $h, \PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $map = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $map[(string)$row['addr_hash']] = $row;
+        }
+        return $map;
+    }
+
+    /**
+     * @param int[] $boardIds
+     * @return array<int, array{totalTasks: int, doneTasks: int, overdueTasks: int}>
+     */
+    private function fetchTaskStatsForBoards(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
+        $sql = "
+            SELECT b.id AS board_id,
+                   COUNT(c.id) AS total,
+                   SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) AS done,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE()
+                              AND s.title <> 'Approved/Done' THEN 1 ELSE 0 END) AS overdue
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
+            WHERE b.id IN ({$placeholders}) AND b.deleted_at = 0
+            GROUP BY b.id
+        ";
+        $stmt = $this->db->prepare($sql);
+        foreach ($boardIds as $i => $bid) {
+            $stmt->bindValue($i + 1, $bid, \PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $map = [];
+        foreach ($stmt->fetchAll() as $r) {
+            $map[(int)$r['board_id']] = [
+                'totalTasks'   => (int)$r['total'],
+                'doneTasks'    => (int)$r['done'],
+                'overdueTasks' => (int)$r['overdue'],
+            ];
+        }
+        return $map;
+    }
+
+    /**
+     * @param int[] $boardIds
+     * @return array<int, string[]>
+     */
+    private function fetchAssigneesForBoards(array $boardIds): array {
+        if (empty($boardIds)) return [];
+        $placeholders = implode(',', array_fill(0, count($boardIds), '?'));
+        $sql = "
+            SELECT DISTINCT b.id AS board_id, au.participant
+            FROM *PREFIX*deck_boards b
+            JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
+            JOIN *PREFIX*deck_cards c  ON c.stack_id = s.id AND c.deleted_at = 0
+            JOIN *PREFIX*deck_assigned_users au ON au.card_id = c.id
+            WHERE b.id IN ({$placeholders})
+              AND b.deleted_at = 0
+              AND au.type = 0
+        ";
+        $stmt = $this->db->prepare($sql);
+        foreach ($boardIds as $i => $bid) {
+            $stmt->bindValue($i + 1, $bid, \PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $map = [];
+        foreach ($stmt->fetchAll() as $r) {
+            $bid = (int)$r['board_id'];
+            if (!isset($map[$bid])) $map[$bid] = [];
+            $map[$bid][] = (string)$r['participant'];
+        }
+        return $map;
     }
 }
