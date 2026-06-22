@@ -19,6 +19,8 @@ if (mountEl) {
         dashboardData: null,
         backupJobs: [],
         upcomingEvents: [],
+        projectGeocodes: { projects: [], geocodingInFlight: 0 },
+        projectGeocodesLoading: false,
         loading: true,
         error: null,
       };
@@ -40,6 +42,8 @@ if (mountEl) {
           data: this.dashboardData,
           backupJobs: this.backupJobs,
           upcomingEvents: this.upcomingEvents,
+          projectGeocodes: this.projectGeocodes,
+          projectGeocodesLoading: this.projectGeocodesLoading,
         },
         on: {
           reload: () => {
@@ -66,6 +70,7 @@ if (mountEl) {
 
         this.fetchBackupJobs();
         this.fetchUpcomingEvents();
+        this.fetchProjectGeocodes();
       },
       async fetchBackupJobs() {
         try {
@@ -84,6 +89,23 @@ if (mountEl) {
           this.upcomingEvents = (response.data && response.data.events) || [];
         } catch (e) {
           console.error("Failed to load upcoming events", e);
+        }
+      },
+      async fetchProjectGeocodes() {
+        this.projectGeocodesLoading = true;
+        try {
+          const url = generateUrl("/apps/adminpage/api/projects/geocodes");
+          const response = await axios.get(url);
+          const d = (response && response.data) || {};
+          this.projectGeocodes = {
+            projects: Array.isArray(d.projects) ? d.projects : [],
+            geocodingInFlight: Number(d.geocodingInFlight) || 0,
+          };
+        } catch (e) {
+          console.error("Failed to load project geocodes", e);
+          this.projectGeocodes = { projects: [], geocodingInFlight: 0 };
+        } finally {
+          this.projectGeocodesLoading = false;
         }
       },
     },

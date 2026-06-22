@@ -43,6 +43,15 @@
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
+      <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
+      <ProjectsMapPanel
+        :projects="(projectGeocodes && projectGeocodes.projects) || []"
+        :org-members="(data.orgOverview && data.orgOverview.members) || []"
+        :loading="projectGeocodesLoading"
+        :geocoding-in-flight="(projectGeocodes && projectGeocodes.geocodingInFlight) || 0"
+        @select-project="onSelectProject"
+      />
+
       <!-- ── Project Performance Analytics ── -->
       <ProjectPerformancePanel
         ref="perfPanel"
@@ -81,6 +90,7 @@ import TasksKpiCard from "./TasksKpiCard.vue";
 import ResourcesKpiCard from "./ResourcesKpiCard.vue";
 import TimelineKpiCard from "./TimelineKpiCard.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
+import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
 
@@ -92,6 +102,7 @@ export default {
     ResourcesKpiCard,
     TimelineKpiCard,
     ProjectPerformancePanel,
+    ProjectsMapPanel,
     OrgInsightsPanel,
     PublicLinksAdmin,
   },
@@ -111,6 +122,16 @@ export default {
       default: function () {
         return [];
       },
+    },
+    projectGeocodes: {
+      type: Object,
+      default: function () {
+        return { projects: [], geocodingInFlight: 0 };
+      },
+    },
+    projectGeocodesLoading: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -157,6 +178,11 @@ export default {
     onGotoOldestTask: function (oldestTask) {
       if (this.$refs.perfPanel) {
         this.$refs.perfPanel.gotoOldestTask(oldestTask);
+      }
+    },
+    onSelectProject: function (projectId) {
+      if (this.$refs.perfPanel) {
+        this.$refs.perfPanel.selectProject(projectId);
       }
     },
   },
