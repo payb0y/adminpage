@@ -210,6 +210,26 @@ class DashboardController extends Controller {
     /**
      * @NoAdminRequired
      * @NoCSRFRequired
+     *
+     * @return JSONResponse
+     */
+    public function getProjectGeocodes(): JSONResponse {
+        $user = $this->userSession->getUser();
+        $uid  = $user ? $user->getUID() : '';
+        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'no_org'], 403);
+        }
+        $result = $this->geocodeService->geocodeOrgProjects($orgId);
+        return new JSONResponse([
+            'projects'          => $result['projects'],
+            'geocodingInFlight' => $result['geocodingInFlight'],
+        ]);
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
      */
     public function listPublicLinks(): JSONResponse {
         $uid = $this->userSession->getUser()->getUID();
