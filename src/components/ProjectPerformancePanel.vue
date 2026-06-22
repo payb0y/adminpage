@@ -1928,14 +1928,14 @@ export default {
       });
     },
     selectProject: function (projectId) {
+      // Un-collapse first so detailsPanel exists in the DOM; the inner
+      // setSelectedProject performs the smooth-scroll onto the details
+      // panel itself (mirrors goToProjectDetails' delegation pattern).
       this.collapsed = false;
       var self = this;
       this.$nextTick(function () {
         if (self.$refs.detailsPanel && typeof self.$refs.detailsPanel.setSelectedProject === "function") {
           self.$refs.detailsPanel.setSelectedProject(projectId);
-        }
-        if (self.$el && self.$el.scrollIntoView) {
-          self.$el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
     },

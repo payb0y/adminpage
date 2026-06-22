@@ -1957,7 +1957,25 @@ export default {
     },
     setSelectedProject: function (projectId) {
       if (projectId == null) return;
-      this.selectedProjectId = String(projectId);
+      // Mirror the existing selectProject(name) flow used by "Details" buttons
+      // elsewhere in the dashboard: clear tab filters that could hide the
+      // newly-selected project from the tab strip, set the id, then scroll
+      // THIS panel into view (not the perf panel wrapper, which leaves details
+      // below the fold).
+      var match = this.projects.find(function (p) {
+        return p.id === projectId || String(p.id) === String(projectId);
+      });
+      this.tabSearch = match ? match.name : "";
+      this.tabStatusFilter = "";
+      this.tabTaskDueFilter = "";
+      this.tabTaskStatusFilter = "";
+      this.selectedProjectId = match ? match.id : String(projectId);
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$el && self.$el.scrollIntoView) {
+          self.$el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
     },
   },
 };
