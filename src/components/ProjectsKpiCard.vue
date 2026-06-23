@@ -19,6 +19,12 @@
         </svg>
       </div>
       <span class="projects-kpi__title">Projects</span>
+      <button
+        v-if="canCreate"
+        type="button"
+        class="projects-kpi__new-btn"
+        @click.stop="$emit('create-project')"
+      >+ New</button>
     </div>
 
     <!-- Hero number -->
@@ -71,6 +77,10 @@ export default {
     kpi: {
       type: Object,
       required: true,
+    },
+    canCreate: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -286,5 +296,23 @@ export default {
   color: var(--color-text-muted, #9ca3af);
   text-align: center;
   padding: 12px 0;
+}
+
+.projects-kpi__header {
+  position: relative;
+}
+.projects-kpi__new-btn {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #4a90d9;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.projects-kpi__new-btn:hover {
+  background: #357ec7;
 }
 </style>
