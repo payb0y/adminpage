@@ -31,7 +31,9 @@
         <ProjectsKpiCard
           v-if="projectsKpi"
           :kpi="projectsKpi"
+          :can-create="isOrgAdmin"
           @filter-projects="onFilterProjects"
+          @create-project="onCreateProject"
         />
         <TasksKpiCard
           v-if="tasksKpi"
@@ -81,6 +83,14 @@
       <!-- ── Public Dashboard Links Management ── -->
       <PublicLinksAdmin />
     </template>
+
+    <CreateProjectModal
+      v-if="showCreateModal && data.orgOverview"
+      :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
+      :org-members="data.orgOverview.members || []"
+      @cancel="showCreateModal = false"
+      @created="onProjectCreated"
+    />
   </div>
 </template>
 
@@ -91,6 +101,7 @@ import ResourcesKpiCard from "./ResourcesKpiCard.vue";
 import TimelineKpiCard from "./TimelineKpiCard.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import ProjectsMapPanel from "./ProjectsMapPanel.vue";
+import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
 
@@ -103,6 +114,7 @@ export default {
     TimelineKpiCard,
     ProjectPerformancePanel,
     ProjectsMapPanel,
+    CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
   },
@@ -134,6 +146,11 @@ export default {
       default: false,
     },
   },
+  data: function () {
+    return {
+      showCreateModal: false,
+    };
+  },
   computed: {
     projectsKpi: function () {
       return (
@@ -163,6 +180,13 @@ export default {
         }) || null
       );
     },
+    isOrgAdmin: function () {
+      var ov = this.data && this.data.orgOverview;
+      var profile = ov && ov.profile;
+      var adminUid = profile && profile.adminUid;
+      var currentUid = ov && ov.currentUid;
+      return !!currentUid && !!adminUid && currentUid === adminUid;
+    },
   },
   methods: {
     onFilterProjects: function (statusLabel) {
@@ -184,6 +208,26 @@ export default {
       if (this.$refs.perfPanel) {
         this.$refs.perfPanel.selectProject(projectId);
       }
+    },
+    onCreateProject: function () {
+      this.showCreateModal = true;
+    },
+    onProjectCreated: function (projectId) {
+      this.showCreateModal = false;
+      // Same reload chain we built for org-members add/remove.
+      this.$emit("reload");
+      // Also re-fetch the map so the new pin appears (once geocoded).
+      if (this.$root && typeof this.$root.fetchProjectGeocodes === "function") {
+        this.$root.fetchProjectGeocodes();
+      }
+      // Hand the new id to the perf panel — its selectProject path
+      // un-collapses + smooth-scrolls into Per Project Details and the
+      // existing watch on selectedProjectId kicks off fetchProjectGeocode +
+      // ensureProjectMembersLoaded for the new project.
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$refs.perfPanel) self.$refs.perfPanel.selectProject(projectId);
+      });
     },
   },
 };
