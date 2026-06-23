@@ -88,6 +88,7 @@
       v-if="showCreateModal && data.orgOverview"
       :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
       :org-members="data.orgOverview.members || []"
+      :current-uid="data.orgOverview.currentUid || null"
       @cancel="showCreateModal = false"
       @created="onProjectCreated"
     />

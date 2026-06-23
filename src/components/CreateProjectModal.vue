@@ -358,6 +358,10 @@ export default {
         return [];
       },
     },
+    currentUid: {
+      type: String,
+      default: null,
+    },
   },
   data: function () {
     return {
@@ -445,12 +449,15 @@ export default {
     availableMembers: function () {
       var q = (this.memberSearch || "").trim().toLowerCase();
       var sel = this.selectedSet;
+      var me = this.currentUid;
       var out = [];
       var src = this.orgMembers || [];
       for (var i = 0; i < src.length; i++) {
         var m = src[i];
         var uid = m.userId || m.id;
         if (!uid || sel[uid]) continue;
+        // The admin creating the project is the owner — exclude from the picker.
+        if (me && uid === me) continue;
         if (q.length >= 2) {
           var nm = (m.displayName || "").toLowerCase();
           var u = String(uid).toLowerCase();
@@ -500,13 +507,16 @@ export default {
     },
     buildPayload: function () {
       var f = this.form;
+      var me = this.currentUid;
+      // The creator is the project owner — never send them as a member.
+      var members = me ? f.members.filter(function (u) { return u !== me; }) : f.members.slice();
       var payload = {
         name: f.name.trim(),
         number: f.number.trim(),
         type: Number(f.type),
         description: f.description || "",
         organizationId: this.orgId,
-        members: f.members.slice(),
+        members: members,
         loc_street: f.loc_street || "",
         loc_city: f.loc_city || "",
         loc_zip: f.loc_zip || "",
