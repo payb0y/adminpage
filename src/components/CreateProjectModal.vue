@@ -776,8 +776,13 @@ export default {
   border: none;
   background: #4a90d9;
   color: #fff;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   cursor: pointer;
 }
 .cp-modal__member-add:hover:not(:disabled) { background: #357ec7; }

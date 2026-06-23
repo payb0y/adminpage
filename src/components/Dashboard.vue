@@ -213,22 +213,30 @@ export default {
     onCreateProject: function () {
       this.showCreateModal = true;
     },
-    onProjectCreated: function (projectId) {
+    onProjectCreated: async function (projectId) {
       this.showCreateModal = false;
-      // Same reload chain we built for org-members add/remove.
-      this.$emit("reload");
-      // Also re-fetch the map so the new pin appears (once geocoded).
+      var self = this;
+      // Await the reload so the new project lands in project-details BEFORE
+      // we ask the perf panel to scroll. Otherwise setSelectedProject runs
+      // against a stale list, the details panel renders empty, and
+      // scrollIntoView lands above where the populated panel will end up
+      // — same failure mode the Task Delay → Details button avoids by
+      // pointing at an already-loaded project.
+      if (this.$root && typeof this.$root.fetchData === "function") {
+        try { await this.$root.fetchData(); } catch (e) { /* ignore */ }
+      } else {
+        this.$emit("reload");
+      }
+      // Re-fetch the map so the new pin appears (once geocoded). Fire-and-
+      // forget — it doesn't affect the details panel height.
       if (this.$root && typeof this.$root.fetchProjectGeocodes === "function") {
         this.$root.fetchProjectGeocodes();
       }
-      // Hand the new id to the perf panel — its selectProject path
-      // un-collapses + smooth-scrolls into Per Project Details and the
-      // existing watch on selectedProjectId kicks off fetchProjectGeocode +
-      // ensureProjectMembersLoaded for the new project.
-      var self = this;
-      this.$nextTick(function () {
-        if (self.$refs.perfPanel) self.$refs.perfPanel.selectProject(projectId);
-      });
+      // Two ticks: one for the data prop to propagate down, one for the
+      // details panel to render the newly-selected project before we scroll.
+      await this.$nextTick();
+      await this.$nextTick();
+      if (self.$refs.perfPanel) self.$refs.perfPanel.selectProject(projectId);
     },
   },
 };
