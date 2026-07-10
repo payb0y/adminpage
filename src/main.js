@@ -33,7 +33,22 @@ if (mountEl) {
         ]);
       }
       if (this.error) {
-        return h("div", { class: "adminpage-error" }, [
+        return h(
+          "div",
+          {
+            class: "adminpage-error",
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "60vh",
+              textAlign: "center",
+              padding: "24px",
+              color: "#6b7280",
+            },
+          },
+          [
           h("p", this.error),
           h(
             "button",
