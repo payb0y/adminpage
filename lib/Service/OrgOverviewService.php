@@ -16,6 +16,8 @@ use OCP\IDBConnection;
  */
 class OrgOverviewService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -115,8 +117,8 @@ class OrgOverviewService {
                 p.max_projects,
                 p.max_members,
                 p.is_public,
-                ROUND(p.shared_storage_per_project / 1073741824, 2) AS shared_storage_gb,
-                ROUND(p.private_storage_per_user   / 1073741824, 2) AS private_storage_gb
+                ROUND(p.shared_storage_per_project / 1073741824.0, 2) AS shared_storage_gb,
+                ROUND(p.private_storage_per_user   / 1073741824.0, 2) AS private_storage_gb
             FROM *PREFIX*subscriptions sub
             INNER JOIN *PREFIX*plans p ON p.id = sub.plan_id
             WHERE sub.organization_id = ?
@@ -202,7 +204,7 @@ class OrgOverviewService {
             JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id AND c.deleted_at = 0
             JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
-            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = {$this->castText('b.id')}
                 AND cp.organization_id = ?
             WHERE au.type = 0
             GROUP BY au.participant
@@ -227,7 +229,7 @@ class OrgOverviewService {
             JOIN *PREFIX*deck_cards  c  ON c.id = au.card_id
             JOIN *PREFIX*deck_stacks s  ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b  ON b.id = s.board_id AND b.deleted_at = 0
-            JOIN *PREFIX*custom_projects cp ON cp.board_id = CAST(b.id AS CHAR)
+            JOIN *PREFIX*custom_projects cp ON cp.board_id = {$this->castText('b.id')}
                 AND cp.organization_id = ?
             WHERE au.type = 0
             GROUP BY au.participant
@@ -310,7 +312,7 @@ class OrgOverviewService {
             FROM *PREFIX*deck_stacks s
             INNER JOIN *PREFIX*deck_cards c ON c.stack_id = s.id
             WHERE s.board_id IN ($placeholders)
-              AND c.deleted_at = 0 AND c.archived = 0
+              AND c.deleted_at = 0 AND c.archived = false
             GROUP BY s.board_id
         ";
         $stmt = $this->db->prepare($totalSql);
@@ -346,8 +348,8 @@ class OrgOverviewService {
             WHERE s.board_id IN ($placeholders)
               AND s.title != 'Approved/Done'
               AND c.duedate IS NOT NULL
-              AND UNIX_TIMESTAMP(c.duedate) < ?
-              AND c.deleted_at = 0 AND c.archived = 0
+              AND {$this->toEpoch('c.duedate')} < ?
+              AND c.deleted_at = 0 AND c.archived = false
             GROUP BY s.board_id
         ";
         $stmt3 = $this->db->prepare($overdueSql);
@@ -362,7 +364,7 @@ class OrgOverviewService {
             SELECT s.board_id, s.title AS stack_title, s.order AS stack_order, COUNT(c.id) AS card_count
             FROM *PREFIX*deck_stacks s
             LEFT JOIN *PREFIX*deck_cards c
-                ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = 0
+                ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = false
             WHERE s.board_id IN ($placeholders)
             GROUP BY s.board_id, s.id, s.title, s.order
             ORDER BY s.board_id, s.order
@@ -435,8 +437,8 @@ class OrgOverviewService {
             SELECT COUNT(c.id) AS total_tasks,
                    SUM(CASE WHEN s.title = 'Approved/Done' AND c.deleted_at = 0 THEN 1 ELSE 0 END) AS done_tasks
             FROM *PREFIX*custom_projects cp
-            INNER JOIN *PREFIX*deck_stacks s  ON s.board_id = CAST(cp.board_id AS UNSIGNED)
-            INNER JOIN *PREFIX*deck_cards  c  ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = 0
+            INNER JOIN *PREFIX*deck_stacks s  ON s.board_id = {$this->castInt('cp.board_id')}
+            INNER JOIN *PREFIX*deck_cards  c  ON c.stack_id = s.id AND c.deleted_at = 0 AND c.archived = false
             WHERE cp.organization_id = ?
         ";
         $stmt3 = $this->db->prepare($taskSql);

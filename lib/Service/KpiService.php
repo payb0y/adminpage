@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class KpiService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -59,7 +61,7 @@ class KpiService {
             SELECT cp.status, COUNT(*) AS cnt
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                ON b.id = {$this->castInt('cp.board_id')}
                 AND b.deleted_at = 0
             WHERE cp.organization_id = ?
             GROUP BY cp.status
@@ -87,7 +89,7 @@ class KpiService {
             SELECT COUNT(DISTINCT cp.id) AS cnt
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                ON b.id = {$this->castInt('cp.board_id')}
                AND b.deleted_at = 0
             INNER JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             INNER JOIN *PREFIX*deck_cards c
@@ -97,7 +99,7 @@ class KpiService {
             WHERE cp.organization_id = ?
               AND s.title <> 'Approved/Done'
               AND c.duedate IS NOT NULL
-              AND DATE(c.duedate) < CURDATE()
+              AND CAST(c.duedate AS DATE) < CURRENT_DATE
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId]);
@@ -141,7 +143,7 @@ class KpiService {
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
             JOIN *PREFIX*custom_projects cp
-                ON CAST(cp.board_id AS UNSIGNED) = b.id
+                ON {$this->castInt('cp.board_id')} = b.id
                AND cp.organization_id = ?
             WHERE c.deleted_at = 0
               AND c.done IS NULL
@@ -176,9 +178,9 @@ class KpiService {
     private function countTasksByStatus(int $orgId): array {
         $sql = "
             SELECT
-                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE() THEN 1 ELSE 0 END) AS overdue,
-                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
-                SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) > CURDATE() THEN 1 ELSE 0 END) AS upcoming,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) = CURRENT_DATE THEN 1 ELSE 0 END) AS today,
+                SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) > CURRENT_DATE THEN 1 ELSE 0 END) AS upcoming,
                 COUNT(*) AS in_progress,
                 SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS non_due,
                 COALESCE(ROUND(AVG(DATEDIFF(NOW(), FROM_UNIXTIME(c.created_at)))), 0) AS avg_days
@@ -186,7 +188,7 @@ class KpiService {
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
             JOIN *PREFIX*custom_projects cp
-                ON CAST(cp.board_id AS UNSIGNED) = b.id
+                ON {$this->castInt('cp.board_id')} = b.id
                AND cp.organization_id = ?
             WHERE c.deleted_at = 0
               AND c.done IS NULL
@@ -332,7 +334,7 @@ class KpiService {
             INNER JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             INNER JOIN *PREFIX*deck_boards b ON b.id = s.board_id
             INNER JOIN *PREFIX*custom_projects cp
-                ON CAST(cp.board_id AS UNSIGNED) = b.id
+                ON {$this->castInt('cp.board_id')} = b.id
                AND cp.organization_id = ?
         ";
         $result = $this->db->prepare($sqlPrivate);
@@ -380,7 +382,7 @@ class KpiService {
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
             JOIN *PREFIX*custom_projects cp
-                ON CAST(cp.board_id AS UNSIGNED) = b.id
+                ON {$this->castInt('cp.board_id')} = b.id
                AND cp.organization_id = ?
             WHERE c.deleted_at = 0
             GROUP BY cp.id

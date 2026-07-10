@@ -457,7 +457,7 @@ class GeocodeService {
             SELECT b.id AS board_id,
                    COUNT(c.id) AS total,
                    SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) AS done,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE()
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) < CURRENT_DATE
                               AND s.title <> 'Approved/Done' THEN 1 ELSE 0 END) AS overdue
             FROM *PREFIX*deck_boards b
             JOIN *PREFIX*deck_stacks s ON s.board_id = b.id

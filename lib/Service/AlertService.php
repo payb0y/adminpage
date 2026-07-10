@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class AlertService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -56,7 +58,7 @@ class AlertService {
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp ON b.id = CAST(cp.board_id AS UNSIGNED)
+            INNER JOIN *PREFIX*custom_projects cp ON b.id = {$this->castInt('cp.board_id')}
             WHERE cp.organization_id = ?
               AND c.duedate IS NOT NULL AND c.duedate < NOW()
               AND c.deleted_at = 0 AND b.deleted_at = 0 AND s.title <> 'Approved/Done'
@@ -74,7 +76,7 @@ class AlertService {
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp ON b.id = CAST(cp.board_id AS UNSIGNED)
+            INNER JOIN *PREFIX*custom_projects cp ON b.id = {$this->castInt('cp.board_id')}
             LEFT JOIN *PREFIX*deck_assigned_users au ON au.card_id = c.id
             WHERE cp.organization_id = ?
               AND au.card_id IS NULL
@@ -92,7 +94,7 @@ class AlertService {
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp ON b.id = CAST(cp.board_id AS UNSIGNED)
+            INNER JOIN *PREFIX*custom_projects cp ON b.id = {$this->castInt('cp.board_id')}
             WHERE cp.organization_id = ?
               AND c.duedate IS NULL
               AND c.deleted_at = 0 AND b.deleted_at = 0 AND s.title <> 'Approved/Done'
@@ -110,7 +112,7 @@ class AlertService {
                    COUNT(c.id) AS total_tasks,
                    SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) AS done_tasks
             FROM *PREFIX*custom_projects cp
-            INNER JOIN *PREFIX*deck_boards b ON b.id = CAST(cp.board_id AS UNSIGNED) AND b.deleted_at = 0
+            INNER JOIN *PREFIX*deck_boards b ON b.id = {$this->castInt('cp.board_id')} AND b.deleted_at = 0
             LEFT JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             WHERE cp.organization_id = ?
@@ -135,7 +137,7 @@ class AlertService {
         $sql = "
             SELECT cp.name AS project_name, COUNT(c.id) AS total_tasks
             FROM *PREFIX*custom_projects cp
-            INNER JOIN *PREFIX*deck_boards b ON b.id = CAST(cp.board_id AS UNSIGNED) AND b.deleted_at = 0
+            INNER JOIN *PREFIX*deck_boards b ON b.id = {$this->castInt('cp.board_id')} AND b.deleted_at = 0
             LEFT JOIN *PREFIX*deck_stacks s ON s.board_id = b.id
             LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             WHERE cp.organization_id = ?

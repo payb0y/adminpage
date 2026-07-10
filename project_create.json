@@ -1,0 +1,184 @@
+{
+  "method": "POST",
+  "path": "/api/v1/projects",
+  "fullOcsPath": "/ocs/v2.php/apps/projectcreatoraio/api/v1/projects",
+  "controller": "ProjectApiController.php",
+  "controllerMethod": "create",
+  "line": 639,
+  "auth": ["NoCSRFRequired", "NoAdminRequired"],
+  "parameters": {
+    "required": [
+      { "name": "name", "type": "string", "description": "Project name" },
+      {
+        "name": "number",
+        "type": "string",
+        "description": "Project number/identifier"
+      },
+      { "name": "type", "type": "int", "description": "Project type ID" }
+    ],
+    "optional": [
+      {
+        "name": "members",
+        "type": "array",
+        "default": "[]",
+        "description": "Array of user IDs to add as members"
+      },
+      {
+        "name": "groupId",
+        "type": "string",
+        "default": "''",
+        "description": "Group/organization ID, falls back as organizationId if numeric"
+      },
+      {
+        "name": "organizationId",
+        "type": "int|null",
+        "default": "null",
+        "description": "Organization to create the project under"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "default": "''",
+        "description": "Project description"
+      },
+      {
+        "name": "client_name",
+        "type": "string|null",
+        "default": "null",
+        "description": "Client name"
+      },
+      {
+        "name": "client_role",
+        "type": "string|null",
+        "default": "null",
+        "description": "Client role"
+      },
+      {
+        "name": "client_phone",
+        "type": "string|null",
+        "default": "null",
+        "description": "Client phone number"
+      },
+      {
+        "name": "client_email",
+        "type": "string|null",
+        "default": "null",
+        "description": "Client email address"
+      },
+      {
+        "name": "client_address",
+        "type": "string|null",
+        "default": "null",
+        "description": "Client address"
+      },
+      {
+        "name": "loc_street",
+        "type": "string|null",
+        "default": "null",
+        "description": "Location street"
+      },
+      {
+        "name": "loc_city",
+        "type": "string|null",
+        "default": "null",
+        "description": "Location city"
+      },
+      {
+        "name": "loc_zip",
+        "type": "string|null",
+        "default": "null",
+        "description": "Location ZIP/postal code"
+      },
+      {
+        "name": "request_date",
+        "type": "string|null",
+        "default": "null",
+        "description": "Request date (not persisted, controller-only)"
+      },
+      {
+        "name": "desired_execution_date",
+        "type": "string|null",
+        "default": "null",
+        "description": "Desired execution date (not persisted, controller-only)"
+      },
+      {
+        "name": "required_preparation_weeks",
+        "type": "int|null",
+        "default": "null",
+        "description": "Required preparation time in weeks"
+      },
+      {
+        "name": "required_preparation_days",
+        "type": "int|null",
+        "default": "null",
+        "description": "Alternative to weeks; converted to weeks if weeks is null (ceil(days/7))"
+      }
+    ]
+  },
+  "requestBodyExample": {
+    "name": "New Building Project",
+    "number": "PRJ-2024-001",
+    "type": 2,
+    "members": ["user1", "user2"],
+    "organizationId": 5,
+    "description": "Construction of a new office building",
+    "client_name": "Acme Corp",
+    "client_role": "Stakeholder",
+    "client_phone": "+1234567890",
+    "client_email": "contact@acme.com",
+    "client_address": "123 Main St",
+    "loc_street": "456 Oak Ave",
+    "loc_city": "Springfield",
+    "loc_zip": "12345",
+    "request_date": "2024-01-15",
+    "desired_execution_date": "2024-06-01",
+    "required_preparation_weeks": 4
+  },
+  "responses": {
+    "201": {
+      "description": "Project created successfully",
+      "body": {
+        "message": "Project created successfully",
+        "projectId": 123
+      }
+    },
+    "4xx/5xx": {
+      "description": "Error response",
+      "body": {
+        "message": "Failed to create project: <error message>"
+      }
+    }
+  },
+  "sideEffects": [
+    "Validates user is logged in and belongs to (or is admin of) the target organization",
+    "Checks organization plan subscription project limit (maxProjects quota)",
+    "Creates a Nextcloud group (e.g. 'proj-<random-hex>') with owner + members",
+    "Creates a Deck board named '{projectName} - Main Board' shared with the project group",
+    "Creates shared group folder via groupfolders API with quota from the plan",
+    "Creates private per-user folders inside each member's personal files",
+    "Creates a whiteboard file (.whiteboard) in the shared folder",
+    "Optionally creates a Talk conversation and adds all members (if Talk integration available)",
+    "Seeds default Deck cards based on project type via DeckDefaultCardsService",
+    "Records a 'project created' activity event",
+    "Shares the whiteboard file in the Talk conversation (if Talk was created)",
+    "Rolls back all created resources (group, board, folders, Talk) on any failure"
+  ],
+  "validation": {
+    "type": "manual",
+    "details": [
+      "PHP type hints enforce basic types on controller method parameters",
+      "Manual fallback parsing for request_date, desired_execution_date, required_preparation_weeks, required_preparation_days from raw request params",
+      "required_preparation_days converted to weeks if weeks not provided (ceil(days/7))",
+      "Negative required_preparation_weeks clamped to 0",
+      "groupId used as organizationId fallback if organizationId is null and groupId is numeric string",
+      "Service layer validates org membership for owner and all members",
+      "Service layer enforces subscription plan project limits"
+    ],
+    "library": "none (no Zod, class-validator, DTO, etc.)"
+  },
+  "source": {
+    "route": "appinfo/routes.php:5-9",
+    "controller": "lib/Controller/ProjectApiController.php:639-733",
+    "service": "lib/Service/ProjectService.php:97-268"
+  }
+}

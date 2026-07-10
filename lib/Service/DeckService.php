@@ -8,6 +8,8 @@ use OCP\IDBConnection;
 
 class DeckService {
 
+    use SqlDialectTrait;
+
     private IDBConnection $db;
 
     public function __construct(IDBConnection $db) {
@@ -31,7 +33,7 @@ class DeckService {
                 b.title         AS board_title
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                ON b.id = {$this->castInt('cp.board_id')}
                 AND b.deleted_at = 0
             WHERE cp.organization_id = ?
             ORDER BY cp.id
@@ -69,16 +71,16 @@ class DeckService {
                 c.created_at    AS card_created_at,
                 CASE
                     WHEN c.deleted_at <> 0          THEN 'deleted'
-                    WHEN c.archived = 1             THEN 'archived'
+                    WHEN c.archived = true          THEN 'archived'
                     WHEN s.title = 'Approved/Done'  THEN 'done'
                     ELSE 'open'
                 END AS task_status,
                 CASE
                     WHEN c.duedate IS NULL                                     THEN 'nodue'
-                    WHEN DATE(c.duedate) < CURDATE()                           THEN 'overdue'
-                    WHEN DATE(c.duedate) = CURDATE()                           THEN 'today'
-                    WHEN DATE(c.duedate) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) THEN 'tomorrow'
-                    WHEN DATE(c.duedate) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'nextSevenDays'
+                    WHEN CAST(c.duedate AS DATE) < CURRENT_DATE                           THEN 'overdue'
+                    WHEN CAST(c.duedate AS DATE) = CURRENT_DATE                           THEN 'today'
+                    WHEN CAST(c.duedate AS DATE) = {$this->dateAddDays('CURRENT_DATE', 1)} THEN 'tomorrow'
+                    WHEN CAST(c.duedate AS DATE) <= {$this->dateAddDays('CURRENT_DATE', 7)} THEN 'nextSevenDays'
                     ELSE 'later'
                 END AS due_bucket
             FROM *PREFIX*deck_cards c
@@ -895,7 +897,7 @@ class DeckService {
                    cp.created_at, cp.updated_at
             FROM *PREFIX*custom_projects cp
             INNER JOIN *PREFIX*deck_boards b
-                ON b.id = CAST(cp.board_id AS UNSIGNED)
+                ON b.id = {$this->castInt('cp.board_id')}
                AND b.deleted_at = 0
             WHERE cp.organization_id = ?
             ORDER BY cp.name
@@ -937,9 +939,9 @@ class DeckService {
 
         $sql = "
             SELECT b.id AS board_id,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) < CURDATE() THEN 1 ELSE 0 END) AS overdue,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) = CURDATE() THEN 1 ELSE 0 END) AS today,
-                   SUM(CASE WHEN c.duedate IS NOT NULL AND DATE(c.duedate) > CURDATE() THEN 1 ELSE 0 END) AS upcoming,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) = CURRENT_DATE THEN 1 ELSE 0 END) AS today,
+                   SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) > CURRENT_DATE THEN 1 ELSE 0 END) AS upcoming,
                    SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS no_due
             FROM *PREFIX*deck_boards b
             JOIN *PREFIX*deck_stacks s ON s.board_id = b.id

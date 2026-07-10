@@ -104,8 +104,8 @@ class FinancialService {
                 p.price AS plan_price,
                 p.max_projects,
                 p.max_members,
-                ROUND(p.shared_storage_per_project / 1073741824, 1) AS shared_storage_gb,
-                ROUND(p.private_storage_per_user / 1073741824, 1) AS private_storage_gb,
+                ROUND(p.shared_storage_per_project / 1073741824.0, 1) AS shared_storage_gb,
+                ROUND(p.private_storage_per_user / 1073741824.0, 1) AS private_storage_gb,
                 sub.status AS sub_status,
                 sub.started_at,
                 sub.ended_at,
@@ -153,8 +153,8 @@ class FinancialService {
                 p.max_projects,
                 p.max_members,
                 p.is_public,
-                ROUND(p.shared_storage_per_project / 1073741824, 1) AS shared_gb,
-                ROUND(p.private_storage_per_user / 1073741824, 1) AS private_gb,
+                ROUND(p.shared_storage_per_project / 1073741824.0, 1) AS shared_gb,
+                ROUND(p.private_storage_per_user / 1073741824.0, 1) AS private_gb,
                 (SELECT COUNT(*) FROM *PREFIX*subscriptions sub WHERE sub.plan_id = p.id AND sub.status = 'active') AS active_subs
             FROM *PREFIX*plans p
             ORDER BY p.price ASC, p.name ASC
