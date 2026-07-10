@@ -13,11 +13,13 @@ use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
 use OCA\AdminPage\Service\PublicTokenService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
+use Psr\Log\LoggerInterface;
 
 class DashboardController extends Controller {
 
@@ -31,6 +33,7 @@ class DashboardController extends Controller {
     private OrgOverviewService $orgOverviewService;
     private PublicTokenService $publicTokenService;
     private IUserSession $userSession;
+    private LoggerInterface $logger;
 
     public function __construct(
         string $appName,
@@ -44,7 +47,8 @@ class DashboardController extends Controller {
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
         PublicTokenService $publicTokenService,
-        IUserSession $userSession
+        IUserSession $userSession,
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
@@ -57,6 +61,33 @@ class DashboardController extends Controller {
         $this->orgOverviewService = $orgOverviewService;
         $this->publicTokenService = $publicTokenService;
         $this->userSession = $userSession;
+        $this->logger = $logger;
+    }
+
+    /**
+     * Error boundary: runs the handler and, on any exception, logs it
+     * server-side and returns a sanitized JSON 500 instead of letting
+     * Nextcloud serialize the full exception + stack trace into the
+     * response body (which leaks internals to the browser).
+     *
+     * @param callable(): JSONResponse $handler
+     */
+    private function guard(callable $handler): JSONResponse {
+        try {
+            return $handler();
+        } catch (\Throwable $e) {
+            $this->logger->error('adminpage request failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'app' => 'adminpage',
+            ]);
+            return new JSONResponse(
+                [
+                    'error' => 'internal',
+                    'message' => 'Something went wrong loading this data. Please try again in a moment.',
+                ],
+                Http::STATUS_INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 
     /**
@@ -66,6 +97,7 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getData(): JSONResponse {
+        return $this->guard(function () {
         // Resolve current user → org
         $user = $this->userSession->getUser();
         $uid  = $user ? $user->getUID() : '';
@@ -114,6 +146,7 @@ class DashboardController extends Controller {
         ];
 
         return new JSONResponse($data);
+        });
     }
 
     /**
@@ -141,9 +174,14 @@ class DashboardController extends Controller {
 
             $data = json_decode($response->getBody(), true);
             return new JSONResponse($data);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->logger->error('adminpage getUpcomingTasks failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'app' => 'adminpage',
+            ]);
             return new JSONResponse([
-                'error' => $e->getMessage(),
+                'error' => 'internal',
+                'message' => 'Could not load upcoming tasks.',
             ], 500);
         }
     }
@@ -155,17 +193,19 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getUpcomingEvents(): JSONResponse {
-        $user = $this->userSession->getUser();
-        $uid  = $user ? $user->getUID() : '';
-        $orgId = $this->orgOverviewService->resolveOrgId($uid);
+        return $this->guard(function () {
+            $user = $this->userSession->getUser();
+            $uid  = $user ? $user->getUID() : '';
+            $orgId = $this->orgOverviewService->resolveOrgId($uid);
 
-        if ($orgId === null) {
-            return new JSONResponse(['events' => []]);
-        }
+            if ($orgId === null) {
+                return new JSONResponse(['events' => []]);
+            }
 
-        return new JSONResponse([
-            'events' => $this->calendarService->getUpcomingEvents($orgId),
-        ]);
+            return new JSONResponse([
+                'events' => $this->calendarService->getUpcomingEvents($orgId),
+            ]);
+        });
     }
 
     /**
@@ -176,6 +216,7 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getProjectGeocode(int $projectId): JSONResponse {
+        return $this->guard(function () use ($projectId) {
         $user = $this->userSession->getUser();
         $uid  = $user ? $user->getUID() : '';
         $orgId = $this->orgOverviewService->resolveOrgId($uid);
@@ -205,6 +246,7 @@ class DashboardController extends Controller {
             default:
                 return new JSONResponse(['error' => 'internal'], 500);
         }
+        });
     }
 
     /**
@@ -214,17 +256,19 @@ class DashboardController extends Controller {
      * @return JSONResponse
      */
     public function getProjectGeocodes(): JSONResponse {
-        $user = $this->userSession->getUser();
-        $uid  = $user ? $user->getUID() : '';
-        $orgId = $this->orgOverviewService->resolveOrgId($uid);
-        if ($orgId === null) {
-            return new JSONResponse(['error' => 'no_org'], 403);
-        }
-        $result = $this->geocodeService->geocodeOrgProjects($orgId);
-        return new JSONResponse([
-            'projects'          => $result['projects'],
-            'geocodingInFlight' => $result['geocodingInFlight'],
-        ]);
+        return $this->guard(function () {
+            $user = $this->userSession->getUser();
+            $uid  = $user ? $user->getUID() : '';
+            $orgId = $this->orgOverviewService->resolveOrgId($uid);
+            if ($orgId === null) {
+                return new JSONResponse(['error' => 'no_org'], 403);
+            }
+            $result = $this->geocodeService->geocodeOrgProjects($orgId);
+            return new JSONResponse([
+                'projects'          => $result['projects'],
+                'geocodingInFlight' => $result['geocodingInFlight'],
+            ]);
+        });
     }
 
     /**
@@ -314,9 +358,14 @@ class DashboardController extends Controller {
 
             $data = json_decode($response->getBody(), true);
             return new JSONResponse($data);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->logger->error('adminpage getBackupJobs failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'app' => 'adminpage',
+            ]);
             return new JSONResponse([
-                'error' => $e->getMessage(),
+                'error' => 'internal',
+                'message' => 'Could not load backup jobs.',
             ], 500);
         }
     }
