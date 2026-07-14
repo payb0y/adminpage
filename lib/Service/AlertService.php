@@ -117,7 +117,7 @@ class AlertService {
             LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             WHERE cp.organization_id = ?
             GROUP BY cp.id, cp.name
-            HAVING latest_activity IS NOT NULL AND latest_activity < ?
+            HAVING MAX(c.last_modified) IS NOT NULL AND MAX(c.last_modified) < ?
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId, $sevenDaysAgo]);
@@ -142,7 +142,7 @@ class AlertService {
             LEFT JOIN *PREFIX*deck_cards c ON c.stack_id = s.id AND c.deleted_at = 0
             WHERE cp.organization_id = ?
             GROUP BY cp.id, cp.name
-            HAVING total_tasks > 0 AND SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) = 0
+            HAVING COUNT(c.id) > 0 AND SUM(CASE WHEN s.title = 'Approved/Done' THEN 1 ELSE 0 END) = 0
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId]);
