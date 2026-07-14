@@ -75,4 +75,24 @@ trait SqlDialectTrait {
             ? "($dateExpr + $days)"
             : "DATE_ADD($dateExpr, INTERVAL $days DAY)";
     }
+
+    /** A unix-epoch integer column/expression as a datetime. */
+    private function fromEpoch(string $expr): string {
+        return $this->isPostgres()
+            ? "TO_TIMESTAMP($expr)"
+            : "FROM_UNIXTIME($expr)";
+    }
+
+    /**
+     * Whole-day difference ($a - $b) between two date/datetime expressions,
+     * matching MySQL DATEDIFF: a calendar-day count that ignores the time part.
+     * Postgres date subtraction yields an integer number of days, but only when
+     * both operands are DATE (timestamp subtraction yields an interval), hence
+     * the explicit casts.
+     */
+    private function datediffDays(string $a, string $b): string {
+        return $this->isPostgres()
+            ? "(CAST($a AS DATE) - CAST($b AS DATE))"
+            : "DATEDIFF($a, $b)";
+    }
 }

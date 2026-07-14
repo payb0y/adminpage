@@ -183,7 +183,7 @@ class KpiService {
                 SUM(CASE WHEN c.duedate IS NOT NULL AND CAST(c.duedate AS DATE) > CURRENT_DATE THEN 1 ELSE 0 END) AS upcoming,
                 COUNT(*) AS in_progress,
                 SUM(CASE WHEN c.duedate IS NULL THEN 1 ELSE 0 END) AS non_due,
-                COALESCE(ROUND(AVG(DATEDIFF(NOW(), FROM_UNIXTIME(c.created_at)))), 0) AS avg_days
+                COALESCE(ROUND(AVG({$this->datediffDays('NOW()', $this->fromEpoch('c.created_at'))})), 0) AS avg_days
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id AND b.deleted_at = 0
@@ -411,7 +411,7 @@ class KpiService {
     private function avgCoordinationPending(int $orgId): string {
         $sql = "
             SELECT
-                ROUND(AVG(DATEDIFF(NOW(), pti.start_date) / 7)) AS avg_weeks
+                ROUND(AVG({$this->datediffDays('NOW()', 'pti.start_date')} / 7.0)) AS avg_weeks
             FROM *PREFIX*project_timeline_items pti
             INNER JOIN *PREFIX*custom_projects cp
                 ON cp.id = pti.project_id
@@ -434,7 +434,7 @@ class KpiService {
     private function avgRequiredPrepTime(int $orgId): string {
         $sql = "
             SELECT
-                ROUND(AVG(DATEDIFF(pti.end_date, pti.start_date) / 7)) AS avg_weeks
+                ROUND(AVG({$this->datediffDays('pti.end_date', 'pti.start_date')} / 7.0)) AS avg_weeks
             FROM *PREFIX*project_timeline_items pti
             INNER JOIN *PREFIX*custom_projects cp
                 ON cp.id = pti.project_id

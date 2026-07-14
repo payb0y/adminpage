@@ -54,7 +54,7 @@ class AlertService {
     private function getOverdueTaskDetails(int $orgId): array {
         $sql = "
             SELECT cp.name AS project_name, c.id AS task_id, c.title AS task_title,
-                   c.duedate, s.title AS stack_title, DATEDIFF(NOW(), c.duedate) AS days_overdue
+                   c.duedate, s.title AS stack_title, {$this->datediffDays('NOW()', 'c.duedate')} AS days_overdue
             FROM *PREFIX*deck_cards c
             JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
             JOIN *PREFIX*deck_boards b ON b.id = s.board_id
