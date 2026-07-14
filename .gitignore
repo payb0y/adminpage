@@ -1,6 +1,7 @@
 /node_modules
 
 db.sql
+nextcloud_db_20260714_191826.sql
 .github/
 nextcloud_dump.sql
 

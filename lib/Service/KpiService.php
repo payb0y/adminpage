@@ -326,21 +326,26 @@ class KpiService {
         $row = $result->fetch();
         $publicNotes = (int)($row['cnt'] ?? 0);
 
-        /* Private card notes: entries linked to org's deck boards */
-        $sqlPrivate = "
-            SELECT COUNT(*) AS cnt
-            FROM *PREFIX*private_card_notes pcn
-            INNER JOIN *PREFIX*deck_cards c  ON c.id = pcn.card_id
-            INNER JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
-            INNER JOIN *PREFIX*deck_boards b ON b.id = s.board_id
-            INNER JOIN *PREFIX*custom_projects cp
-                ON {$this->castInt('cp.board_id')} = b.id
-               AND cp.organization_id = ?
-        ";
-        $result = $this->db->prepare($sqlPrivate);
-        $result->execute([$orgId]);
-        $row = $result->fetch();
-        $privateNotes = (int)($row['cnt'] ?? 0);
+        /* Private card notes: entries linked to org's deck boards.
+         * `private_card_notes` is an optional table (created by a sibling app);
+         * it may be absent on some deployments, so degrade to 0 when missing. */
+        $privateNotes = 0;
+        if ($this->db->tableExists('private_card_notes')) {
+            $sqlPrivate = "
+                SELECT COUNT(*) AS cnt
+                FROM *PREFIX*private_card_notes pcn
+                INNER JOIN *PREFIX*deck_cards c  ON c.id = pcn.card_id
+                INNER JOIN *PREFIX*deck_stacks s ON s.id = c.stack_id
+                INNER JOIN *PREFIX*deck_boards b ON b.id = s.board_id
+                INNER JOIN *PREFIX*custom_projects cp
+                    ON {$this->castInt('cp.board_id')} = b.id
+                   AND cp.organization_id = ?
+            ";
+            $result = $this->db->prepare($sqlPrivate);
+            $result->execute([$orgId]);
+            $row = $result->fetch();
+            $privateNotes = (int)($row['cnt'] ?? 0);
+        }
 
         return ['public' => $publicNotes, 'private' => $privateNotes];
     }
