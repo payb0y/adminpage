@@ -276,7 +276,7 @@ export default {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: 20px 24px;
+  padding: 20px;
   transition: box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -323,7 +323,7 @@ export default {
 .timeline-kpi__body {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
 }
 
 .timeline-kpi__chart-wrap {
@@ -332,13 +332,13 @@ export default {
 
 .timeline-kpi__chart {
   position: relative;
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
 }
 
 .timeline-kpi__chart canvas {
-  width: 96px !important;
-  height: 96px !important;
+  width: 112px !important;
+  height: 112px !important;
 }
 
 /* Hero figure — same treatment across all four KPI cards. */

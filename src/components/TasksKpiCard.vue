@@ -297,7 +297,7 @@ export default {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: 20px 24px;
+  padding: 20px;
   transition: box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -364,7 +364,7 @@ export default {
 .tasks-kpi__body {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
 }
 
 .tasks-kpi__left {
@@ -381,13 +381,13 @@ export default {
 
 .tasks-kpi__chart {
   position: relative;
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
 }
 
 .tasks-kpi__chart canvas {
-  width: 96px !important;
-  height: 96px !important;
+  width: 112px !important;
+  height: 112px !important;
 }
 
 .tasks-kpi__chart-center {
@@ -417,8 +417,8 @@ export default {
 }
 
 .tasks-kpi__chart-empty {
-  width: 96px;
-  height: 96px;
+  width: 112px;
+  height: 112px;
   display: flex;
   align-items: center;
   justify-content: center;
