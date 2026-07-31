@@ -279,7 +279,7 @@ export default {
 }
 
 .insights-panel__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .insights-panel__title {
@@ -295,7 +295,7 @@ export default {
 }
 
 .insights-panel__title svg {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .insights-panel__chevron {
@@ -332,8 +332,8 @@ export default {
 .insights-panel__badge {
   font-size: 10px;
   font-weight: 600;
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
   padding: 1px 7px;
   border-radius: 8px;
   margin-left: 2px;
@@ -342,7 +342,7 @@ export default {
 /* ─── Divider ─── */
 .insights-panel__divider {
   height: 1px;
-  background: #eef1f5;
+  background: var(--bg-subtle);
   margin: var(--spacing-lg, 24px) 0;
 }
 

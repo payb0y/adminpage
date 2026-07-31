@@ -365,7 +365,7 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   box-sizing: border-box;
-  border-right: 1px solid #f3f4f6;
+  border-right: 1px solid var(--bg-subtle);
 }
 
 .timeline-chart__grid {
@@ -382,7 +382,7 @@ export default {
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #f3f4f6;
+  background: var(--bg-subtle);
 }
 
 .timeline-chart__today {
@@ -390,7 +390,7 @@ export default {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #ef4444;
+  background: var(--color-danger);
   z-index: 2;
   opacity: 0.6;
 }
@@ -402,7 +402,7 @@ export default {
   left: 4px;
   font-size: 9px;
   font-weight: 700;
-  color: #ef4444;
+  color: var(--color-danger);
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -414,7 +414,7 @@ export default {
 }
 
 .timeline-chart__bar-row:nth-child(even) {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .timeline-chart__bar {

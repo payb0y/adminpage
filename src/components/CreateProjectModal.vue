@@ -599,7 +599,7 @@ export default {
   padding: 24px;
 }
 .cp-modal {
-  background: #fff;
+  background: var(--bg-card);
   width: min(560px, 100%);
   max-height: calc(100vh - 48px);
   border-radius: 14px;
@@ -613,13 +613,13 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 .cp-modal__title {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -627,8 +627,8 @@ export default {
 .cp-modal__step {
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
-  background: #f0f1f5;
+  color: var(--color-text-secondary);
+  background: var(--bg-inset);
   padding: 2px 8px;
   border-radius: 999px;
 }
@@ -636,11 +636,11 @@ export default {
   background: none;
   border: none;
   font-size: 22px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   line-height: 1;
 }
-.cp-modal__close:hover { color: #1a1a2e; }
+.cp-modal__close:hover { color: var(--color-text-primary); }
 .cp-modal__close:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cp-modal__body {
@@ -652,7 +652,7 @@ export default {
 }
 
 .cp-modal__group {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 10px 12px;
   display: flex;
@@ -662,7 +662,7 @@ export default {
 .cp-modal__group-title {
   font-size: 11px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -683,18 +683,18 @@ export default {
 .cp-modal__label {
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.cp-modal__required { color: #b91c1c; }
+.cp-modal__required { color: var(--color-badge-danger-text); }
 
 .cp-modal__input,
 .cp-modal__textarea {
   font-size: 13px;
-  color: #1a1a2e;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  color: var(--color-text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px 10px;
   outline: none;
@@ -702,13 +702,13 @@ export default {
   width: 100%;
 }
 .cp-modal__input:focus,
-.cp-modal__textarea:focus { border-color: #4a90d9; }
+.cp-modal__textarea:focus { border-color: var(--accent); }
 .cp-modal__input--zip { width: 110px; min-width: 110px; }
 .cp-modal__textarea { resize: vertical; min-height: 56px; }
 
 .cp-modal__field-error {
   font-size: 11px;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 
 .cp-modal__chips {
@@ -720,8 +720,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
   font-size: 12px;
   font-weight: 600;
   padding: 3px 6px 3px 10px;
@@ -730,7 +730,7 @@ export default {
 .cp-modal__chip-x {
   background: none;
   border: none;
-  color: #1e4a8a;
+  color: var(--accent-strong);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -750,7 +750,7 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 6px 4px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 .cp-modal__member-row:last-child { border-bottom: none; }
 .cp-modal__member-info {
@@ -762,11 +762,11 @@ export default {
 .cp-modal__member-name {
   font-size: 13px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 .cp-modal__member-meta {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 .cp-modal__member-add {
   flex: 0 0 auto;
@@ -774,7 +774,7 @@ export default {
   height: 26px;
   border-radius: 50%;
   border: none;
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
   font-size: 18px;
   font-weight: 700;
@@ -785,16 +785,16 @@ export default {
   padding: 0;
   cursor: pointer;
 }
-.cp-modal__member-add:hover:not(:disabled) { background: #357ec7; }
+.cp-modal__member-add:hover:not(:disabled) { background: var(--accent-hover); }
 .cp-modal__member-add:disabled { opacity: 0.5; cursor: not-allowed; }
 .cp-modal__member-empty {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   padding: 6px 0;
 }
 
 .cp-modal__footer {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
   padding: 12px 20px;
   display: flex;
   flex-direction: column;
@@ -802,11 +802,11 @@ export default {
 }
 .cp-modal__error {
   font-size: 12px;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .cp-modal__hint {
   font-size: 11px;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
   font-style: italic;
 }
 .cp-modal__actions {
@@ -827,10 +827,10 @@ export default {
   cursor: pointer;
 }
 .cp-modal__btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.cp-modal__btn--primary { background: #4a90d9; color: #fff; }
-.cp-modal__btn--primary:hover:not(:disabled) { background: #357ec7; }
-.cp-modal__btn--ghost { background: #fff; color: #6b7280; border-color: #e5e7eb; }
-.cp-modal__btn--ghost:hover:not(:disabled) { background: #f0f1f5; }
+.cp-modal__btn--primary { background: var(--accent); color: #fff; }
+.cp-modal__btn--primary:hover:not(:disabled) { background: var(--accent-hover); }
+.cp-modal__btn--ghost { background: var(--bg-card); color: var(--color-text-secondary); border-color: var(--color-border); }
+.cp-modal__btn--ghost:hover:not(:disabled) { background: var(--bg-inset); }
 
 .cp-modal__spinner {
   display: inline-block;

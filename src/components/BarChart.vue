@@ -58,12 +58,21 @@ export default {
     }
   },
   methods: {
+    // Resolve an In Zicht theme token off the live element. Chart.js paints on
+    // canvas, so it cannot consume CSS variables — every colour has to be read
+    // out at render time (and re-read when the chart re-renders after a theme
+    // switch). Fallbacks are the pre-theme literals.
+    themeColor(name, fallback) {
+      if (!this.$el) return fallback;
+      const v = getComputedStyle(this.$el).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    },
     renderChart() {
       const ctx = this.$refs.chartCanvas.getContext("2d");
       const colors = this.chartData.colors || [
-        "#2ec4b6",
-        "#f4a261",
-        "#e63946",
+        this.themeColor("--chart-3", "#2ec4b6"),
+        this.themeColor("--chart-4", "#f4a261"),
+        this.themeColor("--color-danger", "#e63946"),
       ];
 
       this.chart = new Chart(ctx, {
@@ -89,7 +98,12 @@ export default {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: "#1a1a2e",
+              backgroundColor: this.themeColor("--color-text-primary", "#1a1a2e"),
+              // Tooltip is the inverse of the page: dark box/light text in
+              // light mode, light box/dark text in dark mode. Chart.js
+              // defaults to white text, which vanishes on the dark scheme.
+              titleColor: this.themeColor("--bg-card", "#ffffff"),
+              bodyColor: this.themeColor("--bg-card", "#ffffff"),
               titleFont: { size: 13, weight: "600" },
               bodyFont: { size: 12 },
               padding: 10,
@@ -104,7 +118,7 @@ export default {
               grid: { display: false },
               ticks: {
                 font: { size: 12, weight: "500" },
-                color: "#6b7280",
+                color: this.themeColor("--color-text-secondary", "#6b7280"),
               },
               border: { display: false },
             },
@@ -116,7 +130,7 @@ export default {
               },
               ticks: {
                 font: { size: 11 },
-                color: "#9ca3af",
+                color: this.themeColor("--color-text-muted", "#9ca3af"),
                 precision: 0,
               },
               border: { display: false },
@@ -140,7 +154,7 @@ export default {
               meta.data.forEach((bar, i) => {
                 const value = chart.data.datasets[0].data[i];
                 if (value > 0) {
-                  c.fillStyle = "#374151";
+                  c.fillStyle = this.themeColor("--color-text-secondary", "#374151");
                   c.fillText(value, bar.x, bar.y - 6);
                 }
               });

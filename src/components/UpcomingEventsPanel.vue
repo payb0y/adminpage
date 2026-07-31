@@ -124,7 +124,7 @@
 var FALLBACK_COLORS = [
   "#1e4a8a",
   "#0082c9",
-  "#6b21a8",
+  "var(--chart-5)",
   "#92400e",
   "#166534",
   "#b91c1c",
@@ -296,7 +296,7 @@ export default {
 }
 
 .events-panel__empty-check {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-bottom: 8px;
 }
 
@@ -320,7 +320,7 @@ export default {
   gap: 5px;
   align-items: center;
   padding-right: 12px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--color-border);
 }
 
 .events-panel__filter-group:last-child {
@@ -339,30 +339,30 @@ export default {
   padding: 3px 10px;
   border-radius: 12px;
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
 }
 
 .events-panel__filter-badge:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .events-panel__filter-badge--active {
   font-weight: 600;
-  color: #1e4a8a;
-  background: #e8f0fe;
+  color: var(--accent-strong);
+  background: var(--accent-bg);
   border-color: currentColor;
 }
 
 .events-panel__select,
 .events-panel__input {
   font-size: 12px;
-  color: #374151;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  color: var(--color-text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 4px 8px;
   outline: none;
@@ -374,7 +374,7 @@ export default {
 
 .events-panel__select:focus,
 .events-panel__input:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 /* ─── List ─── */
@@ -389,7 +389,7 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 10px 4px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .events-panel__item:last-child {
@@ -458,11 +458,11 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
   font-size: 16px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--accent);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -471,8 +471,8 @@ export default {
 }
 
 .events-panel__page-btn:hover:not(:disabled) {
-  background: #e8f0fe;
-  border-color: #4a90d9;
+  background: var(--accent-bg);
+  border-color: var(--accent);
 }
 
 .events-panel__page-btn:disabled {

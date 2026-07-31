@@ -94,11 +94,11 @@ export default {
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 .project-map__link {
   font-size: 12px;
-  color: #4a90d9;
+  color: var(--accent);
   text-decoration: none;
   align-self: flex-end;
 }

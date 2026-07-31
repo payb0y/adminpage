@@ -317,22 +317,22 @@ export default {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 .projects-map__count {
   display: inline-block;
   margin-left: 8px;
   font-size: 11px;
   font-weight: 700;
-  color: #6b7280;
-  background: #f0f1f5;
+  color: var(--color-text-secondary);
+  background: var(--bg-inset);
   padding: 1px 8px;
   border-radius: 999px;
 }
 .projects-map__chip {
   font-size: 11px;
-  color: #92400e;
-  background: #fef3cd;
+  color: var(--color-badge-warning-text);
+  background: var(--color-badge-warning-bg);
   padding: 4px 10px;
   border-radius: 8px;
 }
@@ -355,68 +355,68 @@ export default {
   padding: 3px 10px;
   border: 1.5px solid transparent;
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   user-select: none;
 }
 .projects-map__pill:hover {
   filter: brightness(0.97);
 }
 .projects-map__pill--on {
-  background: #fff;
+  background: var(--bg-card);
   border-color: currentColor;
 }
-.projects-map__pill--on.projects-map__pill--st-active { color: #166534; background: #d4edda; }
-.projects-map__pill--on.projects-map__pill--st-waiting { color: #b45309; background: #fef3cd; }
-.projects-map__pill--on.projects-map__pill--st-hold { color: #6b7280; background: #e5e7eb; }
+.projects-map__pill--on.projects-map__pill--st-active { color: var(--color-badge-success-text); background: var(--color-badge-success-bg); }
+.projects-map__pill--on.projects-map__pill--st-waiting { color: #b45309; background: var(--color-badge-warning-bg); }
+.projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
 
 .projects-map__select,
 .projects-map__search {
   font-size: 12px;
-  color: #374151;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  color: var(--color-text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 4px 8px;
   outline: none;
 }
 .projects-map__search { min-width: 160px; }
 .projects-map__select:focus,
-.projects-map__search:focus { border-color: #4a90d9; }
+.projects-map__search:focus { border-color: var(--accent); }
 
 .projects-map__toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .projects-map__clear {
   font-size: 11px;
   font-weight: 600;
-  background: #fff;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 3px 10px;
   cursor: pointer;
 }
-.projects-map__clear:hover { background: #f0f1f5; }
+.projects-map__clear:hover { background: var(--bg-inset); }
 
 .projects-map__container {
   height: 360px;
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 
 .projects-map__state {
   text-align: center;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   padding: 32px 0;
   display: flex;
   flex-direction: column;
@@ -442,36 +442,36 @@ export default {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #b91c1c;
+  background: var(--color-badge-danger-text);
   border: 1.5px solid #fff;
 }
 
 .projects-map__popup {
   font-size: 12px;
   line-height: 1.4;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 180px;
 }
 .projects-map__popup small {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-weight: 500;
   margin-left: 6px;
 }
-.projects-map__popup-row { color: #4b5563; }
-.projects-map__popup-danger { color: #b91c1c; font-weight: 600; }
+.projects-map__popup-row { color: var(--color-text-secondary); }
+.projects-map__popup-danger { color: var(--color-badge-danger-text); font-weight: 600; }
 .projects-map__popup-cta {
   margin-top: 6px;
   font-size: 11px;
   font-weight: 600;
   color: #fff;
-  background: #4a90d9;
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   padding: 6px 10px;
   cursor: pointer;
 }
-.projects-map__popup-cta:hover { background: #357ec7; }
+.projects-map__popup-cta:hover { background: var(--accent-hover); }
 </style>

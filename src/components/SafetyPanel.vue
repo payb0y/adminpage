@@ -161,8 +161,8 @@ export default {
 	align-items: flex-start;
 	justify-content: space-between;
 	margin-bottom: var(--spacing-lg, 24px);
-	background: #fcfdff;
-	border: 1px solid #eef1f5;
+	background: var(--bg-subtle);
+	border: 1px solid var(--bg-subtle);
 	border-radius: var(--radius-card, 12px);
 	padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
 }
@@ -350,7 +350,7 @@ export default {
 }
 
 .safety-panel__project-badge--orange {
-	background-color: #fff3e0;
+	background-color: var(--color-badge-warning-bg);
 	color: #e65100;
 }
 

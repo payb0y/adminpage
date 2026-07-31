@@ -152,7 +152,7 @@ export default {
 }
 
 .org-panel__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .org-panel__title {
@@ -168,7 +168,7 @@ export default {
 }
 
 .org-panel__title svg {
-  color: #2e9e5a;
+  color: var(--color-success);
 }
 
 .org-panel__chevron {
@@ -191,14 +191,14 @@ export default {
   gap: 14px;
   padding-bottom: var(--spacing-md, 16px);
   margin-bottom: var(--spacing-md, 16px);
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .org-panel__avatar {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #2e9e5a, #5ec489);
+  background: linear-gradient(135deg, var(--color-success), #5ec489);
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -237,7 +237,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 13px;
 }
 

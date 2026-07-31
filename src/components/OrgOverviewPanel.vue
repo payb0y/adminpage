@@ -559,7 +559,7 @@ export default {
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
   padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
   margin-bottom: var(--spacing-md, 16px);
-  border-left: 4px solid #4a90d9;
+  border-left: 4px solid var(--accent);
 }
 
 .org-panel__header-left {
@@ -572,7 +572,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -614,20 +614,20 @@ export default {
 }
 
 .org-panel__plan-badge--free {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 .org-panel__plan-badge--pro {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 .org-panel__plan-badge--enterprise {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: var(--chart-5-bg);
+  color: var(--chart-5);
 }
 .org-panel__plan-badge--custom {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 
 /* Sub status */
@@ -640,25 +640,25 @@ export default {
 }
 
 .org-panel__sub-status--active {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 .org-panel__sub-status--paused {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 .org-panel__sub-status--cancelled {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
 }
 .org-panel__sub-status--none {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 
 /* Collapse button */
 .org-panel__collapse-btn {
-  background: #f0f1f5;
+  background: var(--bg-inset);
   border: none;
   border-radius: 50%;
   width: 34px;
@@ -672,7 +672,7 @@ export default {
 }
 
 .org-panel__collapse-btn:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .org-panel__chevron {
@@ -711,20 +711,20 @@ export default {
 }
 
 .org-panel__stat-icon--blue {
-  background: #e8f0fe;
-  color: #4a90d9;
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 .org-panel__stat-icon--green {
-  background: #d4edda;
-  color: #2e9e5a;
+  background: var(--color-badge-success-bg);
+  color: var(--color-success);
 }
 .org-panel__stat-icon--purple {
-  background: #f3e8ff;
+  background: var(--chart-5-bg);
   color: #9333ea;
 }
 .org-panel__stat-icon--orange {
-  background: #fef3cd;
-  color: #d97706;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 .org-panel__stat-icon--teal {
   background: #ccfbf1;
@@ -765,7 +765,7 @@ export default {
 /* Usage bar (inside stat card) */
 .org-panel__usage-bar {
   height: 4px;
-  background: #f0f1f5;
+  background: var(--bg-inset);
   border-radius: 2px;
   margin-top: 4px;
   width: 100%;
@@ -779,13 +779,13 @@ export default {
 }
 
 .org-panel__usage-fill--ok {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .org-panel__usage-fill--warning {
-  background: #f4a261;
+  background: var(--chart-4);
 }
 .org-panel__usage-fill--danger {
-  background: #e63946;
+  background: var(--color-danger);
 }
 
 /* ─── Bottom Grid ─── */
@@ -815,7 +815,7 @@ export default {
 .org-panel__card-underline {
   width: 32px;
   height: 3px;
-  background: #4a90d9;
+  background: var(--accent);
   border-radius: 2px;
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -830,7 +830,7 @@ export default {
 /* ─── Project rows ─── */
 .org-panel__project-row {
   padding: 10px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   cursor: pointer;
   transition: background 0.15s;
   border-radius: 4px;
@@ -840,7 +840,7 @@ export default {
   border-bottom: none;
 }
 .org-panel__project-row:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .org-panel__project-main {
@@ -871,8 +871,8 @@ export default {
 }
 
 .org-panel__overdue-badge {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
   font-size: 10px;
   font-weight: 600;
   padding: 1px 6px;
@@ -904,7 +904,7 @@ export default {
 /* Progress bar (project) */
 .org-panel__proj-bar {
   height: 5px;
-  background: #f0f1f5;
+  background: var(--bg-inset);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -916,13 +916,13 @@ export default {
 }
 
 .org-panel__proj-fill--high {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .org-panel__proj-fill--mid {
-  background: #4a90d9;
+  background: var(--accent);
 }
 .org-panel__proj-fill--low {
-  background: #f4a261;
+  background: var(--chart-4);
 }
 
 /* Stacks breakdown */
@@ -938,7 +938,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #f5f6fa;
+  background: var(--bg-subtle);
   border-radius: 6px;
   padding: 3px 8px;
   font-size: 11px;
@@ -949,7 +949,7 @@ export default {
   font-weight: 500;
 }
 .org-panel__stack-count {
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   padding: 0 5px;
   font-weight: 700;
@@ -963,7 +963,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .org-panel__member-row:last-child {
@@ -974,7 +974,7 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -1006,16 +1006,16 @@ export default {
 }
 
 .org-panel__member-role--admin {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 .org-panel__member-role--owner {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: var(--chart-5-bg);
+  color: var(--chart-5);
 }
 .org-panel__member-role--member {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 
 /* ─── Plan detail rows ─── */
@@ -1024,7 +1024,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 7px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 13px;
 }
 

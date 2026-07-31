@@ -404,7 +404,7 @@ export default {
 }
 
 .public-links-admin__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .public-links-admin__title {
@@ -420,7 +420,7 @@ export default {
 }
 
 .public-links-admin__title svg {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .public-links-admin__chevron {
@@ -483,7 +483,7 @@ export default {
   border: 1px solid var(--color-border, #d1d5db);
   border-radius: 6px;
   font-size: 13px;
-  background: #fff;
+  background: var(--bg-card);
 }
 
 /* ─── DateTime picker (matching perf-panel style) ─── */
@@ -546,7 +546,7 @@ export default {
 }
 
 .public-links-admin__datetime-clear:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.08);
 }
 
@@ -575,12 +575,12 @@ export default {
 }
 
 .public-links-admin__btn--revoke {
-  background: #fff;
+  background: var(--bg-card);
   border-color: #fecaca;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .public-links-admin__btn--revoke:hover {
-  background: #fef2f2;
+  background: var(--color-badge-danger-bg);
 }
 .public-links-admin__btn--revoke:disabled {
   opacity: 0.6;
@@ -612,7 +612,7 @@ export default {
 
 .public-links-admin__table td {
   padding: 10px 14px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   color: var(--color-text-primary, #1a1a2e);
 }
 
@@ -692,12 +692,12 @@ export default {
 
 .public-links-admin__badge--revoked {
   background: #fee2e2;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 
 .public-links-admin__badge--expired {
   background: #fef3c7;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
 }
 
 /* ─── States ─── */
@@ -714,7 +714,7 @@ export default {
 .public-links-admin__error {
   padding: 16px;
   background: #fee2e2;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
   border-radius: 8px;
   font-size: 13px;
 }
@@ -739,7 +739,7 @@ export default {
   border-radius: 6px;
   font-size: 13px;
   color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
+  background: var(--bg-card);
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s;
@@ -757,14 +757,14 @@ export default {
 }
 
 .public-links-admin__btn--delete {
-  background: #fff;
-  border-color: #e5e7eb;
-  color: #6b7280;
+  background: var(--bg-card);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
 }
 .public-links-admin__btn--delete:hover {
-  background: #fef2f2;
+  background: var(--color-badge-danger-bg);
   border-color: #fecaca;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .public-links-admin__btn--delete:disabled {
   opacity: 0.6;
@@ -772,7 +772,7 @@ export default {
 }
 
 .public-links-admin__inactive {
-  color: #d1d5db;
+  color: var(--color-border-strong);
 }
 
 /* ─── Responsive ─── */

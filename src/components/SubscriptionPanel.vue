@@ -265,7 +265,7 @@ export default {
 }
 
 .sub-panel__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .sub-panel__title {
@@ -281,7 +281,7 @@ export default {
 }
 
 .sub-panel__title svg {
-  color: #d97706;
+  color: var(--color-badge-warning-text);
 }
 
 .sub-panel__chevron {
@@ -306,7 +306,7 @@ export default {
 }
 
 .sub-panel__meter {
-  background: #fafbfd;
+  background: var(--bg-subtle);
   border-radius: 8px;
   padding: 12px 14px;
 }
@@ -339,7 +339,7 @@ export default {
 
 .sub-panel__bar {
   height: 5px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -351,13 +351,13 @@ export default {
 }
 
 .sub-panel__bar-fill--ok {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .sub-panel__bar-fill--warning {
-  background: #f4a261;
+  background: var(--chart-4);
 }
 .sub-panel__bar-fill--danger {
-  background: #e63946;
+  background: var(--color-danger);
 }
 
 /* ─── Plan Details ─── */
@@ -372,7 +372,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 13px;
 }
 
@@ -402,20 +402,20 @@ export default {
 }
 
 .sub-panel__plan-badge--free {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 .sub-panel__plan-badge--pro {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 .sub-panel__plan-badge--enterprise {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: var(--chart-5-bg);
+  color: var(--chart-5);
 }
 .sub-panel__plan-badge--custom {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 
 /* Status */
@@ -428,20 +428,20 @@ export default {
 }
 
 .sub-panel__status--active {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 .sub-panel__status--paused {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 .sub-panel__status--cancelled {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
 }
 .sub-panel__status--none {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 700px) {

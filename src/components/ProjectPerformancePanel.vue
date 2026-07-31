@@ -2092,7 +2092,7 @@ export default {
 }
 
 .perf-panel__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .perf-panel__title {
@@ -2168,8 +2168,8 @@ export default {
   padding: 3px 10px;
   border-radius: 14px;
   cursor: pointer;
-  background: #f5f6fa;
-  color: #6b7280;
+  background: var(--bg-subtle);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
@@ -2186,19 +2186,19 @@ export default {
 }
 
 .perf-panel__cr-badge--red {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 .perf-panel__cr-badge--red.perf-panel__cr-badge--active {
-  background: #fef2f2;
-  border-color: #dc2626;
+  background: var(--color-badge-danger-bg);
+  border-color: var(--color-danger);
 }
 
 .perf-panel__cr-badge--orange {
-  color: #d97706;
+  color: var(--color-badge-warning-text);
 }
 .perf-panel__cr-badge--orange.perf-panel__cr-badge--active {
-  background: #fffbeb;
-  border-color: #d97706;
+  background: var(--color-badge-warning-bg);
+  border-color: var(--color-badge-warning-text);
 }
 
 .perf-panel__cr-badge--blue {
@@ -2272,7 +2272,7 @@ export default {
 }
 
 .perf-panel__date-range-clear:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.08);
 }
 
@@ -2543,7 +2543,7 @@ export default {
 .perf-panel__bar-track {
   width: 100%;
   height: 6px;
-  background-color: #f0f1f5;
+  background-color: var(--bg-inset);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -2651,17 +2651,17 @@ export default {
   min-width: 150px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #eef1f5;
+  border: 1px solid var(--bg-subtle);
   border-radius: 8px;
   overflow: hidden;
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .perf-panel__proj-search {
   width: 100%;
   padding: 7px 10px;
   border: none;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
   font-size: 12px;
   color: var(--color-text-primary, #1a1a2e);
   background: transparent;
@@ -2686,15 +2686,15 @@ export default {
   padding: 3px 10px;
   border-radius: 12px;
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
 }
 
 .perf-panel__status-badge:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .perf-panel__status-badge--active {
@@ -2710,7 +2710,7 @@ export default {
 }
 
 .perf-panel__status-badge--amber {
-  color: #d97706;
+  color: var(--color-badge-warning-text);
 }
 .perf-panel__status-badge--amber.perf-panel__status-badge--active {
   background: #fef3c7;
@@ -2724,7 +2724,7 @@ export default {
 }
 
 .perf-panel__status-badge--slate {
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 .perf-panel__status-badge--slate.perf-panel__status-badge--active {
   background: #e2e8f0;
@@ -2740,7 +2740,7 @@ export default {
 }
 
 .perf-panel__proj-items::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--color-border-strong);
   border-radius: 2px;
 }
 
@@ -2757,7 +2757,7 @@ export default {
 }
 
 .perf-panel__proj-item:hover {
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 
 .perf-panel__proj-item--active {
@@ -2769,7 +2769,7 @@ export default {
 .perf-panel__proj-empty {
   padding: 10px;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   text-align: center;
 }
 
@@ -2786,7 +2786,7 @@ export default {
   gap: 2px;
   justify-content: flex-end;
   margin-bottom: 6px;
-  background: #f0f1f5;
+  background: var(--bg-inset);
   border-radius: 8px;
   padding: 3px;
   width: fit-content;
@@ -2802,18 +2802,18 @@ export default {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .perf-panel__chart-toggle-btn:hover {
-  color: #6b7280;
+  color: var(--color-text-secondary);
   background: rgba(255, 255, 255, 0.5);
 }
 
 .perf-panel__chart-toggle-btn--active {
-  background: #fff;
+  background: var(--bg-card);
   color: #c878c8;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -2832,12 +2832,12 @@ export default {
 }
 
 .perf-panel__chart-empty-icon {
-  color: #d1d5db;
+  color: var(--color-border-strong);
 }
 
 .perf-panel__chart-empty-text {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-weight: 500;
   text-align: center;
 }
@@ -2879,7 +2879,7 @@ export default {
 }
 
 .perf-modal {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   width: 100%;
@@ -2906,14 +2906,14 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
   flex-shrink: 0;
 }
 
 .perf-modal__title {
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   margin: 0;
   padding: 0;
   border: none;
@@ -2923,7 +2923,7 @@ export default {
   background: none;
   border: none;
   font-size: 24px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   width: 36px;
   height: 36px;
@@ -2936,8 +2936,8 @@ export default {
 }
 
 .perf-modal__close:hover {
-  background: #f0f1f5;
-  color: #1a1a2e;
+  background: var(--bg-inset);
+  color: var(--color-text-primary);
 }
 
 .perf-modal__body {
@@ -2951,14 +2951,14 @@ export default {
 }
 
 .perf-modal__body::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--color-border-strong);
   border-radius: 3px;
 }
 
 /* Project Row */
 .perf-modal__project {
   margin-bottom: 12px;
-  border: 1px solid #eef1f5;
+  border: 1px solid var(--bg-subtle);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -2974,13 +2974,13 @@ export default {
 }
 
 .perf-modal__project-header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .perf-modal__project-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -2994,7 +2994,7 @@ export default {
   padding: 3px 10px;
   border-radius: 12px;
   border: 1px solid #c878c8;
-  background: #fff;
+  background: var(--bg-card);
   color: #a855a8;
   cursor: pointer;
   white-space: nowrap;
@@ -3017,7 +3017,7 @@ export default {
 .perf-modal__chevron {
   font-size: 16px;
   font-weight: 700;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   transition: transform 0.2s ease;
   display: inline-flex;
   margin-left: 4px;
@@ -3037,27 +3037,27 @@ export default {
 }
 
 .perf-modal__badge--success {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 
 .perf-modal__badge--warning {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 
 .perf-modal__badge--danger {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
 }
 
 .perf-modal__badge--info {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .perf-modal__badge--neutral {
-  background: #f0f1f5;
+  background: var(--bg-inset);
   color: #555;
 }
 
@@ -3082,7 +3082,7 @@ export default {
   padding: 4px 12px;
   border-radius: 14px;
   border: 1px solid #ddd;
-  background: #fff;
+  background: var(--bg-card);
   color: #555;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3105,7 +3105,7 @@ export default {
   border-radius: 10px;
   font-size: 11px;
   font-weight: 500;
-  background: #f0f1f5;
+  background: var(--bg-inset);
   color: #555;
   white-space: nowrap;
 }
@@ -3113,7 +3113,7 @@ export default {
 /* Progress bar in modal */
 .perf-modal__progress-bar {
   height: 3px;
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 
 .perf-modal__progress-fill {
@@ -3125,7 +3125,7 @@ export default {
 /* Task Table */
 .perf-modal__task-table-wrap {
   padding: 0 16px 12px;
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .perf-modal__task-table {
@@ -3138,17 +3138,17 @@ export default {
   text-align: left;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 10px 8px 6px;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .perf-modal__task-table td {
   padding: 8px;
-  color: #1a1a2e;
-  border-bottom: 1px solid #f3f4f6;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--bg-subtle);
   vertical-align: middle;
 }
 
@@ -3157,7 +3157,7 @@ export default {
 }
 
 .perf-modal__task-table tbody tr:hover {
-  background: #f5f6fa;
+  background: var(--bg-subtle);
 }
 
 /* Status and Category pills */
@@ -3171,39 +3171,39 @@ export default {
 }
 
 .perf-modal__status--done {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 
 .perf-modal__status--open {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .perf-modal__status--archived {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 
 .perf-modal__category--on-time {
-  background: #d4edda;
-  color: #166534;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 
 .perf-modal__category--delayed {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 
 .perf-modal__category--blocked {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
 }
 
 .perf-modal__stack-badge {
   font-size: 11px;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
@@ -3222,7 +3222,7 @@ export default {
 
 .perf-modal__assignee-none {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -3230,13 +3230,13 @@ export default {
 .perf-modal__empty {
   text-align: center;
   padding: 32px 16px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .perf-modal__empty-inline {
   padding: 12px 8px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-style: italic;
 }

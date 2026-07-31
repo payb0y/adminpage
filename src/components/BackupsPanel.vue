@@ -362,7 +362,7 @@ export default {
   display: flex;
   gap: 5px;
   padding-right: 12px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--color-border);
 }
 
 .backups-panel__filter-group:last-child {
@@ -376,15 +376,15 @@ export default {
   padding: 3px 10px;
   border-radius: 12px;
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
 }
 
 .backups-panel__filter-badge:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .backups-panel__filter-badge--active {
@@ -394,61 +394,61 @@ export default {
 
 /* Status-specific filter colors */
 .backups-panel__filter-badge--completed {
-  color: #166534;
+  color: var(--color-badge-success-text);
 }
 .backups-panel__filter-badge--completed.backups-panel__filter-badge--active {
-  background: #d4edda;
+  background: var(--color-badge-success-bg);
 }
 
 .backups-panel__filter-badge--expired {
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 .backups-panel__filter-badge--expired.backups-panel__filter-badge--active {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .backups-panel__filter-badge--running {
-  color: #1e4a8a;
+  color: var(--accent-strong);
 }
 .backups-panel__filter-badge--running.backups-panel__filter-badge--active {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 
 .backups-panel__filter-badge--failed {
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .backups-panel__filter-badge--failed.backups-panel__filter-badge--active {
-  background: #fde8e8;
+  background: var(--color-badge-danger-bg);
 }
 
 /* Type-specific filter colors */
 .backups-panel__filter-badge--full {
-  color: #1e4a8a;
+  color: var(--accent-strong);
 }
 .backups-panel__filter-badge--full.backups-panel__filter-badge--active {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 
 .backups-panel__filter-badge--incremental {
-  color: #92400e;
+  color: var(--color-badge-warning-text);
 }
 .backups-panel__filter-badge--incremental.backups-panel__filter-badge--active {
-  background: #fef3cd;
+  background: var(--color-badge-warning-bg);
 }
 
 /* Trigger-specific filter colors */
 .backups-panel__filter-badge--scheduled {
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 .backups-panel__filter-badge--scheduled.backups-panel__filter-badge--active {
   background: #e2e8f0;
 }
 
 .backups-panel__filter-badge--manual {
-  color: #6b21a8;
+  color: var(--chart-5);
 }
 .backups-panel__filter-badge--manual.backups-panel__filter-badge--active {
-  background: #f3e8ff;
+  background: var(--chart-5-bg);
 }
 
 /* ─── Table ─── */
@@ -471,7 +471,7 @@ export default {
   padding: 0 10px 10px;
   text-align: left;
   white-space: nowrap;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .backups-panel__row {
@@ -479,12 +479,12 @@ export default {
 }
 
 .backups-panel__row:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .backups-panel__row td {
   padding: 10px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
   vertical-align: middle;
   white-space: nowrap;
 }
@@ -517,12 +517,12 @@ export default {
 .backups-panel__badge--running,
 .backups-panel__badge--pending,
 .backups-panel__badge--queued {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .backups-panel__badge--expired {
-  background: #f0f1f5;
+  background: var(--bg-inset);
   color: var(--color-text-muted, #9ca3af);
 }
 
@@ -537,13 +537,13 @@ export default {
 }
 
 .backups-panel__type--full {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 
 .backups-panel__type--incremental {
-  background: #fef3cd;
-  color: #92400e;
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 
 /* ─── Trigger ─── */
@@ -615,11 +615,11 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
   font-size: 16px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--accent);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -628,8 +628,8 @@ export default {
 }
 
 .backups-panel__page-btn:hover:not(:disabled) {
-  background: #e8f0fe;
-  border-color: #4a90d9;
+  background: var(--accent-bg);
+  border-color: var(--accent);
 }
 
 .backups-panel__page-btn:disabled {

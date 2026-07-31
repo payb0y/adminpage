@@ -1180,7 +1180,7 @@ export default {
 }
 
 .members-panel__header:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .members-panel__title {
@@ -1196,14 +1196,14 @@ export default {
 }
 
 .members-panel__title svg {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .members-panel__count {
   font-size: 11px;
   font-weight: 600;
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
   padding: 2px 8px;
   border-radius: 8px;
 }
@@ -1234,17 +1234,17 @@ export default {
   flex: 1;
   min-width: 120px;
   padding: 7px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 12px;
   color: var(--color-text-primary, #1a1a2e);
-  background: #fff;
+  background: var(--bg-card);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .members-panel__search:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .members-panel__search::placeholder {
@@ -1262,15 +1262,15 @@ export default {
   padding: 3px 10px;
   border-radius: 12px;
   cursor: pointer;
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
   user-select: none;
   border: 1.5px solid transparent;
 }
 
 .members-panel__role-badge:hover {
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .members-panel__role-badge--active {
@@ -1279,14 +1279,14 @@ export default {
 }
 
 .members-panel__role-badge--admin-color {
-  color: #1e4a8a;
+  color: var(--accent-strong);
 }
 .members-panel__role-badge--admin-color.members-panel__role-badge--active {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 
 .members-panel__role-badge--member-color {
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 .members-panel__role-badge--member-color.members-panel__role-badge--active {
   background: #e2e8f0;
@@ -1305,11 +1305,11 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
   font-size: 16px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--accent);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1318,8 +1318,8 @@ export default {
 }
 
 .members-panel__page-btn:hover:not(:disabled) {
-  background: #e8f0fe;
-  border-color: #4a90d9;
+  background: var(--accent-bg);
+  border-color: var(--accent);
 }
 
 .members-panel__page-btn:disabled {
@@ -1349,7 +1349,7 @@ export default {
 
 /* ─── Member Card ─── */
 .members-panel__card {
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--bg-subtle);
   border-radius: 10px;
   margin-bottom: 8px;
   overflow: hidden;
@@ -1375,14 +1375,14 @@ export default {
 }
 
 .members-panel__row:hover {
-  background: #fafbfd;
+  background: var(--bg-subtle);
 }
 
 .members-panel__avatar {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4a90d9, #6cb0f0);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
   font-size: 15px;
   font-weight: 700;
@@ -1427,8 +1427,8 @@ export default {
 .members-panel__stat-pill {
   font-size: 11px;
   font-weight: 600;
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
   padding: 2px 8px;
   border-radius: 8px;
   display: flex;
@@ -1437,8 +1437,8 @@ export default {
 }
 
 .members-panel__stat-pill--danger {
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  color: var(--color-badge-danger-text);
 }
 
 .members-panel__stat-label {
@@ -1456,16 +1456,16 @@ export default {
 }
 
 .members-panel__role--admin {
-  background: #e8f0fe;
-  color: #1e4a8a;
+  background: var(--accent-bg);
+  color: var(--accent-strong);
 }
 .members-panel__role--owner {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: var(--chart-5-bg);
+  color: var(--chart-5);
 }
 .members-panel__role--member {
-  background: #f0f1f5;
-  color: #6b7280;
+  background: var(--bg-inset);
+  color: var(--color-text-secondary);
 }
 
 .members-panel__expand-icon {
@@ -1481,8 +1481,8 @@ export default {
 /* ─── Expanded Detail ─── */
 .members-panel__detail {
   padding: 0 14px 14px;
-  background: #fafbfd;
-  border-top: 1px solid #f3f4f6;
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--bg-subtle);
 }
 
 .members-panel__detail-grid {
@@ -1497,7 +1497,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 
 .members-panel__detail-item:last-child {
@@ -1522,9 +1522,9 @@ export default {
 .members-panel__tasks {
   margin-top: 12px;
   padding: 12px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 8px;
-  border: 1px solid #eef1f5;
+  border: 1px solid var(--bg-subtle);
 }
 
 .members-panel__tasks-header {
@@ -1550,7 +1550,7 @@ export default {
 
 .members-panel__tasks-bar {
   height: 6px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -1563,13 +1563,13 @@ export default {
 }
 
 .members-panel__tasks-fill--high {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .members-panel__tasks-fill--mid {
-  background: #f4a261;
+  background: var(--chart-4);
 }
 .members-panel__tasks-fill--low {
-  background: #e63946;
+  background: var(--color-danger);
 }
 
 .members-panel__tasks-legend {
@@ -1594,13 +1594,13 @@ export default {
 }
 
 .members-panel__dot--done {
-  background: #2e9e5a;
+  background: var(--color-success);
 }
 .members-panel__dot--open {
-  background: #4a90d9;
+  background: var(--accent);
 }
 .members-panel__dot--overdue {
-  background: #e63946;
+  background: var(--color-danger);
 }
 
 .members-panel__tasks-empty {
@@ -1625,7 +1625,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #166534;
+  background: var(--color-badge-success-text);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -1639,7 +1639,7 @@ export default {
   font-size: 12px;
   font-weight: 600;
   color: #fff;
-  background: #4a90d9;
+  background: var(--accent);
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
@@ -1647,13 +1647,13 @@ export default {
   margin-left: auto;
 }
 .members-panel__add-toggle:hover {
-  background: #357ec7;
+  background: var(--accent-hover);
 }
 
 /* ───────── Add form container ───────── */
 .members-panel__add-form {
   background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 14px 16px;
   margin: 8px 0 16px;
@@ -1667,18 +1667,18 @@ export default {
 .members-panel__add-form-title {
   font-size: 13px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 .members-panel__add-form-close {
   background: none;
   border: none;
   font-size: 20px;
   line-height: 1;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 .members-panel__add-form-close:hover {
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 
 /* ───────── Add tabs ───────── */
@@ -1686,12 +1686,12 @@ export default {
   display: flex;
   gap: 4px;
   margin-bottom: 10px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 .members-panel__add-tab {
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -1699,36 +1699,36 @@ export default {
   cursor: pointer;
 }
 .members-panel__add-tab:hover {
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 .members-panel__add-tab--active {
-  color: #1e4a8a;
-  border-bottom-color: #1e4a8a;
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent-strong);
 }
 
 /* ───────── Add form inputs / results ───────── */
 .members-panel__add-form-input {
   width: 100%;
   font-size: 13px;
-  color: #1a1a2e;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  color: var(--color-text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 6px 10px;
   outline: none;
   box-sizing: border-box;
 }
 .members-panel__add-form-input:focus {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 .members-panel__add-form-error {
   font-size: 12px;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
   margin-top: 6px;
 }
 .members-panel__add-form-state {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   padding: 8px 0;
 }
 .members-panel__add-form-results {
@@ -1743,7 +1743,7 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 6px 4px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--bg-subtle);
 }
 .members-panel__add-form-result:last-child {
   border-bottom: none;
@@ -1756,12 +1756,12 @@ export default {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
 }
 .members-panel__add-form-result-meta {
   display: block;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 .members-panel__add-form-add-btn {
   flex: 0 0 auto;
@@ -1769,7 +1769,7 @@ export default {
   height: 28px;
   border-radius: 50%;
   border: none;
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
   font-size: 16px;
   font-weight: 700;
@@ -1779,7 +1779,7 @@ export default {
   justify-content: center;
 }
 .members-panel__add-form-add-btn:hover:not(:disabled) {
-  background: #357ec7;
+  background: var(--accent-hover);
 }
 .members-panel__add-form-add-btn:disabled {
   opacity: 0.5;
@@ -1815,17 +1815,17 @@ export default {
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 4px;
 }
 .members-panel__field-required {
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .members-panel__field-error {
   font-size: 11px;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
   margin-top: 4px;
 }
 
@@ -1842,15 +1842,15 @@ export default {
   flex: 0 0 auto;
   width: 32px;
   height: 32px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
   border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  color: #4a90d9;
+  color: var(--accent);
 }
 .members-panel__icon-btn svg {
   width: 18px;
@@ -1859,7 +1859,7 @@ export default {
   flex-shrink: 0;
 }
 .members-panel__icon-btn:hover:not(:disabled) {
-  background: #e8f0fe;
+  background: var(--accent-bg);
 }
 .members-panel__icon-btn:disabled {
   opacity: 0.5;
@@ -1870,7 +1870,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-top: 6px;
   cursor: pointer;
 }
@@ -1897,19 +1897,19 @@ export default {
   cursor: not-allowed;
 }
 .members-panel__btn--primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
 }
 .members-panel__btn--primary:hover:not(:disabled) {
-  background: #357ec7;
+  background: var(--accent-hover);
 }
 .members-panel__btn--ghost {
-  background: #fff;
-  color: #6b7280;
-  border-color: #e5e7eb;
+  background: var(--bg-card);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
 }
 .members-panel__btn--ghost:hover:not(:disabled) {
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 
 /* ───────── Reveal card ───────── */
@@ -1925,7 +1925,7 @@ export default {
   gap: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: #166534;
+  color: var(--color-badge-success-text);
   margin-bottom: 10px;
 }
 .members-panel__reveal-check {
@@ -1944,7 +1944,7 @@ export default {
   flex: 0 0 80px;
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1952,14 +1952,14 @@ export default {
   flex: 1;
   font-family: "SF Mono", Monaco, "Cascadia Code", Consolas, monospace;
   font-size: 12px;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   word-break: break-all;
 }
 .members-panel__reveal-btn {
   font-size: 11px;
   font-weight: 600;
-  background: #fff;
-  color: #166534;
+  background: var(--bg-card);
+  color: var(--color-badge-success-text);
   border: 1px solid #a7f3d0;
   border-radius: 6px;
   padding: 3px 8px;
@@ -1973,7 +1973,7 @@ export default {
 }
 .members-panel__reveal-warning {
   font-size: 11px;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
   margin: 8px 0 0;
 }
 .members-panel__reveal-actions {
@@ -1988,9 +1988,9 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid #fde8e8;
-  background: #fff;
-  color: #b91c1c;
+  border: 1px solid var(--color-badge-danger-bg);
+  background: var(--bg-card);
+  color: var(--color-badge-danger-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2005,8 +2005,8 @@ export default {
   flex-shrink: 0;
 }
 .members-panel__remove-btn:hover:not(:disabled) {
-  background: #fde8e8;
-  border-color: #b91c1c;
+  background: var(--color-badge-danger-bg);
+  border-color: var(--color-badge-danger-text);
 }
 .members-panel__remove-btn:disabled {
   opacity: 0.4;
@@ -2022,36 +2022,36 @@ export default {
 .members-panel__confirm-text {
   font-size: 12px;
   font-weight: 600;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .members-panel__confirm-error {
   font-size: 11px;
-  color: #b91c1c;
+  color: var(--color-badge-danger-text);
 }
 .members-panel__confirm-btn {
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #6b7280;
+  border: 1px solid var(--color-border);
+  background: var(--bg-card);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 .members-panel__confirm-btn:hover:not(:disabled) {
-  background: #f0f1f5;
+  background: var(--bg-inset);
 }
 .members-panel__confirm-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .members-panel__confirm-btn--danger {
-  background: #b91c1c;
+  background: var(--color-badge-danger-text);
   color: #fff;
-  border-color: #b91c1c;
+  border-color: var(--color-badge-danger-text);
 }
 .members-panel__confirm-btn--danger:hover:not(:disabled) {
   background: #991b1b;
