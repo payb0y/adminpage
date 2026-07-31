@@ -572,7 +572,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -720,15 +720,15 @@ export default {
 }
 .org-panel__stat-icon--purple {
   background: var(--chart-5-bg);
-  color: #9333ea;
+  color: var(--chart-5);
 }
 .org-panel__stat-icon--orange {
   background: var(--color-badge-warning-bg);
   color: var(--color-badge-warning-text);
 }
 .org-panel__stat-icon--teal {
-  background: #ccfbf1;
-  color: #0d9488;
+  background: var(--color-badge-success-bg);
+  color: var(--chart-3);
 }
 
 .org-panel__stat-card > div:last-child {
@@ -974,7 +974,7 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: #fff;
   font-size: 14px;
   font-weight: 700;

@@ -836,7 +836,7 @@ export default {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg-card);
   border-top-color: transparent;
   border-radius: 50%;
   animation: cp-modal-spin 0.7s linear infinite;

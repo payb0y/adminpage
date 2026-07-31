@@ -1248,7 +1248,7 @@ export default {
 }
 
 .members-panel__search::placeholder {
-  color: #b0b5be;
+  color: var(--color-text-muted);
 }
 
 .members-panel__role-badges {
@@ -1289,7 +1289,7 @@ export default {
   color: var(--color-text-secondary);
 }
 .members-panel__role-badge--member-color.members-panel__role-badge--active {
-  background: #e2e8f0;
+  background: var(--color-border);
 }
 
 /* ── Pagination ── */
@@ -1361,7 +1361,7 @@ export default {
 }
 
 .members-panel__card:hover {
-  border-color: #e0e3e9;
+  border-color: var(--color-border);
 }
 
 /* ─── Summary Row ─── */
@@ -1382,7 +1382,7 @@ export default {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: #fff;
   font-size: 15px;
   font-weight: 700;
@@ -1625,8 +1625,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-badge-success-text);
-  color: #fff;
+  background: var(--color-success);
+  color: var(--iz-accent-text, #fff);
   font-size: 12px;
   font-weight: 600;
   padding: 6px 12px;
@@ -1652,7 +1652,7 @@ export default {
 
 /* ───────── Add form container ───────── */
 .members-panel__add-form {
-  background: #f9fafb;
+  background: var(--bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 14px 16px;
@@ -1791,7 +1791,7 @@ export default {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg-card);
   border-top-color: transparent;
   border-radius: 50%;
   animation: members-panel-spin 0.7s linear infinite;
@@ -1914,8 +1914,8 @@ export default {
 
 /* ───────── Reveal card ───────── */
 .members-panel__reveal {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: var(--color-badge-success-bg);
+  border: 1px solid var(--color-badge-success-bg);
   border-radius: 10px;
   padding: 14px 16px;
 }
@@ -1960,13 +1960,13 @@ export default {
   font-weight: 600;
   background: var(--bg-card);
   color: var(--color-badge-success-text);
-  border: 1px solid #a7f3d0;
+  border: 1px solid var(--color-badge-success-bg);
   border-radius: 6px;
   padding: 3px 8px;
   cursor: pointer;
 }
 .members-panel__reveal-btn:hover {
-  background: #d1fae5;
+  background: var(--color-badge-success-bg);
 }
 .members-panel__reveal-btn--wide {
   padding: 4px 12px;
@@ -2049,11 +2049,11 @@ export default {
   cursor: not-allowed;
 }
 .members-panel__confirm-btn--danger {
-  background: var(--color-badge-danger-text);
-  color: #fff;
-  border-color: var(--color-badge-danger-text);
+  background: var(--color-danger);
+  color: var(--iz-accent-text, #fff);
+  border-color: var(--color-danger);
 }
 .members-panel__confirm-btn--danger:hover:not(:disabled) {
-  background: #991b1b;
+  background: var(--color-danger);
 }
 </style>

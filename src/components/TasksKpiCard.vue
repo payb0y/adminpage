@@ -318,8 +318,8 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background-color: rgba(230, 126, 90, 0.1);
-  color: #e67e5a;
+  background-color: color-mix(in oklab, var(--chart-4) 12%, transparent);
+  color: var(--chart-4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -454,7 +454,7 @@ export default {
 }
 
 .tasks-kpi__legend-item:hover {
-  background: #f0f4ff;
+  background: var(--accent-bg);
 }
 
 .tasks-kpi__legend-dot {
@@ -504,9 +504,9 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #fef3f2;
+  background: var(--color-badge-danger-bg);
   border-radius: 8px;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
   cursor: pointer;
   transition: background 0.15s;
   min-width: 0;
@@ -515,19 +515,19 @@ export default {
 }
 
 .tasks-kpi__oldest:hover {
-  background: #fde8e5;
+  background: var(--color-badge-danger-bg);
 }
 
 .tasks-kpi__oldest svg {
   flex-shrink: 0;
   margin-top: 1px;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .tasks-kpi__oldest-text {
   font-size: 11px;
   line-height: 1.4;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -536,18 +536,18 @@ export default {
 
 .tasks-kpi__oldest-text strong {
   font-weight: 600;
-  color: #7c2d12;
+  color: var(--color-badge-warning-text);
   font-size: 10px;
 }
 
 .tasks-kpi__oldest-age {
   font-weight: 500;
   font-size: 10px;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .tasks-kpi__oldest-project {
-  color: #b45309;
+  color: var(--color-badge-warning-text);
   font-style: italic;
   font-size: 10px;
 }

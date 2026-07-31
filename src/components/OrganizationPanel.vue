@@ -198,7 +198,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--color-success), #5ec489);
+  background: linear-gradient(135deg, var(--color-success), var(--color-success));
   color: #fff;
   font-size: 20px;
   font-weight: 700;

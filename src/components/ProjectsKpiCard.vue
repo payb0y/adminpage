@@ -320,7 +320,7 @@ export default {
 }
 
 .projects-kpi__hero--clickable:hover {
-  background: #f0f4ff;
+  background: var(--accent-bg);
 }
 
 .projects-kpi__hero-value {
@@ -438,9 +438,9 @@ button.projects-kpi__row:hover {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #fef3f2;
+  background: var(--color-badge-danger-bg);
   border-radius: 8px;
-  color: #92400e;
+  color: var(--color-badge-warning-text);
   font-size: 11px;
   line-height: 1.4;
   min-width: 0;
@@ -449,7 +449,7 @@ button.projects-kpi__row:hover {
 
 .projects-kpi__issues svg {
   flex-shrink: 0;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 /* Zero issues is good news, not a warning — drop the alarm colouring rather

@@ -333,8 +333,8 @@ export default {
 }
 
 .timeline-chart__type-badge--system {
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--accent-bg);
+  color: var(--accent-on-bg);
 }
 
 .timeline-chart__bars {
@@ -450,9 +450,9 @@ export default {
   transform: translateX(-50%);
   font-size: 9px;
   font-weight: 700;
-  color: #6366f1;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bg);
   border-radius: 4px;
   padding: 0 4px;
   line-height: 16px;

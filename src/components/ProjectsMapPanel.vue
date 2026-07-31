@@ -367,7 +367,7 @@ export default {
   border-color: currentColor;
 }
 .projects-map__pill--on.projects-map__pill--st-active { color: var(--color-badge-success-text); background: var(--color-badge-success-bg); }
-.projects-map__pill--on.projects-map__pill--st-waiting { color: #b45309; background: var(--color-badge-warning-bg); }
+.projects-map__pill--on.projects-map__pill--st-waiting { color: var(--color-badge-warning-text); background: var(--color-badge-warning-bg); }
 .projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
 
 .projects-map__select,
@@ -443,7 +443,7 @@ export default {
   height: 9px;
   border-radius: 50%;
   background: var(--color-badge-danger-text);
-  border: 1.5px solid #fff;
+  border: 1.5px solid var(--bg-card);
 }
 
 .projects-map__popup {

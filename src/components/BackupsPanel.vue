@@ -441,7 +441,7 @@ export default {
   color: var(--color-text-secondary);
 }
 .backups-panel__filter-badge--scheduled.backups-panel__filter-badge--active {
-  background: #e2e8f0;
+  background: var(--color-border);
 }
 
 .backups-panel__filter-badge--manual {

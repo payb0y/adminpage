@@ -2108,7 +2108,7 @@ export default {
 }
 
 .perf-panel__title svg {
-  color: #c878c8;
+  color: var(--accent);
 }
 
 .perf-panel__chevron {
@@ -2152,12 +2152,12 @@ export default {
 }
 
 .perf-panel__completion-filter:hover {
-  border-color: #c878c8;
-  box-shadow: 0 1px 4px rgba(200, 120, 200, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
 .perf-panel__filter-icon {
-  color: #c878c8;
+  color: var(--accent);
   flex-shrink: 0;
   margin-right: 2px;
 }
@@ -2177,7 +2177,7 @@ export default {
 }
 
 .perf-panel__cr-badge:hover {
-  background: #edeef2;
+  background: var(--bg-subtle);
 }
 
 .perf-panel__cr-badge--active {
@@ -2202,19 +2202,19 @@ export default {
 }
 
 .perf-panel__cr-badge--blue {
-  color: #2563eb;
+  color: var(--accent);
 }
 .perf-panel__cr-badge--blue.perf-panel__cr-badge--active {
-  background: #eff6ff;
-  border-color: #2563eb;
+  background: var(--accent-bg);
+  border-color: var(--accent);
 }
 
 .perf-panel__cr-badge--green {
-  color: #16a34a;
+  color: var(--color-success);
 }
 .perf-panel__cr-badge--green.perf-panel__cr-badge--active {
-  background: #f0fdf4;
-  border-color: #16a34a;
+  background: var(--color-badge-success-bg);
+  border-color: var(--color-success);
 }
 
 .perf-panel__date-filter-inner {
@@ -2229,12 +2229,12 @@ export default {
 }
 
 .perf-panel__date-filter-inner:hover {
-  border-color: #c878c8;
-  box-shadow: 0 1px 4px rgba(200, 120, 200, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
 .perf-panel__date-icon {
-  color: #c878c8;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -2273,7 +2273,7 @@ export default {
 
 .perf-panel__date-range-clear:hover {
   color: var(--color-danger);
-  background: rgba(239, 68, 68, 0.08);
+  background: var(--color-badge-danger-bg);
 }
 
 .perf-panel__date-picker-dropdown {
@@ -2369,25 +2369,25 @@ export default {
 }
 
 .perf-panel__date-picker-cell--start {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 6px 0 0 6px;
 }
 
 .perf-panel__date-picker-cell--end {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 0 6px 6px 0;
 }
 
 .perf-panel__date-picker-cell--solo {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 6px;
 }
 
 .perf-panel__date-picker-cell--in-range {
-  background: rgba(200, 120, 200, 0.15);
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
 }
 
 .perf-panel__date-picker-footer {
@@ -2414,13 +2414,13 @@ export default {
 }
 
 .perf-panel__date-picker-btn--apply {
-  background: #c878c8;
+  background: var(--accent);
   color: #fff;
-  border-color: #c878c8;
+  border-color: var(--accent);
 }
 
 .perf-panel__date-picker-btn--apply:hover {
-  background: #b060b0;
+  background: var(--accent-hover);
 }
 
 /* Grids */
@@ -2481,7 +2481,7 @@ export default {
 
 .perf-panel__card--clickable:hover .perf-panel__card-drill {
   opacity: 1;
-  color: #c878c8;
+  color: var(--accent);
 }
 
 .perf-panel__card-title {
@@ -2497,7 +2497,7 @@ export default {
 .perf-panel__card-title-underline {
   width: 36px;
   height: 3px;
-  background-color: #c878c8;
+  background-color: var(--accent);
   border-radius: 2px;
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -2550,7 +2550,7 @@ export default {
 
 .perf-panel__bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c878c8, #d494d4);
+  background: linear-gradient(90deg, var(--accent), var(--accent));
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -2592,7 +2592,7 @@ export default {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #c878c8, #d494d4);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -2628,7 +2628,7 @@ export default {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #c878c8, #d494d4);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
   font-size: 13px;
   font-weight: 700;
@@ -2670,7 +2670,7 @@ export default {
 }
 
 .perf-panel__proj-search::placeholder {
-  color: #b0b5be;
+  color: var(--color-text-muted);
 }
 
 .perf-panel__status-badges {
@@ -2703,31 +2703,31 @@ export default {
 }
 
 .perf-panel__status-badge--green {
-  color: #16a34a;
+  color: var(--color-success);
 }
 .perf-panel__status-badge--green.perf-panel__status-badge--active {
-  background: #dcfce7;
+  background: var(--color-badge-success-bg);
 }
 
 .perf-panel__status-badge--amber {
   color: var(--color-badge-warning-text);
 }
 .perf-panel__status-badge--amber.perf-panel__status-badge--active {
-  background: #fef3c7;
+  background: var(--color-badge-warning-bg);
 }
 
 .perf-panel__status-badge--orange {
-  color: #ea580c;
+  color: var(--color-badge-warning-text);
 }
 .perf-panel__status-badge--orange.perf-panel__status-badge--active {
-  background: #ffedd5;
+  background: var(--color-badge-warning-bg);
 }
 
 .perf-panel__status-badge--slate {
   color: var(--color-text-secondary);
 }
 .perf-panel__status-badge--slate.perf-panel__status-badge--active {
-  background: #e2e8f0;
+  background: var(--color-border);
 }
 
 .perf-panel__proj-items {
@@ -2761,9 +2761,9 @@ export default {
 }
 
 .perf-panel__proj-item--active {
-  background: #f3edf7;
+  background: var(--accent-bg);
   font-weight: 600;
-  border-left-color: #c878c8;
+  border-left-color: var(--accent);
 }
 
 .perf-panel__proj-empty {
@@ -2814,7 +2814,7 @@ export default {
 
 .perf-panel__chart-toggle-btn--active {
   background: var(--bg-card);
-  color: #c878c8;
+  color: var(--accent);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -2849,7 +2849,7 @@ export default {
 }
 
 .perf-panel__card-drill--visible:hover {
-  color: #c878c8;
+  color: var(--accent);
 }
 
 /* =============== DRILL-DOWN MODAL =============== */
@@ -2993,16 +2993,16 @@ export default {
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 12px;
-  border: 1px solid #c878c8;
+  border: 1px solid var(--accent);
   background: var(--bg-card);
-  color: #a855a8;
+  color: var(--accent-hover);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
 
 .perf-modal__goto-btn:hover {
-  background: #c878c8;
+  background: var(--accent);
   color: #fff;
 }
 
@@ -3058,7 +3058,7 @@ export default {
 
 .perf-modal__badge--neutral {
   background: var(--bg-inset);
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 /* Sort bar */
@@ -3067,13 +3067,13 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 0 0 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bg-subtle);
   margin-bottom: 8px;
 }
 
 .perf-modal__sort-label {
   font-size: 12px;
-  color: #777;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -3081,21 +3081,24 @@ export default {
   font-size: 12px;
   padding: 4px 12px;
   border-radius: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   background: var(--bg-card);
-  color: #555;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .perf-modal__sort-btn:hover {
-  border-color: #aaa;
+  border-color: var(--color-text-muted);
 }
 
 .perf-modal__sort-btn--active {
-  background: #5b2c6f;
-  color: #fff;
-  border-color: #5b2c6f;
+  /* --accent, not --accent-strong: accent-strong aliases --iz-cat-2, which
+     inverts to a pale lavender on the dark scheme and left white label text
+     unreadable. --accent stays a saturated pink in both. */
+  background: var(--accent);
+  color: var(--iz-accent-text, #fff);
+  border-color: var(--accent);
 }
 
 /* Age badge in modal */
@@ -3106,7 +3109,7 @@ export default {
   font-size: 11px;
   font-weight: 500;
   background: var(--bg-inset);
-  color: #555;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -3118,7 +3121,7 @@ export default {
 
 .perf-modal__progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c878c8, #d494d4);
+  background: linear-gradient(90deg, var(--accent), var(--accent));
   transition: width 0.4s ease;
 }
 
@@ -3212,8 +3215,8 @@ export default {
 .perf-modal__assignee-badge {
   display: inline-block;
   font-size: 11px;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: var(--accent-bg);
+  color: var(--accent);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;

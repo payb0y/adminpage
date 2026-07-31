@@ -2080,14 +2080,14 @@ export default {
 }
 
 .proj-details__tab:hover {
-  background: #f8fafc;
-  border-color: #c878c8;
+  background: var(--bg-subtle);
+  border-color: var(--accent);
 }
 
 .proj-details__tab--active {
-  background: linear-gradient(135deg, #c878c8, #d494d4);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
-  border-color: #c878c8;
+  border-color: var(--accent);
 }
 
 .proj-details__tab-dot {
@@ -2102,7 +2102,7 @@ export default {
 }
 
 .proj-details__tab-dot--active {
-  background: #22c55e;
+  background: var(--color-success);
 }
 .proj-details__tab-dot--waiting-on-customer {
   background: var(--chart-4);
@@ -2111,7 +2111,7 @@ export default {
   background: var(--color-danger);
 }
 .proj-details__tab-dot--done {
-  background: #6366f1;
+  background: var(--accent);
 }
 
 .proj-details__tab-name {
@@ -2227,8 +2227,8 @@ export default {
   color: var(--color-badge-danger-text);
 }
 .proj-details__badge--done {
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--accent-bg);
+  color: var(--accent-on-bg);
 }
 
 /* ── Info Grid ── */
@@ -2305,7 +2305,7 @@ export default {
 
 .proj-details__progress-bar {
   height: 8px;
-  background: #f1f5f9;
+  background: var(--bg-subtle);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -2323,7 +2323,7 @@ export default {
   background: var(--chart-4);
 }
 .proj-details__progress-fill--high {
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .proj-details__progress-detail {
@@ -2346,7 +2346,7 @@ export default {
   align-items: center;
   padding: 12px 8px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
 }
 
 .proj-details__resource-item + .proj-details__resource-item {
@@ -2400,10 +2400,10 @@ export default {
   background: var(--color-badge-warning-bg);
 }
 .proj-details__due-item--info {
-  background: #eff6ff;
+  background: var(--accent-bg);
 }
 .proj-details__due-item--muted {
-  background: #f8fafc;
+  background: var(--bg-subtle);
 }
 
 .proj-details__due-item--pulse {
@@ -2417,7 +2417,7 @@ export default {
     border-color: var(--color-danger);
   }
   50% {
-    border-color: #fecaca;
+    border-color: var(--color-badge-danger-bg);
   }
 }
 
@@ -2464,7 +2464,7 @@ export default {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c878c8, #d494d4);
+  background: linear-gradient(135deg, var(--accent), var(--accent));
   color: #fff;
   display: flex;
   align-items: center;
@@ -2502,14 +2502,14 @@ export default {
 
 .proj-details__team-bar {
   height: 4px;
-  background: #f1f5f9;
+  background: var(--bg-subtle);
   border-radius: 2px;
   overflow: hidden;
 }
 
 .proj-details__team-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c878c8, #d494d4);
+  background: linear-gradient(90deg, var(--accent), var(--accent));
   border-radius: 2px;
   transition: width 0.4s ease;
 }
@@ -2570,8 +2570,8 @@ export default {
 }
 
 .proj-details__tb-summary-pill--active {
-  border-color: #c878c8;
-  background: #fdf4ff;
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .proj-details__tb-summary-dot {
@@ -2588,7 +2588,7 @@ export default {
   background: var(--chart-4);
 }
 .proj-details__tb-summary-dot--success {
-  background: #22c55e;
+  background: var(--color-success);
 }
 .proj-details__tb-summary-dot--info {
   background: var(--accent);
@@ -2606,7 +2606,7 @@ export default {
 }
 
 .proj-details__th-sort--active {
-  color: #c878c8 !important;
+  color: var(--accent) !important;
 }
 
 .proj-details__sort-arrow {
@@ -2813,25 +2813,25 @@ export default {
 }
 
 .proj-details__date-picker-cell--start {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 6px 0 0 6px;
 }
 
 .proj-details__date-picker-cell--end {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 0 6px 6px 0;
 }
 
 .proj-details__date-picker-cell--solo {
-  background: #c878c8 !important;
+  background: var(--accent) !important;
   color: #fff !important;
   border-radius: 6px;
 }
 
 .proj-details__date-picker-cell--in-range {
-  background: rgba(200, 120, 200, 0.15);
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
 }
 
 .proj-details__date-picker-footer {
@@ -2858,13 +2858,13 @@ export default {
 }
 
 .proj-details__date-picker-btn--apply {
-  background: #c878c8;
+  background: var(--accent);
   color: #fff;
-  border-color: #c878c8;
+  border-color: var(--accent);
 }
 
 .proj-details__date-picker-btn--apply:hover {
-  background: #b060b0;
+  background: var(--accent-hover);
 }
 
 .proj-details__tb-count {
@@ -2901,7 +2901,7 @@ export default {
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
-  background: #f0f4ff;
+  background: var(--accent-bg);
   color: var(--accent);
   white-space: nowrap;
 }
@@ -2920,8 +2920,8 @@ export default {
   color: var(--color-badge-success-text);
 }
 .proj-details__tb-status--done {
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--accent-bg);
+  color: var(--accent-on-bg);
 }
 .proj-details__tb-status--archived {
   background: var(--bg-subtle);
@@ -2934,8 +2934,8 @@ export default {
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #ede9fe;
-  color: #6d28d9;
+  background: var(--chart-5-bg);
+  color: var(--chart-5);
   margin-right: 4px;
   white-space: nowrap;
 }
@@ -2944,15 +2944,15 @@ export default {
   color: var(--color-text-muted, #9ca3af);
 }
 .proj-details__tb-due--overdue {
-  color: #d94040;
+  color: var(--color-danger);
   font-weight: 600;
 }
 .proj-details__tb-due--today {
-  color: #b8860b;
+  color: var(--color-badge-warning-text);
   font-weight: 600;
 }
 .proj-details__tb-due--tomorrow {
-  color: #e67e5a;
+  color: var(--chart-4);
 }
 
 .proj-details__tb-empty {
@@ -3044,7 +3044,7 @@ export default {
   width: 100%;
   max-width: 160px;
   height: 6px;
-  background: #f1f5f9;
+  background: var(--bg-subtle);
   border-radius: 3px;
   overflow: hidden;
   margin-top: 10px;
@@ -3063,7 +3063,7 @@ export default {
   background: var(--chart-4);
 }
 .proj-details__kpi-bar-fill--high {
-  background: #10b981;
+  background: var(--color-success);
 }
 
 /* ── Responsive ── */
@@ -3114,7 +3114,7 @@ export default {
 }
 
 .proj-details__add-form {
-  background: #f9fafb;
+  background: var(--bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px 14px;
@@ -3211,7 +3211,7 @@ export default {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg-card);
   border-top-color: transparent;
   border-radius: 50%;
   animation: proj-details-spin 0.7s linear infinite;
@@ -3305,7 +3305,7 @@ export default {
 .proj-details__member-drasci--supportive,
 .proj-details__member-drasci--consulted,
 .proj-details__member-drasci--informed {
-  background: #ecfdf5;
+  background: var(--color-badge-success-bg);
   color: var(--color-badge-success-text);
 }
 .proj-details__member-drasci--unassigned {

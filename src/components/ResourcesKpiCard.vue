@@ -271,8 +271,8 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background-color: rgba(139, 92, 246, 0.1);
-  color: #8b5cf6;
+  background-color: color-mix(in oklab, var(--chart-5) 12%, transparent);
+  color: var(--chart-5);
   display: flex;
   align-items: center;
   justify-content: center;

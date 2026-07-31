@@ -351,7 +351,7 @@ export default {
 
 .safety-panel__project-badge--orange {
 	background-color: var(--color-badge-warning-bg);
-	color: #e65100;
+	color: var(--color-badge-warning-text);
 }
 
 /* ─── Causes Tag List ─── */

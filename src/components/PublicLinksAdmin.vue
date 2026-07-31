@@ -448,7 +448,7 @@ export default {
   padding: 14px;
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
-  background: #fafbfc;
+  background: var(--bg-subtle);
   margin-bottom: 16px;
 }
 
@@ -500,12 +500,12 @@ export default {
 }
 
 .public-links-admin__datetime-wrap:hover {
-  border-color: #2766e5;
-  box-shadow: 0 1px 4px rgba(39, 102, 229, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 1px 4px color-mix(in oklab, var(--accent) 10%, transparent);
 }
 
 .public-links-admin__datetime-icon {
-  color: #2766e5;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -547,7 +547,7 @@ export default {
 
 .public-links-admin__datetime-clear:hover {
   color: var(--color-danger);
-  background: rgba(239, 68, 68, 0.08);
+  background: var(--color-badge-danger-bg);
 }
 
 /* ─── Buttons ─── */
@@ -563,11 +563,11 @@ export default {
 }
 
 .public-links-admin__btn--create {
-  background: #2766e5;
+  background: var(--accent);
   color: #fff;
 }
 .public-links-admin__btn--create:hover {
-  background: #1f55c7;
+  background: var(--accent-hover);
 }
 .public-links-admin__btn--create:disabled {
   opacity: 0.6;
@@ -576,7 +576,7 @@ export default {
 
 .public-links-admin__btn--revoke {
   background: var(--bg-card);
-  border-color: #fecaca;
+  border-color: var(--color-badge-danger-bg);
   color: var(--color-badge-danger-text);
 }
 .public-links-admin__btn--revoke:hover {
@@ -606,7 +606,7 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-secondary, #6b7280);
-  background: #f9fafb;
+  background: var(--bg-subtle);
   border-bottom: 1px solid var(--color-border, #e5e7eb);
 }
 
@@ -640,15 +640,15 @@ export default {
 }
 
 .public-links-admin__url-link:hover {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  color: #2766e5;
+  background: var(--accent-bg);
+  border-color: var(--accent-bg);
+  color: var(--accent);
 }
 
 .public-links-admin__url-link--copied {
-  background: #d1fae5;
-  border-color: #34d399;
-  color: #059669;
+  background: var(--color-badge-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-badge-success-text);
 }
 
 .public-links-admin__url-text {
@@ -660,7 +660,7 @@ export default {
 .public-links-admin__url-copied-badge {
   font-size: 10px;
   font-weight: 600;
-  color: #059669;
+  color: var(--color-badge-success-text);
   flex-shrink: 0;
   animation: publicLinksCopiedFade 0.3s ease-out;
 }
@@ -686,17 +686,17 @@ export default {
 }
 
 .public-links-admin__badge--active {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--color-badge-success-bg);
+  color: var(--color-badge-success-text);
 }
 
 .public-links-admin__badge--revoked {
-  background: #fee2e2;
+  background: var(--color-badge-danger-bg);
   color: var(--color-badge-danger-text);
 }
 
 .public-links-admin__badge--expired {
-  background: #fef3c7;
+  background: var(--color-badge-warning-bg);
   color: var(--color-badge-warning-text);
 }
 
@@ -706,14 +706,14 @@ export default {
   text-align: center;
   color: var(--color-text-secondary, #6b7280);
   font-size: 13px;
-  background: #fafbfc;
+  background: var(--bg-subtle);
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 10px;
 }
 
 .public-links-admin__error {
   padding: 16px;
-  background: #fee2e2;
+  background: var(--color-badge-danger-bg);
   color: var(--color-badge-danger-text);
   border-radius: 8px;
   font-size: 13px;
@@ -746,7 +746,7 @@ export default {
 }
 
 .public-links-admin__filter-select:focus {
-  border-color: #2766e5;
+  border-color: var(--accent);
 }
 
 /* ─── Actions Cell ─── */
@@ -763,7 +763,7 @@ export default {
 }
 .public-links-admin__btn--delete:hover {
   background: var(--color-badge-danger-bg);
-  border-color: #fecaca;
+  border-color: var(--color-badge-danger-bg);
   color: var(--color-badge-danger-text);
 }
 .public-links-admin__btn--delete:disabled {
