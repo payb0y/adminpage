@@ -356,6 +356,7 @@ class KpiService {
         $completionRate     = $this->avgCompletionRate($orgId);
         $coordinationWeeks  = $this->avgCoordinationPending($orgId);
         $prepWeeks          = $this->avgRequiredPrepTime($orgId);
+        $scheduleElapsed    = $this->avgScheduleElapsed($orgId);
 
         return [
             'id'        => 'timeline',
@@ -363,9 +364,10 @@ class KpiService {
             'icon'      => 'icon-calendar',
             'iconColor' => '#0EA5E9',
             'metrics'   => [
-                ['value' => $completionRate . '%', 'label' => 'Avg Completion Rate'],
-                ['value' => $coordinationWeeks,    'label' => 'Avg Coordination Pending'],
-                ['value' => $prepWeeks,            'label' => 'Avg Required Prep Time'],
+                ['value' => $completionRate . '%',  'label' => 'Avg Completion Rate'],
+                ['value' => $scheduleElapsed . '%', 'label' => 'Avg Schedule Elapsed'],
+                ['value' => $coordinationWeeks,     'label' => 'Avg Coordination Pending'],
+                ['value' => $prepWeeks,             'label' => 'Avg Required Prep Time'],
             ],
         ];
     }
@@ -434,19 +436,22 @@ class KpiService {
 
     /**
      * Average required preparation time in weeks.
-     * Measures weeks between start_date and end_date of required_preparation items.
+     *
+     * Read straight off `custom_projects.required_preparation_weeks`, which is
+     * where projectcreatoraio stores it (ProjectService::…RequiredPreparationWeeks).
+     * This used to query project_timeline_items for a 'required_preparation'
+     * system_key — a key nothing ever writes, so the average was over an empty
+     * set and the KPI rendered '0 wks' for every org since it was introduced.
+     * Zero is a legitimate stored value, so unset projects are excluded rather
+     * than averaged in as 0.
      */
     private function avgRequiredPrepTime(int $orgId): string {
         $sql = "
-            SELECT
-                ROUND(AVG({$this->datediffDays('pti.end_date', 'pti.start_date')} / 7.0)) AS avg_weeks
-            FROM *PREFIX*project_timeline_items pti
-            INNER JOIN *PREFIX*custom_projects cp
-                ON cp.id = pti.project_id
-               AND cp.organization_id = ?
-            WHERE pti.system_key = 'required_preparation'
-              AND pti.start_date IS NOT NULL
-              AND pti.end_date IS NOT NULL
+            SELECT ROUND(AVG(cp.required_preparation_weeks)) AS avg_weeks
+            FROM *PREFIX*custom_projects cp
+            WHERE cp.organization_id = ?
+              AND cp.required_preparation_weeks IS NOT NULL
+              AND cp.required_preparation_weeks > 0
         ";
         $result = $this->db->prepare($sql);
         $result->execute([$orgId]);
@@ -454,6 +459,49 @@ class KpiService {
 
         $weeks = (int)($row['avg_weeks'] ?? 0);
         return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
+    }
+
+    /**
+     * Average share of each project's schedule that has elapsed, 0-100.
+     *
+     * The window is the 'deck_schedule' timeline phase (labelled "Project
+     * Timeline"), the only item type carrying both a start and an end date.
+     * Clamped to 0-100 so a project past its end date reads 100 rather than
+     * an unbounded overrun, and projects with no schedule row are skipped.
+     *
+     * Paired with the completion rate this is the card's one comparative
+     * reading: elapsed well ahead of complete means the org is behind.
+     */
+    private function avgScheduleElapsed(int $orgId): int {
+        $elapsed = $this->datediffDays('CURRENT_DATE', 'pti.start_date');
+        $total   = $this->datediffDays('pti.end_date', 'pti.start_date');
+
+        $sql = "
+            SELECT $elapsed AS elapsed_days, $total AS total_days
+            FROM *PREFIX*project_timeline_items pti
+            INNER JOIN *PREFIX*custom_projects cp
+                ON cp.id = pti.project_id
+               AND cp.organization_id = ?
+            WHERE pti.system_key = 'deck_schedule'
+              AND pti.start_date IS NOT NULL
+              AND pti.end_date IS NOT NULL
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+
+        $rates = [];
+        while ($row = $result->fetch()) {
+            $total = (int)$row['total_days'];
+            if ($total > 0) {
+                $pct = ((int)$row['elapsed_days'] / $total) * 100;
+                $rates[] = max(0, min(100, $pct));
+            }
+        }
+
+        if (empty($rates)) {
+            return 0;
+        }
+        return (int)round(array_sum($rates) / count($rates));
     }
 
     // ─── SUBSCRIPTION ────────────────────────────────────────────────────
