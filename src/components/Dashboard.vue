@@ -292,7 +292,11 @@ export default {
 
 .adminpage-dashboard__kpi-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, …) rather than a bare 1fr: 1fr's implicit minimum is `auto`, so
+     a card with long content widens its own track at its neighbours' expense.
+     Timeline's stat labels were taking it to 329px while Projects was squeezed
+     to 253, which pulled the four cards' internals out of line. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
 }
@@ -338,7 +342,7 @@ export default {
 
 @media (max-width: 1200px) {
   .adminpage-dashboard__kpi-strip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

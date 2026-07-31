@@ -20,44 +20,26 @@
       <span class="tasks-kpi__title">Tasks</span>
     </div>
 
+    <!-- Hero figure. The active count used to sit in the donut's centre; it
+         moved up here so all four KPI cards state their headline number in the
+         same place, which is what lets the strip be scanned across. -->
+    <div class="tasks-kpi__hero">
+      <span class="tasks-kpi__hero-value iz-figure">{{ inProgress }}</span>
+      <span class="tasks-kpi__hero-label">
+        Active<template v-if="avgDays"> · {{ avgDays }} avg days</template>
+      </span>
+    </div>
+
     <div class="tasks-kpi__body">
-      <!-- Left column: Donut + Avg Days Active -->
+      <!-- Left column: Donut -->
       <div class="tasks-kpi__left">
         <div class="tasks-kpi__chart-wrap">
           <div v-if="hasData" class="tasks-kpi__chart">
             <canvas ref="chartCanvas" width="160" height="160"></canvas>
-            <!-- Center label -->
-            <div class="tasks-kpi__chart-center">
-              <span class="tasks-kpi__chart-center-value">{{
-                inProgress
-              }}</span>
-              <span class="tasks-kpi__chart-center-label">Active</span>
-            </div>
           </div>
           <div v-else class="tasks-kpi__chart-empty">
             <span>No tasks</span>
           </div>
-        </div>
-
-        <!-- Avg Days Active -->
-        <div class="tasks-kpi__secondary">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <span class="tasks-kpi__secondary-text">
-            <strong>{{ avgDays }}</strong> avg days active
-          </span>
         </div>
       </div>
 
@@ -343,10 +325,36 @@ export default {
 }
 
 /* ── Body layout ── */
+/* Hero figure — same treatment across all four KPI cards: .iz-figure numeral
+   at 36px with a muted label beside it. */
+.tasks-kpi__hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  /* Same box as the Projects hero, which carries this padding for its
+     click target. Without it that card's numeral sits 4px lower than
+     the rest and the figure row stops being a row. */
+  padding: 4px 8px;
+  margin: -4px -8px;
+}
+
+.tasks-kpi__hero-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text-primary, #1a1a2e);
+  line-height: 1;
+}
+
+.tasks-kpi__hero-label {
+  font-size: 13px;
+  color: var(--color-text-muted, #9ca3af);
+  font-weight: 400;
+}
+
 .tasks-kpi__body {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 16px;
 }
 
 .tasks-kpi__left {
@@ -363,13 +371,13 @@ export default {
 
 .tasks-kpi__chart {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 96px;
+  height: 96px;
 }
 
 .tasks-kpi__chart canvas {
-  width: 120px !important;
-  height: 120px !important;
+  width: 96px !important;
+  height: 96px !important;
 }
 
 .tasks-kpi__chart-center {
@@ -399,8 +407,8 @@ export default {
 }
 
 .tasks-kpi__chart-empty {
-  width: 120px;
-  height: 120px;
+  width: 96px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;

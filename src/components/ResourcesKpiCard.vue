@@ -21,123 +21,53 @@
       <span class="resources-kpi__title">Resources</span>
     </div>
 
-    <div class="resources-kpi__grid">
-      <!-- Whiteboards -->
-      <div class="resources-kpi__block">
+    <!-- Hero figure -->
+    <div class="resources-kpi__hero">
+      <span class="resources-kpi__hero-value iz-figure">{{ grandTotal }}</span>
+      <span class="resources-kpi__hero-label">
+        Items<template v-if="publicTotal"> · {{ publicTotal }} public</template>
+      </span>
+    </div>
+
+    <!-- Body: donut left, breakdown right — the shape TasksKpiCard and
+         TimelineKpiCard use, so all three charts sit on one line. -->
+    <div class="resources-kpi__body">
+      <div class="resources-kpi__chart-wrap">
+        <div v-if="grandTotal > 0" class="resources-kpi__chart">
+          <canvas ref="chartCanvas" width="120" height="120"></canvas>
+        </div>
+        <div v-else class="resources-kpi__chart-empty">
+          <span>No resources</span>
+        </div>
+      </div>
+
+      <div class="resources-kpi__details">
         <div
-          class="resources-kpi__block-icon resources-kpi__block-icon--purple"
+          v-for="seg in segments"
+          :key="seg.key"
+          class="resources-kpi__row"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-        </div>
-        <div class="resources-kpi__block-data">
-          <span class="resources-kpi__block-value">{{ whiteboards }}</span>
-          <span class="resources-kpi__block-label">Whiteboards</span>
-        </div>
-      </div>
-
-      <!-- Scrumban Boards -->
-      <div class="resources-kpi__block">
-        <div class="resources-kpi__block-icon resources-kpi__block-icon--blue">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <line x1="3" y1="9" x2="21" y2="9" />
-            <line x1="9" y1="21" x2="9" y2="9" />
-          </svg>
-        </div>
-        <div class="resources-kpi__block-data">
-          <span class="resources-kpi__block-value">{{ scrumbanBoards }}</span>
-          <span class="resources-kpi__block-label">Scrumban Boards</span>
-        </div>
-      </div>
-
-      <!-- Files -->
-      <div class="resources-kpi__block">
-        <div class="resources-kpi__block-icon resources-kpi__block-icon--green">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
-            />
-            <polyline points="13 2 13 9 20 9" />
-          </svg>
-        </div>
-        <div class="resources-kpi__block-data">
-          <span class="resources-kpi__block-value">{{ filesTotal }}</span>
-          <span class="resources-kpi__block-label">Files</span>
-          <span class="resources-kpi__block-sub">
-            {{ filesPublic }} public · {{ filesPrivate }} private
+          <span
+            class="resources-kpi__row-dot"
+            :style="{ backgroundColor: seg.color }"
+          ></span>
+          <span class="resources-kpi__row-label">
+            {{ seg.label }}
+            <span v-if="seg.sub" class="resources-kpi__row-sub">{{ seg.sub }}</span>
           </span>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="resources-kpi__block">
-        <div class="resources-kpi__block-icon resources-kpi__block-icon--amber">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-            />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
-          </svg>
-        </div>
-        <div class="resources-kpi__block-data">
-          <span class="resources-kpi__block-value">{{ notesTotal }}</span>
-          <span class="resources-kpi__block-label">Notes</span>
-          <span class="resources-kpi__block-sub">
-            {{ notesPublic }} public · {{ notesPrivate }} private
-          </span>
+          <span class="resources-kpi__row-value">{{ seg.value }}</span>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
+import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
+
+Chart.register(DoughnutController, ArcElement, Tooltip);
+
 export default {
   name: "ResourcesKpiCard",
   props: {
@@ -145,6 +75,11 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  data: function () {
+    return {
+      chart: null,
+    };
   },
   computed: {
     metricsMap: function () {
@@ -184,6 +119,68 @@ export default {
     notesTotal: function () {
       return this.notesPublic + this.notesPrivate;
     },
+    grandTotal: function () {
+      return (
+        this.whiteboards + this.scrumbanBoards + this.filesTotal + this.notesTotal
+      );
+    },
+    publicTotal: function () {
+      return this.filesPublic + this.notesPublic;
+    },
+    /* Colour is an explicit property per segment, never built from the key.
+       The four categories are unrelated kinds of thing, so they take
+       categorical colours rather than a status ramp. */
+    segments: function () {
+      return [
+        {
+          key: "whiteboards",
+          label: "Whiteboards",
+          value: this.whiteboards,
+          color: "#8b5cf6",
+          sub: "",
+        },
+        {
+          key: "scrumban",
+          label: "Scrumban",
+          value: this.scrumbanBoards,
+          color: "#2f9e8f",
+          sub: "",
+        },
+        {
+          key: "files",
+          label: "Files",
+          value: this.filesTotal,
+          color: "#4a90d9",
+          sub: this.filesPublic + " pub · " + this.filesPrivate + " priv",
+        },
+        {
+          key: "notes",
+          label: "Notes",
+          value: this.notesTotal,
+          color: "#d98a2b",
+          sub: this.notesPublic + " pub · " + this.notesPrivate + " priv",
+        },
+      ];
+    },
+  },
+  mounted: function () {
+    this.renderChart();
+  },
+  beforeDestroy: function () {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  },
+  watch: {
+    kpi: function () {
+      if (this.chart) {
+        this.chart.destroy();
+      }
+      var self = this;
+      this.$nextTick(function () {
+        self.renderChart();
+      });
+    },
   },
   methods: {
     parsePubPriv: function (val) {
@@ -192,6 +189,42 @@ export default {
       var pub = parseInt(parts[0], 10) || 0;
       var priv = parts.length > 1 ? parseInt(parts[1], 10) || 0 : 0;
       return { pub: pub, priv: priv };
+    },
+    renderChart: function () {
+      if (!this.$refs.chartCanvas) return;
+      var segs = this.segments;
+      this.chart = new Chart(this.$refs.chartCanvas.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: segs.map(function (s) {
+            return s.label;
+          }),
+          datasets: [
+            {
+              data: segs.map(function (s) {
+                return s.value;
+              }),
+              backgroundColor: segs.map(function (s) {
+                return s.color;
+              }),
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: "62%",
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+          },
+          layout: { padding: 0 },
+          events: [],
+        },
+      });
     },
   },
 };
@@ -240,75 +273,112 @@ export default {
 }
 
 /* ── 2×2 Grid ── */
-.resources-kpi__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* ── Hero figure ──
+   Same treatment as the Projects card's hero: .iz-figure numeral, 36px, with
+   a muted label beside it, so the strip has one figure row. */
+.resources-kpi__hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  /* Same box as the Projects hero, which carries this padding for its
+     click target. Without it that card's numeral sits 4px lower than
+     the rest and the figure row stops being a row. */
+  padding: 4px 8px;
+  margin: -4px -8px;
 }
 
-.resources-kpi__block {
+.resources-kpi__hero-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text-primary, #1a1a2e);
+  line-height: 1;
+}
+
+.resources-kpi__hero-label {
+  font-size: 13px;
+  color: var(--color-text-muted, #9ca3af);
+  font-weight: 400;
+}
+
+/* ── Body ──
+   Copied from .tasks-kpi__body / __left / __details: 120px chart box, 20px
+   gap, details column flexing. Keeps this card's chart on the same line as
+   the Tasks donut and the Timeline rings. */
+.resources-kpi__body {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  background: var(--bg-page, #f0f1f5);
-  border-radius: 10px;
+  gap: 16px;
 }
 
-.resources-kpi__block-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.resources-kpi__chart-wrap {
   flex-shrink: 0;
 }
 
-.resources-kpi__block-icon--purple {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8b5cf6;
+.resources-kpi__chart {
+  position: relative;
+  width: 96px;
+  height: 96px;
 }
 
-.resources-kpi__block-icon--blue {
-  background: rgba(74, 144, 217, 0.12);
-  color: #4a90d9;
+.resources-kpi__chart canvas {
+  width: 96px !important;
+  height: 96px !important;
 }
 
-.resources-kpi__block-icon--green {
-  background: rgba(34, 197, 94, 0.12);
-  color: #16a34a;
+.resources-kpi__chart-empty {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-border, #e5e7eb);
+  border-radius: 50%;
+  font-size: 12px;
+  text-align: center;
+  color: var(--color-text-muted, #9ca3af);
 }
 
-.resources-kpi__block-icon--amber {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-}
-
-.resources-kpi__block-data {
+.resources-kpi__details {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 8px;
+}
+
+.resources-kpi__row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
 }
 
-.resources-kpi__block-value {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-primary, #1a1a2e);
-  line-height: 1.1;
+.resources-kpi__row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  transform: translateY(-1px);
 }
 
-.resources-kpi__block-label {
-  font-size: 11px;
-  color: var(--color-text-muted, #9ca3af);
-  font-weight: 500;
+.resources-kpi__row-label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  min-width: 0;
 }
 
-.resources-kpi__block-sub {
+.resources-kpi__row-sub {
+  display: block;
   font-size: 10px;
   color: var(--color-text-muted, #9ca3af);
-  font-weight: 400;
-  margin-top: 2px;
 }
+
+.resources-kpi__row-value {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+  font-variant-numeric: tabular-nums;
+}
+
 </style>

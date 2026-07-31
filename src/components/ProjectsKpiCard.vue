@@ -36,25 +36,72 @@
       <span class="projects-kpi__hero-label">Total Projects</span>
     </div>
 
-    <!-- Status chips: one per project status, each a drill-down -->
-    <div v-if="total > 0" class="projects-kpi__chips">
-      <button
-        v-for="seg in segments"
-        :key="seg.key"
-        type="button"
-        class="projects-kpi__chip"
-        @click="$emit('filter-projects', seg.statusLabel)"
-      >
-        <span class="iz-badge" :class="seg.badgeClass">
-          <strong>{{ seg.value }}</strong> {{ seg.label }}
-        </span>
-      </button>
+    <!-- Body: donut left, status rows right — the same shape as the Tasks,
+         Resources and Timeline cards, so all four charts share a line. Each
+         row stays a drill-down, as the chips and the old legend both were. -->
+    <div v-if="total > 0" class="projects-kpi__body">
+      <div class="projects-kpi__chart-wrap">
+        <div class="projects-kpi__chart">
+          <canvas ref="chartCanvas" width="120" height="120"></canvas>
+        </div>
+      </div>
+
+      <div class="projects-kpi__details">
+        <button
+          v-for="seg in segments"
+          :key="seg.key"
+          type="button"
+          class="projects-kpi__row"
+          @click="$emit('filter-projects', seg.statusLabel)"
+        >
+          <span
+            class="projects-kpi__row-dot"
+            :style="{ backgroundColor: seg.color }"
+          ></span>
+          <span class="projects-kpi__row-label">{{ seg.label }}</span>
+          <span class="projects-kpi__row-value">{{ seg.value }}</span>
+        </button>
+      </div>
     </div>
     <div v-else class="projects-kpi__empty">No projects yet</div>
+
+    <!-- Issue count — full-width footer, same geometry as TasksKpiCard's
+         oldest-task footer and TimelineKpiCard's schedule rail so the three
+         cards' footers share one band. Not a donut slice: a project can be
+         Active and have an issue at once, so it sits outside the breakdown. -->
+    <div
+      v-if="total > 0"
+      class="projects-kpi__issues"
+      :class="{ 'projects-kpi__issues--clear': withIssue === 0 }"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+      <span class="projects-kpi__issues-text">
+        <strong>{{ withIssue }}</strong>
+        {{ withIssue === 1 ? "project" : "projects" }} with issues
+      </span>
+    </div>
   </div>
 </template>
 
 <script>
+import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
+
+Chart.register(DoughnutController, ArcElement, Tooltip);
+
 export default {
   name: "ProjectsKpiCard",
   props: {
@@ -66,6 +113,11 @@ export default {
       type: Boolean,
       default: false,
     },
+  },
+  data: function () {
+    return {
+      chart: null,
+    };
   },
   computed: {
     metricsMap: function () {
@@ -90,40 +142,99 @@ export default {
     total: function () {
       return this.active + this.waiting + this.onHold + this.done;
     },
+    withIssue: function () {
+      return this.metricsMap["With Issue"] || 0;
+    },
+    /* Colour is an explicit property per segment, never built from the key —
+       a class or colour derived from data can silently resolve to nothing. */
     segments: function () {
-      // Tone is an explicit property, never `'iz-badge--' + key` — a class
-      // built from data silently emits one that may not exist. 'On Hold' uses
-      // the neutral .iz-badge base, which is also the fallback tone.
       return [
         {
           key: "active",
           label: "Active",
           statusLabel: "Active",
           value: this.active,
-          badgeClass: "iz-badge--success",
+          color: "#1f7a3e",
         },
         {
           key: "waiting",
           label: "W.o.c.",
           statusLabel: "Waiting on Customer",
           value: this.waiting,
-          badgeClass: "iz-badge--warning",
+          color: "#d98a2b",
         },
         {
           key: "on_hold",
           label: "On Hold",
           statusLabel: "On Hold",
           value: this.onHold,
-          badgeClass: "",
+          color: "#9a94a2",
         },
         {
           key: "done",
           label: "Done",
           statusLabel: "Done",
           value: this.done,
-          badgeClass: "iz-badge--accent",
+          color: "#7c5cbf",
         },
       ];
+    },
+  },
+  mounted: function () {
+    this.renderChart();
+  },
+  beforeDestroy: function () {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  },
+  watch: {
+    kpi: function () {
+      if (this.chart) {
+        this.chart.destroy();
+      }
+      var self = this;
+      this.$nextTick(function () {
+        self.renderChart();
+      });
+    },
+  },
+  methods: {
+    renderChart: function () {
+      if (!this.$refs.chartCanvas) return;
+      var segs = this.segments;
+      this.chart = new Chart(this.$refs.chartCanvas.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: segs.map(function (s) {
+            return s.label;
+          }),
+          datasets: [
+            {
+              data: segs.map(function (s) {
+                return s.value;
+              }),
+              backgroundColor: segs.map(function (s) {
+                return s.color;
+              }),
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: "62%",
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+          },
+          layout: { padding: 0 },
+          events: [],
+        },
+      });
     },
   },
 };
@@ -149,6 +260,11 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  /* Pinned to the icon's height. This is the only KPI card with an action in
+     its header, and at narrow widths '+ New' wrapped to two lines, making the
+     header 40px against the other three cards' 32 — which pushed this card's
+     figure and chart 8px below everyone else's. */
+  min-height: 32px;
 }
 
 .projects-kpi__icon {
@@ -205,56 +321,136 @@ export default {
   font-weight: 400;
 }
 
-/* ── Status chips ──
-   Chrome (tint + text colour + geometry) is the theme's .iz-badge primitive;
-   only the row layout is local. The button is deliberately chrome-less: the
-   badge is the whole visual. Selectors are qualified on `button` because NC
+/* ── Body ──
+   Copied from .tasks-kpi__body / __left / __details: 120px chart box, 20px
+   gap, details column flexing, so this card's donut sits on the same line as
+   the Tasks, Resources and Timeline charts.
+
+   Rows are drill-down buttons. Selectors are qualified on `button` because NC
    core styles bare elements at 0,1,1 and outranks a plain class. */
-.projects-kpi__chips {
+.projects-kpi__body {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-button.projects-kpi__chip {
-  padding: 0;
-  margin: 0;
+.projects-kpi__chart-wrap {
+  flex-shrink: 0;
+}
+
+.projects-kpi__chart {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.projects-kpi__chart canvas {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+.projects-kpi__details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+button.projects-kpi__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 4px;
+  margin: 0 -4px;
   border: 0;
   background: transparent;
   border-radius: var(--iz-radius-sm);
   cursor: pointer;
   font: inherit;
+  text-align: left;
   -webkit-appearance: none;
   appearance: none;
+  min-height: 0;
 }
 
-.projects-kpi__chip .iz-badge {
-  font-variant-numeric: tabular-nums;
-  transition: transform 0.12s ease, filter 0.12s ease;
-}
-
-/* Hover feedback lives on the badge and only while the pointer is over it, so
-   it clears the moment you leave. :focus and :active stay inert — focus
-   persists after a mouse click, and a chip that stays highlighted after being
-   clicked reads as a selected filter that isn't one. */
-button.projects-kpi__chip:hover,
-button.projects-kpi__chip:focus,
-button.projects-kpi__chip:active {
+/* Hover only, and on the row's own background rather than a colour token, so
+   it clears the moment the pointer leaves. :focus and :active stay inert —
+   focus survives a mouse click, and a row still highlighted afterwards reads
+   as a selected filter that isn't one. No :focus-visible rule: NC core styles
+   button:focus-visible with `outline: ... !important`, which no specificity
+   beats, so keyboard focus already has a ring and ours would be dead CSS. */
+button.projects-kpi__row:focus,
+button.projects-kpi__row:active {
   background: transparent;
   box-shadow: none;
   outline: none;
 }
 
-/* No :focus-visible rule here on purpose. NC core styles
-   `button:not(.button-vue,…):not(:disabled,.primary):focus-visible` with
-   `outline: … !important`, which no specificity can beat, so keyboard focus
-   already gets core's ring and an app-level one would be dead CSS. The :focus
-   reset above still matters: :focus-visible does not match a mouse click, so
-   core's rule doesn't fire there and ours is what keeps a clicked chip clean. */
+button.projects-kpi__row:hover {
+  background: var(--bg-page, #f0f1f5);
+  box-shadow: none;
+}
 
-button.projects-kpi__chip:hover .iz-badge {
-  transform: translateY(-1px);
-  filter: brightness(0.96);
+.projects-kpi__row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.projects-kpi__row-label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  min-width: 0;
+}
+
+.projects-kpi__row-value {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a1a2e);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Footer band — geometry deliberately identical to .tasks-kpi__oldest and
+   .timeline-kpi__rail-wrap: margin-top:auto, 8px/10px padding, 8px radius,
+   11px/1.4 type. All three resolve to the same height and sit on one line. */
+.projects-kpi__issues {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #fef3f2;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 11px;
+  line-height: 1.4;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.projects-kpi__issues svg {
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+/* Zero issues is good news, not a warning — drop the alarm colouring rather
+   than showing a red-tinted banner that says nothing is wrong. */
+.projects-kpi__issues--clear {
+  background: var(--bg-page, #f0f1f5);
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.projects-kpi__issues--clear svg {
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.projects-kpi__issues-text strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .projects-kpi__empty {
@@ -267,8 +463,19 @@ button.projects-kpi__chip:hover .iz-badge {
 .projects-kpi__header {
   position: relative;
 }
+/* Qualified on `button` and with min-height reset: NC core gives bare buttons
+   a 34px min-height, which made this header 40px against the other cards' 32
+   and pushed the whole card 8px down the strip. A min-height on the header
+   can't cap a taller child, so it has to be reset here. */
+button.projects-kpi__new-btn {
+  min-height: 0;
+  line-height: 1.4;
+}
+
 .projects-kpi__new-btn {
   margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 11px;
   font-weight: 600;
   color: #fff;

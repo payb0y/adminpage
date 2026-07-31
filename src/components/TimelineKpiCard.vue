@@ -20,61 +20,39 @@
       <span class="timeline-kpi__title">Timeline</span>
     </div>
 
+    <!-- Hero figure. The completion rate used to sit in the gauge's centre; it
+         moved up here so all four KPI cards state their headline number in the
+         same place, which is what lets the strip be scanned across. -->
+    <div class="timeline-kpi__hero">
+      <span class="timeline-kpi__hero-value iz-figure">{{ completionRate }}%</span>
+      <span class="timeline-kpi__hero-label">
+        Complete<template v-if="scheduleElapsed !== null">
+          · {{ scheduleElapsed }}% elapsed</template
+        >
+      </span>
+    </div>
+
     <!-- Body: rings left, stats right — the same two-column shape as the
          Tasks card, so both cards' visuals sit on one line across the strip. -->
     <div class="timeline-kpi__body">
       <div class="timeline-kpi__chart-wrap">
         <div class="timeline-kpi__chart">
           <canvas ref="gaugeCanvas" width="120" height="120"></canvas>
-          <div class="timeline-kpi__chart-center">
-            <span class="timeline-kpi__chart-center-value">{{ completionRate }}%</span>
-            <span class="timeline-kpi__chart-center-label">Complete</span>
-          </div>
         </div>
       </div>
 
-      <!-- Secondary stats -->
+      <!-- Secondary stats: plain rows, matching the Projects and Resources
+           breakdown columns. These used to be icon + tinted pill, which needed
+           128px in a 116px column and clipped. -->
       <div class="timeline-kpi__stats">
-      <div class="timeline-kpi__stat">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        <span class="timeline-kpi__stat-label">Coordination Pending</span>
-        <span class="timeline-kpi__stat-value">{{ coordinationPending }}</span>
-      </div>
-      <div class="timeline-kpi__stat">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-          />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-        </svg>
-        <span class="timeline-kpi__stat-label">Prep Time</span>
-        <span class="timeline-kpi__stat-value">{{ prepTime }}</span>
-      </div>
+        <div class="timeline-kpi__stat">
+          <span class="timeline-kpi__stat-label">Coordination</span>
+          <span class="timeline-kpi__stat-value">{{ coordinationPending }}</span>
+        </div>
+        <div class="timeline-kpi__stat">
+          <span class="timeline-kpi__stat-label">Prep Time</span>
+          <span class="timeline-kpi__stat-value">{{ prepTime }}</span>
+        </div>
       </div>
     </div>
 
@@ -273,7 +251,7 @@ export default {
 .timeline-kpi__body {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 16px;
 }
 
 .timeline-kpi__chart-wrap {
@@ -282,39 +260,38 @@ export default {
 
 .timeline-kpi__chart {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 96px;
+  height: 96px;
 }
 
 .timeline-kpi__chart canvas {
-  width: 120px !important;
-  height: 120px !important;
+  width: 96px !important;
+  height: 96px !important;
 }
 
-.timeline-kpi__chart-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
+/* Hero figure — same treatment across all four KPI cards. */
+.timeline-kpi__hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  /* Same box as the Projects hero, which carries this padding for its
+     click target. Without it that card's numeral sits 4px lower than
+     the rest and the figure row stops being a row. */
+  padding: 4px 8px;
+  margin: -4px -8px;
 }
 
-.timeline-kpi__chart-center-value {
-  display: block;
-  font-size: 22px;
+.timeline-kpi__hero-value {
+  font-size: 36px;
   font-weight: 800;
   color: var(--color-text-primary, #1a1a2e);
   line-height: 1;
 }
 
-.timeline-kpi__chart-center-label {
-  display: block;
-  font-size: 10px;
+.timeline-kpi__hero-label {
+  font-size: 13px;
   color: var(--color-text-muted, #9ca3af);
-  margin-top: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  font-weight: 400;
 }
 
 /* ── Schedule rail ──
@@ -388,23 +365,24 @@ export default {
 
 .timeline-kpi__stat {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  padding: 8px 10px;
-  background: var(--bg-page, #f0f1f5);
-  border-radius: 8px;
-  color: var(--color-text-secondary, #6b7280);
+  min-width: 0;
 }
 
 .timeline-kpi__stat-label {
   font-size: 12px;
   color: var(--color-text-secondary, #6b7280);
-  flex: 1;
+  min-width: 0;
 }
 
 .timeline-kpi__stat-value {
+  margin-left: auto;
+  white-space: nowrap;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-primary, #1a1a2e);
+  font-variant-numeric: tabular-nums;
 }
+
 </style>
