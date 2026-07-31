@@ -32,39 +32,23 @@
       class="projects-kpi__hero projects-kpi__hero--clickable"
       @click="$emit('filter-projects', '')"
     >
-      <span class="projects-kpi__hero-value">{{ total }}</span>
+      <span class="projects-kpi__hero-value iz-figure">{{ total }}</span>
       <span class="projects-kpi__hero-label">Total Projects</span>
     </div>
 
-    <!-- Stacked bar -->
-    <div v-if="total > 0" class="projects-kpi__bar-container">
-      <div class="projects-kpi__bar">
-        <div
-          v-for="seg in segments"
-          :key="seg.key"
-          class="projects-kpi__bar-segment"
-          :style="{ width: seg.pct + '%', backgroundColor: seg.color }"
-          :title="seg.label + ': ' + seg.value"
-          @click="$emit('filter-projects', seg.statusLabel)"
-        ></div>
-      </div>
-      <div class="projects-kpi__legend">
-        <div
-          v-for="seg in segments"
-          :key="seg.key"
-          class="projects-kpi__legend-item"
-          @click="$emit('filter-projects', seg.statusLabel)"
-        >
-          <span
-            class="projects-kpi__legend-dot"
-            :style="{ backgroundColor: seg.color }"
-          ></span>
-          <span class="projects-kpi__legend-text">
-            {{ seg.label }}
-            <strong>{{ seg.value }}</strong>
-          </span>
-        </div>
-      </div>
+    <!-- Status chips: one per project status, each a drill-down -->
+    <div v-if="total > 0" class="projects-kpi__chips">
+      <button
+        v-for="seg in segments"
+        :key="seg.key"
+        type="button"
+        class="projects-kpi__chip"
+        @click="$emit('filter-projects', seg.statusLabel)"
+      >
+        <span class="iz-badge" :class="seg.badgeClass">
+          <strong>{{ seg.value }}</strong> {{ seg.label }}
+        </span>
+      </button>
     </div>
     <div v-else class="projects-kpi__empty">No projects yet</div>
   </div>
@@ -107,39 +91,37 @@ export default {
       return this.active + this.waiting + this.onHold + this.done;
     },
     segments: function () {
-      var t = this.total || 1;
+      // Tone is an explicit property, never `'iz-badge--' + key` — a class
+      // built from data silently emits one that may not exist. 'On Hold' uses
+      // the neutral .iz-badge base, which is also the fallback tone.
       return [
         {
           key: "active",
           label: "Active",
           statusLabel: "Active",
           value: this.active,
-          color: "#22C55E",
-          pct: (this.active / t) * 100,
+          badgeClass: "iz-badge--success",
         },
         {
           key: "waiting",
           label: "W.o.c.",
           statusLabel: "Waiting on Customer",
           value: this.waiting,
-          color: "#F59E0B",
-          pct: (this.waiting / t) * 100,
+          badgeClass: "iz-badge--warning",
         },
         {
           key: "on_hold",
           label: "On Hold",
           statusLabel: "On Hold",
           value: this.onHold,
-          color: "#94A3B8",
-          pct: (this.onHold / t) * 100,
+          badgeClass: "",
         },
         {
           key: "done",
           label: "Done",
           statusLabel: "Done",
           value: this.done,
-          color: "#4A90D9",
-          pct: (this.done / t) * 100,
+          badgeClass: "iz-badge--accent",
         },
       ];
     },
@@ -173,8 +155,11 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background-color: rgba(74, 144, 217, 0.1);
-  color: #4a90d9;
+  /* --iz-accent-text is for sitting on the SOLID accent (it is white); the
+     on-tint companion is --iz-accent-bg-text, which is what .iz-badge--accent
+     uses. Pairing the tint with the wrong one renders the glyph invisible. */
+  background-color: var(--iz-accent-bg);
+  color: var(--iz-accent-bg-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,75 +205,31 @@ export default {
   font-weight: 400;
 }
 
-/* ── Stacked Bar ── */
-.projects-kpi__bar-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.projects-kpi__bar {
-  display: flex;
-  height: 10px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--color-border, #e5e7eb);
-}
-
-.projects-kpi__bar-segment {
-  min-width: 4px;
-  transition: width 0.4s ease;
-  cursor: pointer;
-}
-
-.projects-kpi__bar-segment:hover {
-  opacity: 0.8;
-}
-
-.projects-kpi__bar-segment:first-child {
-  border-radius: 6px 0 0 6px;
-}
-
-.projects-kpi__bar-segment:last-child {
-  border-radius: 0 6px 6px 0;
-}
-
-.projects-kpi__legend {
+/* ── Status chips ──
+   Chrome (tint + text colour + geometry) is the theme's .iz-badge primitive;
+   only the row layout is local. The button is deliberately chrome-less: the
+   badge is the whole visual. Selectors are qualified on `button` because NC
+   core styles bare elements at 0,1,1 and outranks a plain class. */
+.projects-kpi__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 6px;
 }
 
-.projects-kpi__legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+button.projects-kpi__chip {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--iz-radius-sm);
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 6px;
-  transition: background 0.15s;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.projects-kpi__legend-item:hover {
-  background: #f0f4ff;
-}
-
-.projects-kpi__legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.projects-kpi__legend-text {
-  font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
-}
-
-.projects-kpi__legend-text strong {
-  font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
-  margin-left: 2px;
+.projects-kpi__chip .iz-badge {
+  font-variant-numeric: tabular-nums;
 }
 
 .projects-kpi__empty {
