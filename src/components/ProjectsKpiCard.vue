@@ -227,22 +227,27 @@ export default {
               backgroundColor: segs.map(function (s) {
                 return self.themeColor(s.colorToken[0], s.colorToken[1]);
               }),
-              borderColor: "#ffffff",
+              borderColor: self.themeColor("--iz-surface", "#ffffff"),
               borderWidth: 3,
-              hoverOffset: 0,
+              hoverOffset: 4,
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: true,
-          cutout: "62%",
+          cutout: "65%",
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false },
+            tooltip: {
+              backgroundColor: self.themeColor("--iz-text", "#1a1a2e"),
+              titleFont: { size: 12, weight: "600" },
+              bodyFont: { size: 11 },
+              padding: 8,
+              cornerRadius: 6,
+            },
           },
-          layout: { padding: 0 },
-          events: [],
+          layout: { padding: 4 },
         },
       });
     },

@@ -264,7 +264,7 @@ export default {
             {
               data: values,
               backgroundColor: colors,
-              borderColor: "#ffffff",
+              borderColor: self.themeColor("--iz-surface", "#ffffff"),
               borderWidth: 3,
               hoverOffset: 4,
             },
@@ -277,7 +277,7 @@ export default {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: "#1a1a2e",
+              backgroundColor: self.themeColor("--iz-text", "#1a1a2e"),
               titleFont: { size: 12, weight: "600" },
               bodyFont: { size: 11 },
               padding: 8,

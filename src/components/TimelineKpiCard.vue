@@ -233,24 +233,37 @@ export default {
             track,
           ],
           borderWidth: 0,
-          hoverOffset: 0,
+          hoverOffset: 4,
         },
       ];
 
+      var self = this;
       this.chart = new Chart(ctx, {
         type: "doughnut",
-        data: { datasets: datasets },
+        /* Labelled so the tooltip reads 'Complete 40%' rather than naming the
+           dataset index. */
+        data: { labels: ["Complete", "Remaining"], datasets: datasets },
         options: {
           responsive: true,
           maintainAspectRatio: true,
           rotation: -90,
-          cutout: "62%",
+          cutout: "65%",
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false },
+            tooltip: {
+              backgroundColor: self.themeColor("--iz-text", "#1a1a2e"),
+              titleFont: { size: 12, weight: "600" },
+              bodyFont: { size: 11 },
+              padding: 8,
+              cornerRadius: 6,
+              callbacks: {
+                label: function (ctx) {
+                  return " " + ctx.parsed + "%";
+                },
+              },
+            },
           },
-          layout: { padding: 0 },
-          events: [],
+          layout: { padding: 4 },
         },
       });
     },
