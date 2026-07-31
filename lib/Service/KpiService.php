@@ -363,6 +363,7 @@ class KpiService {
             'title'     => 'Timeline',
             'icon'      => 'icon-calendar',
             'iconColor' => '#0EA5E9',
+            'schedule'  => $this->scheduleWindow($orgId),
             'metrics'   => [
                 ['value' => $completionRate . '%',  'label' => 'Avg Completion Rate'],
                 ['value' => $scheduleElapsed . '%', 'label' => 'Avg Schedule Elapsed'],
@@ -459,6 +460,80 @@ class KpiService {
 
         $weeks = (int)($row['avg_weeks'] ?? 0);
         return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
+    }
+
+    /**
+     * The org's overall delivery window, with each project's deadline placed
+     * on it and today's position marked.
+     *
+     * This is what makes the Timeline card's rail worth drawing: a percentage
+     * can already be read off the hero figure, so a bar that only restates it
+     * carries nothing. Absolute dates and where the deadlines fall cannot be
+     * read anywhere else on the dashboard.
+     *
+     * Returns null when no project has a schedule, so the card can omit the
+     * rail rather than draw an empty track.
+     *
+     * @return array{start: string, end: string, todayPct: float,
+     *               deadlines: list<array{label: string, date: string, pct: float}>}|null
+     */
+    private function scheduleWindow(int $orgId): ?array {
+        $sql = "
+            SELECT cp.name AS project, pti.start_date, pti.end_date
+            FROM *PREFIX*project_timeline_items pti
+            INNER JOIN *PREFIX*custom_projects cp
+                ON cp.id = pti.project_id
+               AND cp.organization_id = ?
+            WHERE pti.system_key = 'deck_schedule'
+              AND pti.start_date IS NOT NULL
+              AND pti.end_date IS NOT NULL
+        ";
+        $result = $this->db->prepare($sql);
+        $result->execute([$orgId]);
+
+        $rows = [];
+        while ($row = $result->fetch()) {
+            $start = strtotime((string)$row['start_date']);
+            $end   = strtotime((string)$row['end_date']);
+            if ($start === false || $end === false || $end < $start) {
+                continue;
+            }
+            $rows[] = ['project' => (string)$row['project'], 'start' => $start, 'end' => $end];
+        }
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        $winStart = min(array_column($rows, 'start'));
+        $winEnd   = max(array_column($rows, 'end'));
+        $span     = $winEnd - $winStart;
+        if ($span <= 0) {
+            return null;
+        }
+
+        // Position on the window as a percentage, clamped so a project that
+        // started before the window or a today past the end stays on the track.
+        $pct = static function (int $ts) use ($winStart, $span): float {
+            return round(max(0.0, min(100.0, (($ts - $winStart) / $span) * 100)), 1);
+        };
+
+        $deadlines = [];
+        foreach ($rows as $r) {
+            $deadlines[] = [
+                'label' => $r['project'],
+                'date'  => date('Y-m-d', $r['end']),
+                'pct'   => $pct($r['end']),
+            ];
+        }
+        usort($deadlines, static fn(array $a, array $b): int => $a['pct'] <=> $b['pct']);
+
+        return [
+            'start'     => date('Y-m-d', $winStart),
+            'end'       => date('Y-m-d', $winEnd),
+            'todayPct'  => $pct(strtotime('today') ?: time()),
+            'deadlines' => $deadlines,
+        ];
     }
 
     /**
