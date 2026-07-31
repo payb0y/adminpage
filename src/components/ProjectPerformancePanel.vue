@@ -744,7 +744,11 @@
                             >{{ task.status }}</span
                           >
                         </td>
-                        <td>{{ task.due || "\u2014" }}</td>
+                        <!-- date only: task.due arrives as a full timestamp,
+                             and the 12:27:34 half was both meaningless for a
+                             due date and wide enough to push the Opened
+                             column out of the delay table. -->
+                        <td>{{ formatDateShort(task.due) }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -835,7 +839,11 @@
                             >{{ task.status }}</span
                           >
                         </td>
-                        <td>{{ task.due || "\u2014" }}</td>
+                        <!-- date only: task.due arrives as a full timestamp,
+                             and the 12:27:34 half was both meaningless for a
+                             due date and wide enough to push the Opened
+                             column out of the delay table. -->
+                        <td>{{ formatDateShort(task.due) }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -901,7 +909,26 @@
                     {{ countByCategory(proj.tasks, "blocked") }} blocked
                   </span>
                   <span class="perf-modal__badge perf-modal__badge--neutral">
-                    &#9202; {{ formatAge(proj.avgDaysActive) }} avg
+                    <!-- inline SVG, not the U+23F2 timer emoji this used to
+                         carry: no font in the stack has that glyph, so it
+                         rendered as a tofu box next to the age. -->
+                    <svg
+                      class="perf-modal__badge-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <polyline points="12 7 12 12 15.5 14" />
+                    </svg>
+                    {{ formatAge(proj.avgDaysActive) }} avg
                   </span>
                   <span
                     class="perf-modal__chevron"
@@ -973,7 +1000,11 @@
                             >
                           </span>
                         </td>
-                        <td>{{ task.due || "\u2014" }}</td>
+                        <!-- date only: task.due arrives as a full timestamp,
+                             and the 12:27:34 half was both meaningless for a
+                             due date and wide enough to push the Opened
+                             column out of the delay table. -->
+                        <td>{{ formatDateShort(task.due) }}</td>
                         <td>
                           <span
                             v-if="task.createdAt"
@@ -1078,7 +1109,11 @@
                           }}</span>
                         </td>
                         <td>{{ task.completed_at }}</td>
-                        <td>{{ task.due || "\u2014" }}</td>
+                        <!-- date only: task.due arrives as a full timestamp,
+                             and the 12:27:34 half was both meaningless for a
+                             due date and wide enough to push the Opened
+                             column out of the delay table. -->
+                        <td>{{ formatDateShort(task.due) }}</td>
                         <td>
                           <span
                             v-if="task.created_at"
@@ -3029,11 +3064,19 @@ export default {
 
 /* Badges */
 .perf-modal__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 10px;
   white-space: nowrap;
+}
+
+.perf-modal__badge-icon {
+  flex-shrink: 0;
+  opacity: 0.75;
 }
 
 .perf-modal__badge--success {
@@ -3129,6 +3172,11 @@ export default {
 .perf-modal__task-table-wrap {
   padding: 0 16px 12px;
   background: var(--bg-subtle);
+  /* The delay table carries seven columns and used to overrun this box with no
+     way to reach the overflow — the Opened column was simply clipped off the
+     right edge. Scroll it here rather than widening the modal, which would put
+     a horizontal scrollbar on the whole dialog. */
+  overflow-x: auto;
 }
 
 .perf-modal__task-table {
