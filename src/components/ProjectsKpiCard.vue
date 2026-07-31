@@ -230,6 +230,31 @@ button.projects-kpi__chip {
 
 .projects-kpi__chip .iz-badge {
   font-variant-numeric: tabular-nums;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+/* Hover feedback lives on the badge and only while the pointer is over it, so
+   it clears the moment you leave. :focus and :active stay inert — focus
+   persists after a mouse click, and a chip that stays highlighted after being
+   clicked reads as a selected filter that isn't one. */
+button.projects-kpi__chip:hover,
+button.projects-kpi__chip:focus,
+button.projects-kpi__chip:active {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+/* No :focus-visible rule here on purpose. NC core styles
+   `button:not(.button-vue,…):not(:disabled,.primary):focus-visible` with
+   `outline: … !important`, which no specificity can beat, so keyboard focus
+   already gets core's ring and an app-level one would be dead CSS. The :focus
+   reset above still matters: :focus-visible does not match a mouse click, so
+   core's rule doesn't fire there and ours is what keeps a clicked chip clean. */
+
+button.projects-kpi__chip:hover .iz-badge {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
 }
 
 .projects-kpi__empty {
