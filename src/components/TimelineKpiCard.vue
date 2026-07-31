@@ -119,12 +119,13 @@ export default {
       if (val === undefined || val === null) return null;
       return parseInt(val, 10) || 0;
     },
-    gaugeColor: function () {
+    /* Completion ramp, on the theme's status tokens rather than raw hexes. */
+    gaugeColorToken: function () {
       var rate = this.completionRate;
-      if (rate >= 75) return "#22C55E";
-      if (rate >= 50) return "#F59E0B";
-      if (rate >= 25) return "#F97316";
-      return "#EF4444";
+      if (rate >= 75) return ["--iz-success", "#1f7a3e"];
+      if (rate >= 50) return ["--iz-cat-4", "#d98a2b"];
+      if (rate >= 25) return ["--iz-warning", "#ecc980"];
+      return ["--iz-danger", "#c9314a"];
     },
   },
   mounted: function () {
@@ -147,6 +148,15 @@ export default {
     },
   },
   methods: {
+    /* Resolve theme tokens at render time rather than hardcoding hexes: the
+       chart then follows the In Zicht palette, and light/dark automatically,
+       instead of drifting from it. getComputedStyle resolves the var() chain,
+       so --iz-cat-1 comes back as a real colour. */
+    themeColor: function (name, fallback) {
+      if (!this.$el) return fallback;
+      var v = getComputedStyle(this.$el).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    },
     renderGauge: function () {
       var ctx = this.$refs.gaugeCanvas.getContext("2d");
       var rate = this.completionRate;
@@ -161,7 +171,10 @@ export default {
       var datasets = [
         {
           data: [rate, 100 - rate],
-          backgroundColor: [this.gaugeColor, track],
+          backgroundColor: [
+            this.themeColor(this.gaugeColorToken[0], this.gaugeColorToken[1]),
+            track,
+          ],
           borderWidth: 0,
           hoverOffset: 0,
           weight: 1,
@@ -171,7 +184,7 @@ export default {
       if (elapsed !== null) {
         datasets.push({
           data: [elapsed, 100 - elapsed],
-          backgroundColor: ["#8b5cf6", track],
+          backgroundColor: [this.themeColor("--iz-cat-5", "#7c5cbf"), track],
           borderWidth: 0,
           hoverOffset: 0,
           weight: 0.6,

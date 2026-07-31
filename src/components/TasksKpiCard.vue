@@ -54,7 +54,7 @@
           >
             <span
               class="tasks-kpi__legend-dot"
-              :style="{ backgroundColor: seg.color }"
+              :style="{ backgroundColor: themeColor(seg.colorToken[0], seg.colorToken[1]) }"
             ></span>
             <span class="tasks-kpi__legend-label">{{ seg.label }}</span>
             <span class="tasks-kpi__legend-value">{{ seg.value }}</span>
@@ -153,7 +153,7 @@ export default {
           key: "overdue",
           label: "Overdue",
           value: this.overdue,
-          color: "#EF4444",
+          colorToken: ["--iz-danger", "#c9314a"],
           filterType: "due",
           filterValue: "overdue",
         },
@@ -161,7 +161,7 @@ export default {
           key: "today",
           label: "Today",
           value: this.today,
-          color: "#F59E0B",
+          colorToken: ["--iz-cat-4", "#d98a2b"],
           filterType: "due",
           filterValue: "today",
         },
@@ -169,7 +169,7 @@ export default {
           key: "upcoming",
           label: "Upcoming",
           value: this.upcoming,
-          color: "#4A90D9",
+          colorToken: ["--iz-cat-3", "#2f9e8f"],
           filterType: "due",
           filterValue: "nextSevenDays",
         },
@@ -177,7 +177,7 @@ export default {
           key: "nondue",
           label: "Non Due",
           value: this.nonDue,
-          color: "#94A3B8",
+          colorToken: ["--iz-text-muted", "#9a94a2"],
           filterType: "due",
           filterValue: "nodue",
         },
@@ -223,6 +223,15 @@ export default {
     },
   },
   methods: {
+    /* Resolve theme tokens at render time rather than hardcoding hexes: the
+       chart then follows the In Zicht palette, and light/dark automatically,
+       instead of drifting from it. getComputedStyle resolves the var() chain,
+       so --iz-cat-1 comes back as a real colour. */
+    themeColor: function (name, fallback) {
+      if (!this.$el) return fallback;
+      var v = getComputedStyle(this.$el).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    },
     formatAge: function (days) {
       if (!days || days < 1) return "Today";
       if (days === 1) return "1 day";
@@ -236,8 +245,9 @@ export default {
     },
     renderChart: function () {
       var ctx = this.$refs.chartCanvas.getContext("2d");
+      var self = this;
       var colors = this.segments.map(function (s) {
-        return s.color;
+        return self.themeColor(s.colorToken[0], s.colorToken[1]);
       });
       var values = this.segments.map(function (s) {
         return s.value;

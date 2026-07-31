@@ -22,7 +22,7 @@
       <button
         v-if="canCreate"
         type="button"
-        class="projects-kpi__new-btn"
+        class="iz-btn iz-btn--primary iz-btn--sm projects-kpi__new-btn"
         @click.stop="$emit('create-project')"
       >+ New</button>
     </div>
@@ -56,7 +56,7 @@
         >
           <span
             class="projects-kpi__row-dot"
-            :style="{ backgroundColor: seg.color }"
+            :style="{ backgroundColor: themeColor(seg.colorToken[0], seg.colorToken[1]) }"
           ></span>
           <span class="projects-kpi__row-label">{{ seg.label }}</span>
           <span class="projects-kpi__row-value">{{ seg.value }}</span>
@@ -154,28 +154,28 @@ export default {
           label: "Active",
           statusLabel: "Active",
           value: this.active,
-          color: "#1f7a3e",
+          colorToken: ["--iz-success", "#1f7a3e"],
         },
         {
           key: "waiting",
           label: "W.o.c.",
           statusLabel: "Waiting on Customer",
           value: this.waiting,
-          color: "#d98a2b",
+          colorToken: ["--iz-cat-4", "#d98a2b"],
         },
         {
           key: "on_hold",
           label: "On Hold",
           statusLabel: "On Hold",
           value: this.onHold,
-          color: "#9a94a2",
+          colorToken: ["--iz-text-muted", "#9a94a2"],
         },
         {
           key: "done",
           label: "Done",
           statusLabel: "Done",
           value: this.done,
-          color: "#7c5cbf",
+          colorToken: ["--iz-cat-5", "#7c5cbf"],
         },
       ];
     },
@@ -200,9 +200,19 @@ export default {
     },
   },
   methods: {
+    /* Resolve theme tokens at render time rather than hardcoding hexes: the
+       chart then follows the In Zicht palette, and light/dark automatically,
+       instead of drifting from it. getComputedStyle resolves the var() chain,
+       so --iz-cat-1 comes back as a real colour. */
+    themeColor: function (name, fallback) {
+      if (!this.$el) return fallback;
+      var v = getComputedStyle(this.$el).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    },
     renderChart: function () {
       if (!this.$refs.chartCanvas) return;
       var segs = this.segments;
+      var self = this;
       this.chart = new Chart(this.$refs.chartCanvas.getContext("2d"), {
         type: "doughnut",
         data: {
@@ -215,7 +225,7 @@ export default {
                 return s.value;
               }),
               backgroundColor: segs.map(function (s) {
-                return s.color;
+                return self.themeColor(s.colorToken[0], s.colorToken[1]);
               }),
               borderColor: "#ffffff",
               borderWidth: 3,
@@ -463,29 +473,18 @@ button.projects-kpi__row:hover {
 .projects-kpi__header {
   position: relative;
 }
-/* Qualified on `button` and with min-height reset: NC core gives bare buttons
-   a 34px min-height, which made this header 40px against the other cards' 32
-   and pushed the whole card 8px down the strip. A min-height on the header
-   can't cap a taller child, so it has to be reset here. */
+/* Chrome comes from the theme's .iz-btn --primary --sm; only layout stays
+   here. It used to hardcode the old #4a90d9 blue, which by the end of the
+   migration was the one thing on the card still on the old palette.
+
+   min-height is reset because NC core gives bare buttons 34px, which made this
+   header 40px against the other cards' 32 and pushed the whole card down the
+   strip. A min-height on the header can't cap a taller child. */
 button.projects-kpi__new-btn {
   min-height: 0;
-  line-height: 1.4;
-}
-
-.projects-kpi__new-btn {
   margin-left: auto;
   flex-shrink: 0;
   white-space: nowrap;
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  background: #4a90d9;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 8px;
-  cursor: pointer;
 }
-.projects-kpi__new-btn:hover {
-  background: #357ec7;
-}
+
 </style>

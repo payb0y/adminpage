@@ -49,7 +49,7 @@
         >
           <span
             class="resources-kpi__row-dot"
-            :style="{ backgroundColor: seg.color }"
+            :style="{ backgroundColor: themeColor(seg.colorToken[0], seg.colorToken[1]) }"
           ></span>
           <span class="resources-kpi__row-label">
             {{ seg.label }}
@@ -136,28 +136,28 @@ export default {
           key: "whiteboards",
           label: "Whiteboards",
           value: this.whiteboards,
-          color: "#8b5cf6",
+          colorToken: ["--iz-cat-5", "#7c5cbf"],
           sub: "",
         },
         {
           key: "scrumban",
           label: "Scrumban",
           value: this.scrumbanBoards,
-          color: "#2f9e8f",
+          colorToken: ["--iz-cat-3", "#2f9e8f"],
           sub: "",
         },
         {
           key: "files",
           label: "Files",
           value: this.filesTotal,
-          color: "#4a90d9",
+          colorToken: ["--iz-cat-2", "#3a2350"],
           sub: this.filesPublic + " pub · " + this.filesPrivate + " priv",
         },
         {
           key: "notes",
           label: "Notes",
           value: this.notesTotal,
-          color: "#d98a2b",
+          colorToken: ["--iz-cat-4", "#d98a2b"],
           sub: this.notesPublic + " pub · " + this.notesPrivate + " priv",
         },
       ];
@@ -183,6 +183,15 @@ export default {
     },
   },
   methods: {
+    /* Resolve theme tokens at render time rather than hardcoding hexes: the
+       chart then follows the In Zicht palette, and light/dark automatically,
+       instead of drifting from it. getComputedStyle resolves the var() chain,
+       so --iz-cat-1 comes back as a real colour. */
+    themeColor: function (name, fallback) {
+      if (!this.$el) return fallback;
+      var v = getComputedStyle(this.$el).getPropertyValue(name);
+      return (v && v.trim()) || fallback;
+    },
     parsePubPriv: function (val) {
       // Expected format: "12 pub / 3 priv"
       var parts = String(val).split("/");
@@ -193,6 +202,7 @@ export default {
     renderChart: function () {
       if (!this.$refs.chartCanvas) return;
       var segs = this.segments;
+      var self = this;
       this.chart = new Chart(this.$refs.chartCanvas.getContext("2d"), {
         type: "doughnut",
         data: {
@@ -205,7 +215,7 @@ export default {
                 return s.value;
               }),
               backgroundColor: segs.map(function (s) {
-                return s.color;
+                return self.themeColor(s.colorToken[0], s.colorToken[1]);
               }),
               borderColor: "#ffffff",
               borderWidth: 3,
