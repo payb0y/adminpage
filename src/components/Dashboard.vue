@@ -243,36 +243,127 @@ export default {
 </script>
 
 <style>
+/* unscoped — page backdrop follows the In Zicht theme (light + dark).
+   Deliberately NOT `!important` with a hardcoded grey: forcing a light
+   backdrop here is what broke dark mode in superadminpage. --image-background
+   is the theme's own page ground and flips with the colour scheme. */
 #app-content:has(.adminpage-dashboard) {
-  background-color: #f0f1f5 !important;
+  background: var(--image-background);
 }
 
 #adminpage-root {
-  background-color: #f0f1f5 !important;
+  background: var(--image-background);
   min-height: 100vh;
+}
+
+/* ---- Cross-cutting In Zicht behaviours (unscoped so they reach every child
+   component's elements regardless of scoped data-v attributes) ---- */
+
+/* Space Grotesk on titles + big value numerals across all panels */
+.adminpage-dashboard [class*="__title"],
+.adminpage-dashboard [class*="__metric-value"],
+.adminpage-dashboard [class*="__value"],
+.adminpage-dashboard [class*="__count"],
+.adminpage-dashboard [class*="__figure"],
+.adminpage-dashboard [class*="__number"],
+.adminpage-dashboard [class*="__amount"],
+.adminpage-dashboard [class*="__headline"] {
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+}
+
+/* Buttons — smooth transition on all, hover lift on primary/create actions.
+   No :focus-visible ring: NC core's
+   `button:not(.button-vue,…):not(:disabled,.primary):focus-visible { outline: … !important }`
+   wins over anything we can set here, so such a rule would be dead CSS. */
+.adminpage-dashboard [class*="btn"] {
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
+}
+.adminpage-dashboard [class*="btn--primary"]:hover:not(:disabled),
+.adminpage-dashboard [class*="__create-btn"]:hover:not(:disabled),
+.adminpage-dashboard [class*="__add-btn"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--iz-shadow-accent);
+}
+
+/* Native form controls follow the In Zicht accent */
+.adminpage-dashboard input[type="checkbox"],
+.adminpage-dashboard input[type="radio"],
+.adminpage-dashboard input[type="range"],
+.adminpage-dashboard progress {
+  accent-color: var(--accent);
 }
 </style>
 
 <style scoped>
 .adminpage-dashboard {
-  --bg-page: #f0f1f5;
-  --bg-card: #ffffff;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --radius-card: 12px;
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
-  --color-danger: #d94040;
-  --color-warning: #b8860b;
-  --color-success: #2e7d32;
-  --color-badge-danger-bg: #fde8e8;
-  --color-badge-danger-text: #b91c1c;
-  --color-badge-warning-bg: #fef3cd;
-  --color-badge-warning-text: #92400e;
-  --color-badge-success-bg: #d4edda;
-  --color-badge-success-text: #166534;
-  --color-border: #e5e7eb;
+  /* ── App tokens are ALIASES of the In Zicht theme's .iz-* primitives ──
+     The real definitions live in the theme (server.css §8), shared with the
+     other In Zicht apps and — unlike this bundle — cache-busted by Nextcloud's
+     ?v=. These aliases exist so the 22 components still written against the
+     generic names resolve to theme values without being touched; as a
+     component converts to .iz-* classes, its uses of these names go away.
+     Do NOT re-add a literal value here — change it in the theme. */
+
+  /* surfaces */
+  --bg-page: var(--image-background, linear-gradient(135deg, #f7e9f2, #fdf9fc)); /* gradient → use with `background:` */
+  --bg-card: var(--iz-surface, var(--color-main-background, #fff));
+  --bg-subtle: var(--iz-surface-subtle, var(--color-background-hover, #faf6fa));
+  --bg-inset: var(--iz-surface-inset, var(--color-background-dark, #f3ecf3));
+
+  /* text */
+  --color-text-primary: var(--iz-text, var(--color-main-text, #24172e));
+  --color-text-secondary: var(--iz-text-secondary, var(--color-text-maxcontrast, #6a6472));
+  --color-text-muted: var(--iz-text-muted, color-mix(in oklab, var(--color-text-maxcontrast, #6a6472) 70%, var(--color-main-background, #fff)));
+
+  /* borders — --color-border is inherited from the theme (do NOT redefine: cycle) */
+  --color-border-strong: var(--iz-border-strong, var(--color-border-dark, #e6d8e6));
+
+  /* accent (pink) */
+  --accent: var(--iz-accent, var(--color-primary-element, #cc3d94));
+  --accent-hover: var(--iz-accent-hover, var(--color-primary-element-hover, #bd3487));
+  --accent-strong: var(--iz-cat-2, var(--color-primary, #3a2350));
+  --accent-bg: var(--iz-accent-bg, var(--color-primary-element-light, #f6e4f0));
+  --accent-on-bg: var(--iz-accent-bg-text, var(--color-primary-element-light-text, #8a2b6b));
+
+  /* radii */
+  --radius-card: var(--iz-radius-card, var(--border-radius-container, 14px));
+  --radius-el: var(--iz-radius, var(--border-radius-element, 8px));
+  --radius-sm: var(--iz-radius-sm, var(--border-radius-small, 6px));
+  --radius-lg: var(--iz-radius-lg, var(--border-radius-large, 10px));
+  --radius-pill: var(--iz-radius-pill, var(--border-radius-pill, 9999px));
+
+  /* shadows — In Zicht pink glow */
+  --shadow-card: var(--iz-shadow, 0 1px 3px rgba(0, 0, 0, 0.08));
+  --shadow-card-hover: var(--iz-shadow-lift, 0 12px 32px -8px rgba(204, 61, 148, 0.15), 0 4px 12px -4px rgba(0, 0, 0, 0.08));
+
+  /* status — semantic */
+  --color-danger: var(--iz-danger, var(--color-error, #c9314a));
+  --color-danger-text: var(--iz-danger-text, var(--color-error, #b42318));
+  --color-danger-bg: var(--iz-danger-bg, color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff)));
+  --color-warning-text: var(--iz-warning-text, #a86a12);
+  --color-warning-bg: var(--iz-warning-bg, color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff)));
+  --color-success: var(--iz-success, #1f7a3e);
+  --color-success-text: var(--iz-success-text, #166534);
+  --color-success-bg: var(--iz-success-bg, color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff)));
+
+  /* legacy badge token names (children reference them) → point at the ramps */
+  --color-badge-danger-bg: var(--iz-danger-bg, color-mix(in oklab, var(--color-error, #c9314a) 14%, var(--color-main-background, #fff)));
+  --color-badge-danger-text: var(--iz-danger-text, var(--color-error, #b42318));
+  --color-badge-warning-bg: var(--iz-warning-bg, color-mix(in oklab, var(--color-warning, #ecc980) 30%, var(--color-main-background, #fff)));
+  --color-badge-warning-text: var(--iz-warning-text, #a86a12);
+  --color-badge-success-bg: var(--iz-success-bg, color-mix(in oklab, #1f7a3e 14%, var(--color-main-background, #fff)));
+  --color-badge-success-text: var(--iz-success-text, #166534);
+
+  /* chart palette — series 1 = pink, reharmonized for light + dark */
+  --chart-1: var(--iz-cat-1, var(--color-primary-element, #cc3d94));
+  --chart-2: var(--iz-cat-2, var(--color-primary, #3a2350));
+  --chart-3: var(--iz-cat-3, #2f9e8f);
+  --chart-4: var(--iz-cat-4, #d98a2b);
+  --chart-5: var(--iz-cat-5, #7c5cbf);
+  --chart-5-bg: var(--iz-cat-5-bg, color-mix(in oklab, #7c5cbf 16%, var(--color-main-background, #fff)));
+
+  /* spacing — unchanged */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -280,13 +371,13 @@ export default {
   --spacing-xl: 32px;
   --spacing-2xl: 40px;
 
-  background-color: var(--bg-page);
+  /* `background`, not `background-color`: --bg-page resolves to the theme's
+     --image-background, which can be a gradient. */
+  background: var(--bg-page);
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial,
-    sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   color: var(--color-text-primary);
 }
 
@@ -316,8 +407,8 @@ export default {
   width: 80px;
   height: 80px;
   border-radius: 20px;
-  background: #e8f0fe;
-  color: #4a90d9;
+  background: var(--accent-bg);
+  color: var(--accent-on-bg);
   display: flex;
   align-items: center;
   justify-content: center;
