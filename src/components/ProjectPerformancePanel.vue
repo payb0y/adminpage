@@ -3019,6 +3019,12 @@ export default {
 }
 
 /* Badges */
+/* .iz-badge capitalizes, which suits a one-word status but not the count
+   phrases these carry ("11 on-time", "1 week avg"). */
+.perf-modal__project-stats .iz-badge {
+  text-transform: none;
+}
+
 .perf-modal__badge-icon {
   flex-shrink: 0;
   opacity: 0.75;

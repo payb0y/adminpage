@@ -66,6 +66,7 @@
 <script>
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
+import { themeColor as izThemeColor } from "../lib/izChart";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 export default {
@@ -188,9 +189,11 @@ export default {
        instead of drifting from it. getComputedStyle resolves the var() chain,
        so --iz-cat-1 comes back as a real colour. */
     themeColor: function (name, fallback) {
-      if (!this.$el) return fallback;
-      var v = getComputedStyle(this.$el).getPropertyValue(name);
-      return (v && v.trim()) || fallback;
+      // Delegates to the shared helper vendored from the theme repo
+      // (src/lib/izChart.js). Kept as a method because the template calls
+      // it bare and because renderChart resolves colours through `self`
+      // inside plain-function callbacks, where `this` is not the component.
+      return izThemeColor(this.$el, name, fallback);
     },
     parsePubPriv: function (val) {
       // Expected format: "12 pub / 3 priv"

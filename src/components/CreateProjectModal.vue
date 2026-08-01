@@ -1,14 +1,14 @@
 <template>
-  <div class="cp-modal__overlay" @click.self="onOverlayClick">
-    <div class="cp-modal" role="dialog" aria-modal="true">
-      <header class="cp-modal__header">
+  <div class="cp-modal__overlay iz-modal-backdrop" @click.self="onOverlayClick">
+    <div class="cp-modal iz-modal" role="dialog" aria-modal="true">
+      <header class="cp-modal__header iz-modal__header">
         <h3 class="cp-modal__title">
           New project
-          <span class="cp-modal__step">Step {{ step }} of 2</span>
+          <span class="iz-badge iz-badge--muted cp-modal__step">Step {{ step }} of 2</span>
         </h3>
         <button
           type="button"
-          class="cp-modal__close"
+          class="iz-close iz-close--sm"
           :disabled="submitting"
           aria-label="Close"
           @click="$emit('cancel')"
@@ -16,7 +16,7 @@
       </header>
 
       <!-- Step 1: Basics + Location -->
-      <section v-if="step === 1" class="cp-modal__body">
+      <section v-if="step === 1" class="cp-modal__body iz-modal__body">
         <div class="cp-modal__field">
           <label class="cp-modal__label" for="cp-name">
             Name <span class="cp-modal__required">*</span>
@@ -123,7 +123,7 @@
       </section>
 
       <!-- Step 2: Client + Members + Timing -->
-      <section v-else class="cp-modal__body">
+      <section v-else class="cp-modal__body iz-modal__body">
         <div class="cp-modal__group">
           <span class="cp-modal__group-title">Client</span>
           <div class="cp-modal__field">
@@ -275,7 +275,7 @@
         </div>
       </section>
 
-      <footer class="cp-modal__footer">
+      <footer class="cp-modal__footer iz-modal__footer">
         <div v-if="error" class="cp-modal__error">{{ error }}</div>
         <div v-if="slowHint" class="cp-modal__hint">This may take a few seconds…</div>
         <div class="cp-modal__actions">
@@ -588,64 +588,27 @@ export default {
 </script>
 
 <style scoped>
-.cp-modal__overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 24px;
-}
+/* Scrim, surface, radius, shadow, header/footer padding and the close button
+   come from the theme's .iz-modal* primitives. Only the dialog width is local
+   — the theme deliberately sets none. */
 .cp-modal {
-  background: var(--bg-card);
   width: min(560px, 100%);
-  max-height: calc(100vh - 48px);
-  border-radius: 14px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
-.cp-modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border);
+/* .iz-badge capitalizes, which is right for a one-word status but turns
+   "Step 1 of 2" into "Step 1 Of 2". */
+.cp-modal__step {
+  text-transform: none;
 }
+
+/* NC core styles bare <h3>; reset what .iz-modal__title does not cover. */
 .cp-modal__title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.cp-modal__step {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--bg-inset);
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-.cp-modal__close {
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-}
-.cp-modal__close:hover { color: var(--color-text-primary); }
-.cp-modal__close:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cp-modal__body {
-  padding: 16px 20px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -794,8 +757,6 @@ export default {
 }
 
 .cp-modal__footer {
-  border-top: 1px solid var(--color-border);
-  padding: 12px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;

@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { themeColor } from "../lib/izChart";
 import {
   Chart,
   LineController,
@@ -68,15 +69,6 @@ export default {
     },
   },
   methods: {
-    // Resolve an In Zicht theme token off the live element. Chart.js paints on
-    // canvas, so it cannot consume CSS variables — every colour has to be read
-    // out at render time (and re-read when the chart re-renders after a theme
-    // switch). Fallbacks are the pre-theme literals.
-    themeColor(name, fallback) {
-      if (!this.$el) return fallback;
-      const v = getComputedStyle(this.$el).getPropertyValue(name);
-      return (v && v.trim()) || fallback;
-    },
     renderChart() {
       const ctx = this.$refs.chartCanvas.getContext("2d");
 
@@ -92,11 +84,11 @@ export default {
           datasets: [
             {
               data: this.data,
-              borderColor: this.themeColor("--chart-1", "#c878c8"),
+              borderColor: themeColor(this.$el, "--chart-1", "#c878c8"),
               backgroundColor: gradient,
               borderWidth: 2.5,
-              pointBackgroundColor: this.themeColor("--chart-1", "#c878c8"),
-              pointBorderColor: this.themeColor("--bg-card", "#ffffff"),
+              pointBackgroundColor: themeColor(this.$el, "--chart-1", "#c878c8"),
+              pointBorderColor: themeColor(this.$el, "--bg-card", "#ffffff"),
               pointBorderWidth: 2,
               pointRadius: 4,
               pointHoverRadius: 6,
@@ -111,12 +103,12 @@ export default {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: this.themeColor("--color-text-primary", "#1a1a2e"),
+              backgroundColor: themeColor(this.$el, "--color-text-primary", "#1a1a2e"),
               // Tooltip is the inverse of the page: dark box/light text in
               // light mode, light box/dark text in dark mode. Chart.js
               // defaults to white text, which vanishes on the dark scheme.
-              titleColor: this.themeColor("--bg-card", "#ffffff"),
-              bodyColor: this.themeColor("--bg-card", "#ffffff"),
+              titleColor: themeColor(this.$el, "--bg-card", "#ffffff"),
+              bodyColor: themeColor(this.$el, "--bg-card", "#ffffff"),
               titleFont: { size: 13, weight: "600" },
               bodyFont: { size: 12 },
               padding: 10,
@@ -131,7 +123,7 @@ export default {
               grid: { display: false },
               ticks: {
                 font: { size: 11 },
-                color: this.themeColor("--color-text-muted", "#9ca3af"),
+                color: themeColor(this.$el, "--color-text-muted", "#9ca3af"),
               },
             },
             y: {
@@ -141,7 +133,7 @@ export default {
               },
               ticks: {
                 font: { size: 11 },
-                color: this.themeColor("--color-text-muted", "#9ca3af"),
+                color: themeColor(this.$el, "--color-text-muted", "#9ca3af"),
                 stepSize: 2,
               },
             },
@@ -189,7 +181,7 @@ export default {
                 c.roundRect(boxX, boxY, boxW, boxH, 4);
                 c.fill();
 
-                c.fillStyle = this.themeColor("--iz-accent-text", "#ffffff");
+                c.fillStyle = themeColor(this.$el, "--iz-accent-text", "#ffffff");
                 c.textAlign = "left";
                 c.textBaseline = "middle";
                 c.fillText(text, boxX + boxPad, boxY + boxH / 2);
