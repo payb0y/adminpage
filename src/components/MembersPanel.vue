@@ -450,37 +450,7 @@
               {{ member.title ? member.title : member.email }}
             </span>
           </div>
-          <div
-            v-if="confirmRemoveUid === member.userId"
-            class="members-panel__right members-panel__right--confirm"
-            @click.stop
-          >
-            <span class="members-panel__confirm-text">Remove?</span>
-            <span
-              v-if="removeError"
-              class="members-panel__confirm-error"
-            >{{ removeError }}</span>
-            <button
-              type="button"
-              class="members-panel__confirm-btn members-panel__confirm-btn--danger"
-              :disabled="removingUid === member.userId"
-              @click.stop="confirmRemove(member.userId)"
-            >
-              <span
-                v-if="removingUid === member.userId"
-                class="members-panel__spinner members-panel__spinner--inline"
-                aria-hidden="true"
-              ></span>
-              Confirm
-            </button>
-            <button
-              type="button"
-              class="members-panel__confirm-btn"
-              :disabled="removingUid === member.userId"
-              @click.stop="cancelRemove()"
-            >Cancel</button>
-          </div>
-          <div v-else class="members-panel__right">
+          <div class="members-panel__right">
             <!-- Task mini-stats -->
             <span
               v-if="member.assignedTasks > 0"
@@ -679,6 +649,19 @@
         {{ filteredMembers.length }} members
       </div>
     </div>
+
+    <ConfirmDialog
+      v-if="confirmRemoveUid"
+      title="Remove this member?"
+      :message="removeMessage"
+      confirm-label="Remove member"
+      busy-label="Removing…"
+      danger
+      :busy="removingUid !== null"
+      :error="removeError || ''"
+      @confirm="confirmRemove(confirmRemoveUid)"
+      @cancel="cancelRemove"
+    />
   </component>
 </template>
 
@@ -691,8 +674,11 @@ const OCS_HEADERS = {
   Accept: "application/json",
 };
 
+import ConfirmDialog from "./ConfirmDialog.vue";
+
 export default {
   name: "MembersPanel",
+  components: { ConfirmDialog },
   props: {
     embedded: {
       type: Boolean,
@@ -771,6 +757,16 @@ export default {
     });
   },
   computed: {
+    removeMessage: function () {
+      var uid = this.confirmRemoveUid;
+      var m = (this.members || []).find(function (x) { return x.userId === uid; });
+      var name = (m && (m.displayName || m.userId)) || uid;
+      return (
+        name +
+        " loses access to this organization's projects immediately. Their " +
+        "Nextcloud account is not deleted."
+      );
+    },
     filteredMembers: function () {
       var q = (this.search || "").toLowerCase();
       var role = this.roleFilter;
@@ -2013,47 +2009,12 @@ export default {
   cursor: not-allowed;
 }
 
-.members-panel__right--confirm {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.members-panel__confirm-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-badge-danger-text);
-}
-.members-panel__confirm-error {
-  font-size: 11px;
-  color: var(--color-badge-danger-text);
-}
-.members-panel__confirm-btn {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border);
-  background: var(--bg-card);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.members-panel__confirm-btn:hover:not(:disabled) {
-  background: var(--bg-inset);
-}
-.members-panel__confirm-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.members-panel__confirm-btn--danger {
-  background: var(--color-danger);
-  color: var(--iz-accent-text, #fff);
-  border-color: var(--color-danger);
-}
-.members-panel__confirm-btn--danger:hover:not(:disabled) {
-  background: var(--color-danger);
-}
+
+
+
+
+
+
+
+
 </style>

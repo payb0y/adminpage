@@ -261,6 +261,20 @@
         </div>
       </div>
     </div>
+
+    <ConfirmDialog
+      v-if="dialog"
+      :title="dialog.title"
+      :message="dialog.message"
+      :confirm-label="dialog.confirmLabel"
+      :busy-label="dialog.busyLabel"
+      :danger="dialog.danger"
+      :alert-only="dialog.alertOnly"
+      :busy="dialogBusy"
+      :error="dialogError"
+      @confirm="onDialogConfirm"
+      @cancel="closeDialog"
+    />
   </section>
 </template>
 
@@ -268,8 +282,11 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
+import ConfirmDialog from "./ConfirmDialog.vue";
+
 export default {
   name: "PublicLinksAdmin",
+  components: { ConfirmDialog },
   data() {
     return {
       collapsed: true,
@@ -285,6 +302,11 @@ export default {
       statusFilter: "",
       page: 1,
       pageSize: 10,
+      // The single dialog this panel drives. `dialog.action` is the thing to
+      // run on confirm; null means nothing is open.
+      dialog: null,
+      dialogBusy: false,
+      dialogError: "",
     };
   },
   computed: {
@@ -350,6 +372,46 @@ export default {
     this.fetchLinks();
   },
   methods: {
+    /** Open the shared dialog. `action` is awaited on confirm. */
+    ask(opts) {
+      this.dialogError = "";
+      this.dialogBusy = false;
+      this.dialog = opts;
+    },
+    /** Notice-only variant — this is what used to be alert(). */
+    notify(title, message) {
+      this.ask({
+        title,
+        message,
+        confirmLabel: "OK",
+        alertOnly: true,
+        action: null,
+      });
+    },
+    closeDialog() {
+      this.dialog = null;
+      this.dialogError = "";
+      this.dialogBusy = false;
+    },
+    async onDialogConfirm() {
+      const action = this.dialog && this.dialog.action;
+      if (!action) {
+        this.closeDialog();
+        return;
+      }
+      this.dialogBusy = true;
+      this.dialogError = "";
+      try {
+        await action();
+        this.closeDialog();
+      } catch (e) {
+        // Stay open and say why, rather than closing and popping a second
+        // dialog the user has to dismiss separately.
+        this.dialogError =
+          e.response?.data?.error || e.message || "Something went wrong";
+        this.dialogBusy = false;
+      }
+    },
     goToPage(p) {
       this.page = Math.min(Math.max(1, p), this.pageCount);
     },
@@ -382,44 +444,57 @@ export default {
         await this.fetchLinks();
       } catch (e) {
         console.error("Failed to create public link", e);
-        alert(e.response?.data?.error || "Failed to create link");
+        this.notify(
+          "Could not create link",
+          e.response?.data?.error || "Failed to create link",
+        );
       } finally {
         this.creating = false;
       }
     },
 
-    async revokeLink(id) {
-      if (
-        !confirm("Revoke this public link? It will stop working immediately.")
-      )
-        return;
-      this.revoking = id;
-      try {
-        const url = generateUrl(`/apps/adminpage/api/public-links/${id}`);
-        await axios.delete(url);
-        await this.fetchLinks();
-      } catch (e) {
-        console.error("Failed to revoke link", e);
-        alert(e.response?.data?.error || "Failed to revoke link");
-      } finally {
-        this.revoking = null;
-      }
+    revokeLink(id) {
+      this.ask({
+        title: "Revoke this link?",
+        message:
+          "Anyone holding the URL will stop being able to open the dashboard immediately. The link stays in this list and can be deleted separately.",
+        confirmLabel: "Revoke link",
+        busyLabel: "Revoking…",
+        danger: true,
+        action: async () => {
+          this.revoking = id;
+          try {
+            const url = generateUrl(`/apps/adminpage/api/public-links/${id}`);
+            await axios.delete(url);
+            await this.fetchLinks();
+          } finally {
+            this.revoking = null;
+          }
+        },
+      });
     },
 
-    async deleteLink(id) {
-      if (!confirm("Permanently delete this link? This cannot be undone."))
-        return;
-      this.deleting = id;
-      try {
-        const url = generateUrl(`/apps/adminpage/api/public-links/${id}/delete`);
-        await axios.post(url);
-        await this.fetchLinks();
-      } catch (e) {
-        console.error("Failed to delete link", e);
-        alert(e.response?.data?.error || "Failed to delete link");
-      } finally {
-        this.deleting = null;
-      }
+    deleteLink(id) {
+      this.ask({
+        title: "Delete this link?",
+        message:
+          "The link is removed from this list and its URL can never be reissued. This cannot be undone.",
+        confirmLabel: "Delete link",
+        busyLabel: "Deleting…",
+        danger: true,
+        action: async () => {
+          this.deleting = id;
+          try {
+            const url = generateUrl(
+              `/apps/adminpage/api/public-links/${id}/delete`,
+            );
+            await axios.post(url);
+            await this.fetchLinks();
+          } finally {
+            this.deleting = null;
+          }
+        },
+      });
     },
 
     openDatePicker() {
