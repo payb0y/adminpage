@@ -277,11 +277,10 @@ export default {
 }
 
 
+/* Layout from .iz-kpi__row; this card aligns on the baseline because its rows
+   carry a second line under the label. */
 .resources-kpi__row {
-  display: flex;
   align-items: baseline;
-  gap: 8px;
-  min-width: 0;
 }
 
 

@@ -327,18 +327,5 @@ button.projects-kpi__row:active {
 }
 
 
-/* Chrome comes from the theme's .iz-btn --primary --sm; only layout stays
-   here. It used to hardcode the old #4a90d9 blue, which by the end of the
-   migration was the one thing on the card still on the old palette.
-
-   min-height is reset because NC core gives bare buttons 34px, which made this
-   header 40px against the other cards' 32 and pushed the whole card down the
-   strip. A min-height on the header can't cap a taller child. */
-button.projects-kpi__new-btn {
-  min-height: 0;
-  margin-left: auto;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
 
 </style>

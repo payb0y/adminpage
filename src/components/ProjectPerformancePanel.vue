@@ -439,7 +439,7 @@
             <div class="perf-panel__proj-list">
               <input
                 v-model="delaySearch"
-                class="iz-input perf-panel__proj-search"
+                class="perf-panel__proj-search"
                 type="text"
                 placeholder="Filter…"
                 @click.stop
@@ -590,7 +590,7 @@
             <div class="perf-panel__proj-list">
               <input
                 v-model="completionSearch"
-                class="iz-input perf-panel__proj-search"
+                class="perf-panel__proj-search"
                 type="text"
                 placeholder="Filter…"
                 @click.stop

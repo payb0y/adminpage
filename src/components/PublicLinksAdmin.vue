@@ -85,7 +85,9 @@
                 <line x1="8" y1="2" x2="8" y2="6" />
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
-              <input class="iz-input"
+              <!-- No .iz-input: this sits inside .datetime-wrap, which already
+                   carries the border and radius. -->
+              <input
                 id="pl-expires"
                 ref="dateInput"
                 v-model="newExpiresAt"

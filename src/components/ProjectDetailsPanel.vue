@@ -1995,35 +1995,20 @@ export default {
   flex-wrap: wrap;
 }
 
+/* Chrome from .iz-input; only this field's fixed width is local. It was a full
+   copy of the primitive until now — the class was added but the rule was never
+   removed, and a scoped rule wins the tie, so the primitive never applied. */
 .proj-details__tabs-search-input {
-  padding: 6px 12px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: var(--bg-card);
-  outline: none;
   width: 200px;
-  transition: border-color 0.15s;
 }
 
-.proj-details__tabs-search-input:focus {
-  border-color: var(--accent);
-}
 
+/* Chrome from .iz-select. width:auto because the primitive is width:100% —
+   right for a stacked form, wrong for these sitting in a toolbar row. */
 .proj-details__tabs-status-select {
-  padding: 6px 10px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
+  width: auto;
   cursor: pointer;
-
-  /* toolbar control — see the note on .projects-map__select */
-  width: auto;}
+}
 
 .proj-details__tabs-status-select:focus {
   border-color: var(--accent);
