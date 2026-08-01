@@ -2919,7 +2919,11 @@ export default {
    are specific to this dialog. */
 .perf-modal {
   width: 100%;
-  max-width: 780px;
+  /* 860, not the old 780: .iz-table-wrap adds a border and the expanded-row
+     inset takes another 32px, which left the delay table's seven columns
+     overflowing again. Wide enough that the widest table fits without
+     scrolling; it still scrolls if a project name is long. */
+  max-width: 860px;
 }
 
 /* NC core styles bare <h3>; reset what .iz-modal__title does not cover. */
