@@ -650,19 +650,19 @@
     </div>
 
     <!-- DRILL-DOWN MODAL -->
-    <div v-if="modal" class="perf-modal__backdrop" @click.self="closeModal">
-      <div class="perf-modal">
-        <div class="perf-modal__header">
-          <h3 class="perf-modal__title">{{ modalTitle }}</h3>
-          <button class="perf-modal__close" @click="closeModal">&times;</button>
+    <div v-if="modal" class="perf-modal__backdrop iz-modal-backdrop" @click.self="closeModal">
+      <div class="perf-modal iz-modal">
+        <div class="perf-modal__header iz-modal__header">
+          <h3 class="perf-modal__title iz-modal__title">{{ modalTitle }}</h3>
+          <button class="iz-close" @click="closeModal">&times;</button>
         </div>
-        <div class="perf-modal__body">
+        <div class="perf-modal__body iz-modal__body">
           <!-- Progress Detail -->
           <template v-if="modal === 'progress'">
             <div class="perf-modal__sort-bar" @click.stop>
               <span class="perf-modal__sort-label">% Done:</span>
               <button
-                class="perf-modal__sort-btn perf-modal__sort-btn--active"
+                class="iz-chip iz-chip--active"
                 @click="
                   progressSortBy = progressSortBy === 'desc' ? 'asc' : 'desc'
                 "
@@ -688,11 +688,11 @@
                   >
                     &#8594; Details
                   </button>
-                  <span class="perf-modal__badge perf-modal__badge--info">
+                  <span class="iz-badge iz-badge--accent">
                     {{ proj.done }}/{{ proj.total }} done
                   </span>
                   <span
-                    class="perf-modal__badge"
+                    class="iz-badge"
                     :class="progressBadgeClass(proj.progress)"
                   >
                     {{ proj.progress }}%
@@ -718,9 +718,9 @@
               <transition name="perf-modal-expand">
                 <div
                   v-if="isProjectOpen('progress', proj.name)"
-                  class="perf-modal__task-table-wrap"
+                  class="iz-table-wrap perf-modal__task-table-wrap"
                 >
-                  <table class="perf-modal__task-table">
+                  <table class="iz-table">
                     <thead>
                       <tr>
                         <th>Task</th>
@@ -781,11 +781,11 @@
                   <span class="perf-modal__project-name">{{ mem.name }}</span>
                 </div>
                 <div class="perf-modal__project-stats">
-                  <span class="perf-modal__badge perf-modal__badge--info">
+                  <span class="iz-badge iz-badge--accent">
                     {{ mem.done }}/{{ mem.total }} done
                   </span>
                   <span
-                    class="perf-modal__badge"
+                    class="iz-badge"
                     :class="progressBadgeClass(mem.progress)"
                   >
                     {{ mem.progress }}%
@@ -811,9 +811,9 @@
               <transition name="perf-modal-expand">
                 <div
                   v-if="isProjectOpen('member', mem.name)"
-                  class="perf-modal__task-table-wrap"
+                  class="iz-table-wrap perf-modal__task-table-wrap"
                 >
-                  <table class="perf-modal__task-table">
+                  <table class="iz-table">
                     <thead>
                       <tr>
                         <th>Task</th>
@@ -863,18 +863,18 @@
             <div class="perf-modal__sort-bar">
               <span class="perf-modal__sort-label">Sort by:</span>
               <button
-                class="perf-modal__sort-btn"
+                class="iz-chip"
                 :class="{
-                  'perf-modal__sort-btn--active': delaySortBy === 'latest',
+                  'iz-chip--active': delaySortBy === 'latest',
                 }"
                 @click="delaySortBy = 'latest'"
               >
                 Latest Opened
               </button>
               <button
-                class="perf-modal__sort-btn"
+                class="iz-chip"
                 :class="{
-                  'perf-modal__sort-btn--active': delaySortBy === 'oldest',
+                  'iz-chip--active': delaySortBy === 'oldest',
                 }"
                 @click="delaySortBy = 'oldest'"
               >
@@ -899,16 +899,16 @@
                   >
                     &#8594; Details
                   </button>
-                  <span class="perf-modal__badge perf-modal__badge--success">
+                  <span class="iz-badge iz-badge--success">
                     {{ countByCategory(proj.tasks, "on-time") }} on-time
                   </span>
-                  <span class="perf-modal__badge perf-modal__badge--warning">
+                  <span class="iz-badge iz-badge--warning">
                     {{ countByCategory(proj.tasks, "delayed") }} delayed
                   </span>
-                  <span class="perf-modal__badge perf-modal__badge--danger">
+                  <span class="iz-badge iz-badge--danger">
                     {{ countByCategory(proj.tasks, "blocked") }} blocked
                   </span>
-                  <span class="perf-modal__badge perf-modal__badge--neutral">
+                  <span class="iz-badge iz-badge--muted">
                     <!-- inline SVG, not the U+23F2 timer emoji this used to
                          carry: no font in the stack has that glyph, so it
                          rendered as a tofu box next to the age. -->
@@ -945,9 +945,9 @@
               <transition name="perf-modal-expand">
                 <div
                   v-if="isProjectOpen('delay', proj.name)"
-                  class="perf-modal__task-table-wrap"
+                  class="iz-table-wrap perf-modal__task-table-wrap"
                 >
-                  <table class="perf-modal__task-table">
+                  <table class="iz-table">
                     <thead>
                       <tr>
                         <th>Task</th>
@@ -1033,7 +1033,7 @@
             <div class="perf-modal__sort-bar" @click.stop>
               <span class="perf-modal__sort-label">Completion Rate:</span>
               <button
-                class="perf-modal__sort-btn perf-modal__sort-btn--active"
+                class="iz-chip iz-chip--active"
                 @click="
                   completionSortBy =
                     completionSortBy === 'desc' ? 'asc' : 'desc'
@@ -1064,7 +1064,7 @@
                   >
                     &#8594; Details
                   </button>
-                  <span class="perf-modal__badge perf-modal__badge--info">
+                  <span class="iz-badge iz-badge--accent">
                     {{ proj.completed }}/{{ proj.total_tasks }} completed
                   </span>
                   <span
@@ -1082,7 +1082,7 @@
               <transition name="perf-modal-expand">
                 <div
                   v-if="isProjectOpen('completion', proj.name)"
-                  class="perf-modal__task-table-wrap"
+                  class="iz-table-wrap perf-modal__task-table-wrap"
                 >
                   <div
                     v-if="proj.tasks.length === 0"
@@ -1090,7 +1090,7 @@
                   >
                     No completed tasks yet
                   </div>
-                  <table v-else class="perf-modal__task-table">
+                  <table v-else class="iz-table">
                     <thead>
                       <tr>
                         <th>Task</th>
@@ -1890,9 +1890,9 @@ export default {
       return !!this.expandedProjects[section + ":" + name];
     },
     progressBadgeClass: function (pct) {
-      if (pct >= 75) return "perf-modal__badge--success";
-      if (pct >= 40) return "perf-modal__badge--warning";
-      return "perf-modal__badge--danger";
+      if (pct >= 75) return "iz-badge--success";
+      if (pct >= 40) return "iz-badge--warning";
+      return "iz-badge--danger";
     },
     countByCategory: function (tasks, cat) {
       return tasks.filter(function (t) {
@@ -2889,20 +2889,7 @@ export default {
 
 /* =============== DRILL-DOWN MODAL =============== */
 
-.perf-modal__backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  animation: perf-fade-in 0.15s ease;
-}
+
 
 @keyframes perf-fade-in {
   from {
@@ -2913,17 +2900,7 @@ export default {
   }
 }
 
-.perf-modal {
-  background: var(--bg-card);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 780px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  animation: perf-slide-up 0.2s ease;
-}
+
 
 @keyframes perf-slide-up {
   from {
@@ -2936,50 +2913,25 @@ export default {
   }
 }
 
-.perf-modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--bg-subtle);
-  flex-shrink: 0;
+/* Chrome (surface, radius, shadow, scrim, header/body padding, close button,
+   table, badges, chips) now comes from the theme's .iz-modal* / .iz-table* /
+   .iz-badge / .iz-chip primitives. What stays here is layout and the bits that
+   are specific to this dialog. */
+.perf-modal {
+  width: 100%;
+  max-width: 780px;
 }
 
+/* NC core styles bare <h3>; reset what .iz-modal__title does not cover. */
 .perf-modal__title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text-primary);
   margin: 0;
   padding: 0;
   border: none;
 }
 
-.perf-modal__close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
 
-.perf-modal__close:hover {
-  background: var(--bg-inset);
-  color: var(--color-text-primary);
-}
 
-.perf-modal__body {
-  padding: 16px 24px 24px;
-  overflow-y: auto;
-  flex: 1;
-}
+
 
 .perf-modal__body::-webkit-scrollbar {
   width: 5px;
@@ -3063,46 +3015,20 @@ export default {
 }
 
 /* Badges */
-.perf-modal__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
 .perf-modal__badge-icon {
   flex-shrink: 0;
   opacity: 0.75;
 }
 
-.perf-modal__badge--success {
-  background: var(--color-badge-success-bg);
-  color: var(--color-badge-success-text);
-}
 
-.perf-modal__badge--warning {
-  background: var(--color-badge-warning-bg);
-  color: var(--color-badge-warning-text);
-}
 
-.perf-modal__badge--danger {
-  background: var(--color-badge-danger-bg);
-  color: var(--color-badge-danger-text);
-}
 
-.perf-modal__badge--info {
-  background: var(--accent-bg);
-  color: var(--accent-strong);
-}
 
-.perf-modal__badge--neutral {
-  background: var(--bg-inset);
-  color: var(--color-text-secondary);
-}
+
+
+
+
+
 
 /* Sort bar */
 .perf-modal__sort-bar {
@@ -3120,29 +3046,11 @@ export default {
   font-weight: 500;
 }
 
-.perf-modal__sort-btn {
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--bg-card);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
 
-.perf-modal__sort-btn:hover {
-  border-color: var(--color-text-muted);
-}
 
-.perf-modal__sort-btn--active {
-  /* --accent, not --accent-strong: accent-strong aliases --iz-cat-2, which
-     inverts to a pale lavender on the dark scheme and left white label text
-     unreadable. --accent stays a saturated pink in both. */
-  background: var(--accent);
-  color: var(--iz-accent-text, #fff);
-  border-color: var(--accent);
-}
+
+
+
 
 /* Age badge in modal */
 .perf-modal__age-badge {
@@ -3169,47 +3077,22 @@ export default {
 }
 
 /* Task Table */
+/* .iz-table-wrap already scrolls on x, which is what keeps the seven-column
+   delay table reachable instead of clipping its Opened column. Only the inset
+   inside the expanded row is local. */
 .perf-modal__task-table-wrap {
-  padding: 0 16px 12px;
-  background: var(--bg-subtle);
-  /* The delay table carries seven columns and used to overrun this box with no
-     way to reach the overflow — the Opened column was simply clipped off the
-     right edge. Scroll it here rather than widening the modal, which would put
-     a horizontal scrollbar on the whole dialog. */
-  overflow-x: auto;
+  margin: 0 16px 12px;
 }
 
-.perf-modal__task-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
 
-.perf-modal__task-table th {
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 10px 8px 6px;
-  border-bottom: 1px solid var(--bg-subtle);
-}
 
-.perf-modal__task-table td {
-  padding: 8px;
-  color: var(--color-text-primary);
-  border-bottom: 1px solid var(--bg-subtle);
-  vertical-align: middle;
-}
 
-.perf-modal__task-table tbody tr:last-child td {
-  border-bottom: none;
-}
 
-.perf-modal__task-table tbody tr:hover {
-  background: var(--bg-subtle);
-}
+
+
+
+
+
 
 /* Status and Category pills */
 .perf-modal__status,
