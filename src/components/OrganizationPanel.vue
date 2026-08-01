@@ -45,7 +45,7 @@
     <div v-show="embedded || !collapsed" class="org-panel__body">
       <!-- ── Profile Header ── -->
       <div class="org-panel__profile">
-        <span class="org-panel__avatar">{{ initials }}</span>
+        <span class="iz-identity__avatar org-panel__avatar">{{ initials }}</span>
         <div class="org-panel__profile-text">
           <span class="org-panel__name">{{ profile.name }}</span>
           <span class="org-panel__admin">Admin: {{ profile.adminUid }}</span>
@@ -194,18 +194,13 @@ export default {
   border-bottom: 1px solid var(--bg-subtle);
 }
 
+/* Chrome from .iz-identity__avatar; only the header's larger scale is local.
+   The fill changes from a green gradient to the accent — the green was
+   arbitrary, and an org avatar reading as "success" was misleading. */
 .org-panel__avatar {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--color-success), var(--color-success));
-  color: #fff;
   font-size: 20px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .org-panel__profile-text {

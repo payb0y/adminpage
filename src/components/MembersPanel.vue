@@ -425,7 +425,7 @@
         </template>
       </div>
 
-      <div v-if="filteredMembers.length === 0" class="members-panel__empty">
+      <div v-if="filteredMembers.length === 0" class="iz-empty members-panel__empty">
         No members match your filters.
       </div>
 
@@ -436,7 +436,7 @@
       >
         <!-- Summary Row (always visible, clickable) -->
         <div class="members-panel__row" @click="toggle(member.userId)">
-          <span class="members-panel__avatar">{{
+          <span class="iz-identity__avatar">{{
             (member.displayName || member.userId).charAt(0).toUpperCase()
           }}</span>
           <div class="members-panel__info">
@@ -1336,11 +1336,9 @@ export default {
   margin-top: 6px;
 }
 
+/* .iz-empty supplies the box. */
 .members-panel__empty {
-  font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
-  padding: 16px 0;
-  text-align: center;
+  margin: 8px 0;
 }
 
 /* ─── Member Card ─── */
@@ -1374,19 +1372,7 @@ export default {
   background: var(--bg-subtle);
 }
 
-.members-panel__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+
 
 .members-panel__info {
   display: flex;

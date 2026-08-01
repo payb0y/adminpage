@@ -1,7 +1,7 @@
 <template>
   <div :class="['events-panel', { 'events-panel--embedded': embedded }]">
     <!-- Empty state (no events at all) -->
-    <div v-if="!events || events.length === 0" class="events-panel__empty">
+    <div v-if="!events || events.length === 0" class="iz-empty events-panel__empty">
       <svg
         class="events-panel__empty-check"
         xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +70,7 @@
       </div>
 
       <!-- No results after filtering -->
-      <div v-if="filteredEvents.length === 0" class="events-panel__empty">
+      <div v-if="filteredEvents.length === 0" class="iz-empty events-panel__empty">
         <p class="events-panel__empty-text">No events match your filters.</p>
       </div>
 
@@ -290,9 +290,9 @@ export default {
 }
 
 /* ─── Empty State ─── */
+/* .iz-empty supplies the box. */
 .events-panel__empty {
-  text-align: center;
-  padding: var(--spacing-lg, 24px) 0;
+  margin: 8px 0;
 }
 
 .events-panel__empty-check {

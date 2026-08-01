@@ -757,7 +757,7 @@
             </div>
             <div
               v-if="dateFilteredProgressDetails.length === 0"
-              class="perf-modal__empty"
+              class="iz-empty perf-modal__empty"
             >
               No project data available
             </div>
@@ -775,7 +775,7 @@
                 @click="toggleProject('member', mem.name)"
               >
                 <div class="perf-modal__member-header">
-                  <span class="perf-modal__member-avatar">{{
+                  <span class="iz-identity__avatar iz-identity__avatar--sm">{{
                     mem.name.charAt(0).toUpperCase()
                   }}</span>
                   <span class="perf-modal__project-name">{{ mem.name }}</span>
@@ -852,7 +852,7 @@
             </div>
             <div
               v-if="dateFilteredMemberDetails.length === 0"
-              class="perf-modal__empty"
+              class="iz-empty perf-modal__empty"
             >
               No member assignment data available
             </div>
@@ -1022,7 +1022,7 @@
             </div>
             <div
               v-if="sortedDelayDetails.length === 0"
-              class="perf-modal__empty"
+              class="iz-empty perf-modal__empty"
             >
               No delay data available
             </div>
@@ -1131,7 +1131,7 @@
             </div>
             <div
               v-if="sortedCompletionDetails.length === 0"
-              class="perf-modal__empty"
+              class="iz-empty perf-modal__empty"
             >
               No completion data available
             </div>
@@ -2659,19 +2659,7 @@ export default {
   min-width: 0;
 }
 
-.perf-modal__member-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent));
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+
 
 /* Chart Row: list + chart side by side */
 .perf-panel__chart-row {
@@ -3171,11 +3159,9 @@ export default {
 }
 
 /* Empty states */
+/* .iz-empty supplies the box; nothing local is needed beyond its own margin. */
 .perf-modal__empty {
-  text-align: center;
-  padding: 32px 16px;
-  color: var(--color-text-muted);
-  font-size: 14px;
+  margin: 8px 0;
 }
 
 .perf-modal__empty-inline {

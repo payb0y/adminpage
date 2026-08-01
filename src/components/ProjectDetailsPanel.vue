@@ -77,7 +77,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="!selectedProject" class="proj-details__empty">
+    <div v-if="!selectedProject" class="iz-empty proj-details__empty">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="40"
@@ -358,7 +358,7 @@
             >
               <div class="proj-details__team-row">
                 <div class="proj-details__team-info">
-                  <span class="proj-details__team-avatar">{{
+                  <span class="iz-identity__avatar iz-identity__avatar--sm proj-details__team-avatar">{{
                     a.userId.charAt(0).toUpperCase()
                   }}</span>
                   <span class="proj-details__team-name">{{ a.userId }}</span>
@@ -574,7 +574,7 @@
               :key="'pm-' + selectedProject.id + '-' + m.userId"
               class="proj-details__member"
             >
-              <span class="proj-details__member-avatar">{{
+              <span class="iz-identity__avatar iz-identity__avatar--sm iz-identity__avatar--soft proj-details__member-avatar">{{
                 (m.displayName || m.userId).charAt(0).toUpperCase()
               }}</span>
               <div class="proj-details__member-info">
@@ -2132,12 +2132,12 @@ export default {
 }
 
 /* ── Empty State ── */
+/* Box, border, padding and type come from .iz-empty; only layout is local. */
 .proj-details__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 48px 24px;
-  color: var(--color-text-muted, #9ca3af);
 }
 
 .proj-details__empty-icon {
@@ -2460,18 +2460,13 @@ export default {
   flex: 1;
 }
 
+/* Chrome from .iz-identity__avatar--sm; the circle is local — these read as
+   people in a row rather than as cards, and the rounded square does not. */
 .proj-details__team-avatar {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent));
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 .proj-details__team-name {
@@ -3235,18 +3230,12 @@ export default {
 .proj-details__member:last-child {
   border-bottom: none;
 }
+/* .iz-identity__avatar--soft supplies the tint pair; circle is local, same
+   reasoning as the team avatar above. */
 .proj-details__member-avatar {
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
   border-radius: 50%;
-  background: var(--accent-bg);
-  color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 .proj-details__member-info {
   flex: 1;

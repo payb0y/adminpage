@@ -125,12 +125,12 @@
         </select>
       </div>
 
-      <div v-if="loading" class="public-links-admin__state">Loading links…</div>
+      <div v-if="loading" class="iz-empty public-links-admin__state">Loading links…</div>
       <div v-else-if="error" class="public-links-admin__error">{{ error }}</div>
-      <div v-else-if="links.length === 0" class="public-links-admin__state">
+      <div v-else-if="links.length === 0" class="iz-empty public-links-admin__state">
         No public links yet. Create one above.
       </div>
-      <div v-else-if="filteredLinks.length === 0" class="public-links-admin__state">
+      <div v-else-if="filteredLinks.length === 0" class="iz-empty public-links-admin__state">
         No links match the selected filter.
       </div>
       <table v-else class="public-links-admin__table">
@@ -877,14 +877,9 @@ export default {
 }
 
 /* ─── States ─── */
+/* .iz-empty supplies the box — this rule was already a hand-copy of it. */
 .public-links-admin__state {
-  padding: 24px;
-  text-align: center;
-  color: var(--color-text-secondary, #6b7280);
-  font-size: 13px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 10px;
+  margin: 8px 0;
 }
 
 .public-links-admin__error {

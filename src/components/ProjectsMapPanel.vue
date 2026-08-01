@@ -51,14 +51,14 @@
       >Clear all</button>
     </div>
 
-    <div v-if="loading" class="projects-map__state">Loading project locations…</div>
+    <div v-if="loading" class="iz-empty projects-map__state">Loading project locations…</div>
     <div
       v-else-if="!hasAnyOk"
-      class="projects-map__state"
+      class="iz-empty projects-map__state"
     >No projects with addresses yet.</div>
     <div
       v-else-if="filteredProjects.length === 0"
-      class="projects-map__state"
+      class="iz-empty projects-map__state"
     >
       No projects match these filters.
       <button type="button" class="projects-map__clear" @click="clearFilters">Clear filters</button>
@@ -413,11 +413,8 @@ export default {
   background: var(--bg-inset);
 }
 
+/* Box, border, padding and type come from .iz-empty; only layout is local. */
 .projects-map__state {
-  text-align: center;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  padding: 32px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
