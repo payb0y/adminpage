@@ -673,14 +673,15 @@
             <div
               v-for="proj in sortedProgressDetails"
               :key="'mp-' + proj.name"
-              class="perf-modal__project"
+              class="iz-row iz-row--card iz-row--expandable perf-modal__project"
+              :class="{ 'iz-row--expanded': isProjectOpen('progress', proj.name) }"
             >
               <div
-                class="perf-modal__project-header"
+                class="iz-row__header"
                 @click="toggleProject('progress', proj.name)"
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
-                <div class="perf-modal__project-stats">
+                <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
                     title="Open in Per Project Details"
@@ -697,16 +698,20 @@
                   >
                     {{ proj.progress }}%
                   </span>
-                  <span
-                    class="perf-modal__chevron"
-                    :class="{
-                      'perf-modal__chevron--open': isProjectOpen(
-                        'progress',
-                        proj.name,
-                      ),
-                    }"
-                    >&#8250;</span
+                  <svg
+                    class="iz-row__chevron"
+                    :class="{ 'iz-row__chevron--open': isProjectOpen('progress', proj.name) }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
                   >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </div>
               </div>
               <div class="perf-modal__progress-bar">
@@ -768,10 +773,11 @@
             <div
               v-for="mem in dateFilteredMemberDetails"
               :key="'mm-' + mem.name"
-              class="perf-modal__project"
+              class="iz-row iz-row--card iz-row--expandable perf-modal__project"
+              :class="{ 'iz-row--expanded': isProjectOpen('member', mem.name) }"
             >
               <div
-                class="perf-modal__project-header"
+                class="iz-row__header"
                 @click="toggleProject('member', mem.name)"
               >
                 <div class="perf-modal__member-header">
@@ -780,7 +786,7 @@
                   }}</span>
                   <span class="perf-modal__project-name">{{ mem.name }}</span>
                 </div>
-                <div class="perf-modal__project-stats">
+                <div class="iz-row__actions">
                   <span class="iz-badge iz-badge--accent">
                     {{ mem.done }}/{{ mem.total }} done
                   </span>
@@ -790,16 +796,22 @@
                   >
                     {{ mem.progress }}%
                   </span>
-                  <span
-                    class="perf-modal__chevron"
+                  <svg
+                    class="iz-row__chevron"
                     :class="{
-                      'perf-modal__chevron--open': isProjectOpen(
-                        'member',
-                        mem.name,
-                      ),
+                      'iz-row__chevron--open': isProjectOpen('member', mem.name),
                     }"
-                    >&#8250;</span
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
                   >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </div>
               </div>
               <div class="perf-modal__progress-bar">
@@ -884,14 +896,15 @@
             <div
               v-for="proj in sortedDelayDetails"
               :key="'mdl-' + proj.name"
-              class="perf-modal__project"
+              class="iz-row iz-row--card iz-row--expandable perf-modal__project"
+              :class="{ 'iz-row--expanded': isProjectOpen('delay', proj.name) }"
             >
               <div
-                class="perf-modal__project-header"
+                class="iz-row__header"
                 @click="toggleProject('delay', proj.name)"
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
-                <div class="perf-modal__project-stats">
+                <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
                     title="Open in Per Project Details"
@@ -930,16 +943,20 @@
                     </svg>
                     {{ formatAge(proj.avgDaysActive) }} avg
                   </span>
-                  <span
-                    class="perf-modal__chevron"
-                    :class="{
-                      'perf-modal__chevron--open': isProjectOpen(
-                        'delay',
-                        proj.name,
-                      ),
-                    }"
-                    >&#8250;</span
+                  <svg
+                    class="iz-row__chevron"
+                    :class="{ 'iz-row__chevron--open': isProjectOpen('delay', proj.name) }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
                   >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </div>
               </div>
               <transition name="perf-modal-expand">
@@ -1049,14 +1066,15 @@
             <div
               v-for="proj in sortedCompletionDetails"
               :key="'mc-' + proj.name"
-              class="perf-modal__project"
+              class="iz-row iz-row--card iz-row--expandable perf-modal__project"
+              :class="{ 'iz-row--expanded': isProjectOpen('completion', proj.name) }"
             >
               <div
-                class="perf-modal__project-header"
+                class="iz-row__header"
                 @click="toggleProject('completion', proj.name)"
               >
                 <span class="perf-modal__project-name">{{ proj.name }}</span>
-                <div class="perf-modal__project-stats">
+                <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
                     title="Open in Per Project Details"
@@ -1067,16 +1085,20 @@
                   <span class="iz-badge iz-badge--accent">
                     {{ proj.completed }}/{{ proj.total_tasks }} completed
                   </span>
-                  <span
-                    class="perf-modal__chevron"
-                    :class="{
-                      'perf-modal__chevron--open': isProjectOpen(
-                        'completion',
-                        proj.name,
-                      ),
-                    }"
-                    >&#8250;</span
+                  <svg
+                    class="iz-row__chevron"
+                    :class="{ 'iz-row__chevron--open': isProjectOpen('completion', proj.name) }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
                   >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </div>
               </div>
               <transition name="perf-modal-expand">
@@ -2934,27 +2956,17 @@ export default {
   border-radius: 3px;
 }
 
-/* Project Row */
+/* Project Row — surface, border, radius, header padding, hover, the actions
+   cluster and the chevron all come from .iz-row--card / .iz-row--expandable.
+   Only the gap between rows is local. */
 .perf-modal__project {
   margin-bottom: 12px;
-  border: 1px solid var(--bg-subtle);
-  border-radius: 10px;
   overflow: hidden;
 }
 
-.perf-modal__project-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: background 0.15s;
-  gap: 12px;
-}
 
-.perf-modal__project-header:hover {
-  background: var(--bg-subtle);
-}
+
+
 
 .perf-modal__project-name {
   font-size: 14px;
@@ -2985,31 +2997,17 @@ export default {
   color: #fff;
 }
 
-.perf-modal__project-stats {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
 
-.perf-modal__chevron {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text-muted);
-  transition: transform 0.2s ease;
-  display: inline-flex;
-  margin-left: 4px;
-}
 
-.perf-modal__chevron--open {
-  transform: rotate(90deg);
-}
+
+
+
 
 /* Badges */
 /* .iz-badge capitalizes, which suits a one-word status but not the count
-   phrases these carry ("11 on-time", "1 week avg"). */
-.perf-modal__project-stats .iz-badge {
+   phrases these carry ("11 on-time", "1 week avg"). Scoped to .iz-row__actions
+   — the cluster these badges sit in — since .perf-modal__project-stats is gone. */
+.iz-row__actions .iz-badge {
   text-transform: none;
 }
 
