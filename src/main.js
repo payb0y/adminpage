@@ -45,7 +45,7 @@ if (mountEl) {
               minHeight: "60vh",
               textAlign: "center",
               padding: "24px",
-              color: "#6b7280",
+              color: "var(--iz-text-secondary, #6b7280)",
             },
           },
           [
@@ -57,10 +57,10 @@ if (mountEl) {
               style: {
                 marginTop: "12px",
                 padding: "8px 18px",
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--iz-border, #d1d5db)",
                 borderRadius: "8px",
-                background: "#fff",
-                color: "#1a1a2e",
+                background: "var(--iz-surface, #fff)",
+                color: "var(--iz-text, #1a1a2e)",
                 fontWeight: "600",
                 cursor: "pointer",
               },
