@@ -1,7 +1,7 @@
 <template>
-  <div class="timeline-kpi">
-    <div class="timeline-kpi__header">
-      <div class="timeline-kpi__icon">
+  <div class="iz-kpi timeline-kpi">
+    <div class="iz-kpi__header timeline-kpi__header">
+      <div class="iz-kpi__icon timeline-kpi__icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -17,15 +17,15 @@
           <polyline points="12 6 12 12 16 14" />
         </svg>
       </div>
-      <span class="timeline-kpi__title">Timeline</span>
+      <span class="iz-kpi__title timeline-kpi__title">Timeline</span>
     </div>
 
     <!-- Hero figure. The completion rate used to sit in the gauge's centre; it
          moved up here so all four KPI cards state their headline number in the
          same place, which is what lets the strip be scanned across. -->
-    <div class="timeline-kpi__hero">
-      <span class="timeline-kpi__hero-value iz-figure">{{ completionRate }}%</span>
-      <span class="timeline-kpi__hero-label">
+    <div class="iz-kpi__hero timeline-kpi__hero">
+      <span class="iz-kpi__hero-value timeline-kpi__hero-value iz-figure">{{ completionRate }}%</span>
+      <span class="iz-kpi__hero-label timeline-kpi__hero-label">
         Complete<template v-if="scheduleElapsed !== null">
           · {{ scheduleElapsed }}% elapsed</template
         >
@@ -34,9 +34,9 @@
 
     <!-- Body: rings left, stats right — the same two-column shape as the
          Tasks card, so both cards' visuals sit on one line across the strip. -->
-    <div class="timeline-kpi__body">
+    <div class="iz-kpi__body timeline-kpi__body">
       <div class="timeline-kpi__chart-wrap">
-        <div class="timeline-kpi__chart">
+        <div class="iz-kpi__chart timeline-kpi__chart">
           <canvas ref="gaugeCanvas" width="120" height="120"></canvas>
         </div>
       </div>
@@ -65,7 +65,7 @@
          a second rendering of one number rather than a second fact. -->
     <div
       v-if="schedule"
-      class="timeline-kpi__rail-wrap"
+      class="iz-kpi__footer timeline-kpi__rail-wrap"
       :title="scheduleTitle"
     >
       <span class="timeline-kpi__rail-date">{{ formatDate(schedule.start) }}</span>
@@ -275,99 +275,20 @@ export default {
 </script>
 
 <style scoped>
-.timeline-kpi {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  /* 16px, not the 12px this card used to use — the other three KPI cards all
-     gap at 16, and the 4px difference pushed this card's chart off the line. */
-  gap: 16px;
-}
 
-.timeline-kpi:hover {
-  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-}
 
-.timeline-kpi__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
-.timeline-kpi__icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: color-mix(in oklab, var(--chart-3) 12%, transparent);
-  color: var(--chart-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
-.timeline-kpi__title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
 
-/* ── Body ──
-   Mirrors TasksKpiCard's .tasks-kpi__body / __left / __details: same flex
-   direction, same 20px gap, same 120px chart box and 22px centre value. The
-   two cards' charts therefore share a baseline across the KPI strip, which
-   the old 160x90 half-gauge could never do. */
-.timeline-kpi__body {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
 
 .timeline-kpi__chart-wrap {
   flex-shrink: 0;
 }
 
-.timeline-kpi__chart {
-  position: relative;
-  width: 112px;
-  height: 112px;
-}
 
-.timeline-kpi__chart canvas {
-  width: 112px !important;
-  height: 112px !important;
-}
 
-/* Hero figure — same treatment across all four KPI cards. */
-.timeline-kpi__hero {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  /* Same box as the Projects hero, which carries this padding for its
-     click target. Without it that card's numeral sits 4px lower than
-     the rest and the figure row stops being a row. */
-  padding: 4px 8px;
-  margin: -4px -8px;
-}
 
-.timeline-kpi__hero-value {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary, #1a1a2e);
-  line-height: 1;
-}
 
-.timeline-kpi__hero-label {
-  font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
-  font-weight: 400;
-}
 
 /* ── Schedule rail ──
    Geometry copied from .tasks-kpi__oldest so the two footers occupy the same
@@ -377,16 +298,10 @@ export default {
    .tasks-kpi__oldest and .projects-kpi__issues and the three sit on one band.
    A stacked version with the dates underneath came out 39px against their 31
    and broke the line. */
+/* Band geometry from .iz-kpi__footer; only the wider gap this row needs
+   between its two dates and the rail is local. */
 .timeline-kpi__rail-wrap {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  background: var(--bg-page, #f0f1f5);
-  border-radius: 8px;
-  font-size: 11px;
-  line-height: 1.4;
 }
 
 .timeline-kpi__rail-date {

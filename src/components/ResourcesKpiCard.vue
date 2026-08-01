@@ -1,7 +1,7 @@
 <template>
-  <div class="resources-kpi">
-    <div class="resources-kpi__header">
-      <div class="resources-kpi__icon">
+  <div class="iz-kpi resources-kpi">
+    <div class="iz-kpi__header resources-kpi__header">
+      <div class="iz-kpi__icon resources-kpi__icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -18,22 +18,22 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </div>
-      <span class="resources-kpi__title">Resources</span>
+      <span class="iz-kpi__title resources-kpi__title">Resources</span>
     </div>
 
     <!-- Hero figure -->
-    <div class="resources-kpi__hero">
-      <span class="resources-kpi__hero-value iz-figure">{{ grandTotal }}</span>
-      <span class="resources-kpi__hero-label">
+    <div class="iz-kpi__hero resources-kpi__hero">
+      <span class="iz-kpi__hero-value resources-kpi__hero-value iz-figure">{{ grandTotal }}</span>
+      <span class="iz-kpi__hero-label resources-kpi__hero-label">
         Items<template v-if="publicTotal"> · {{ publicTotal }} public</template>
       </span>
     </div>
 
     <!-- Body: donut left, breakdown right — the shape TasksKpiCard and
          TimelineKpiCard use, so all three charts sit on one line. -->
-    <div class="resources-kpi__body">
+    <div class="iz-kpi__body resources-kpi__body">
       <div class="resources-kpi__chart-wrap">
-        <div v-if="grandTotal > 0" class="resources-kpi__chart">
+        <div v-if="grandTotal > 0" class="iz-kpi__chart resources-kpi__chart">
           <canvas ref="chartCanvas" width="120" height="120"></canvas>
         </div>
         <div v-else class="resources-kpi__chart-empty">
@@ -41,21 +41,21 @@
         </div>
       </div>
 
-      <div class="resources-kpi__details">
+      <div class="iz-kpi__details resources-kpi__details">
         <div
           v-for="seg in segments"
           :key="seg.key"
-          class="resources-kpi__row"
+          class="iz-kpi__row resources-kpi__row"
         >
           <span
-            class="resources-kpi__row-dot"
+            class="iz-kpi__row-dot resources-kpi__row-dot"
             :style="{ backgroundColor: themeColor(seg.colorToken[0], seg.colorToken[1]) }"
           ></span>
-          <span class="resources-kpi__row-label">
+          <span class="iz-kpi__row-label resources-kpi__row-label">
             {{ seg.label }}
-            <span v-if="seg.sub" class="resources-kpi__row-sub">{{ seg.sub }}</span>
+            <span v-if="seg.sub" class="iz-kpi__row-sub resources-kpi__row-sub">{{ seg.sub }}</span>
           </span>
-          <span class="resources-kpi__row-value">{{ seg.value }}</span>
+          <span class="iz-kpi__row-value resources-kpi__row-value">{{ seg.value }}</span>
         </div>
       </div>
     </div>
@@ -249,99 +249,19 @@ export default {
 </script>
 
 <style scoped>
-.resources-kpi {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
-.resources-kpi:hover {
-  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-}
 
-.resources-kpi__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
-.resources-kpi__icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: color-mix(in oklab, var(--chart-5) 12%, transparent);
-  color: var(--chart-5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
-.resources-kpi__title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
 
-/* ── 2×2 Grid ── */
-/* ── Hero figure ──
-   Same treatment as the Projects card's hero: .iz-figure numeral, 36px, with
-   a muted label beside it, so the strip has one figure row. */
-.resources-kpi__hero {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  /* Same box as the Projects hero, which carries this padding for its
-     click target. Without it that card's numeral sits 4px lower than
-     the rest and the figure row stops being a row. */
-  padding: 4px 8px;
-  margin: -4px -8px;
-}
 
-.resources-kpi__hero-value {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary, #1a1a2e);
-  line-height: 1;
-}
 
-.resources-kpi__hero-label {
-  font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
-  font-weight: 400;
-}
-
-/* ── Body ──
-   Copied from .tasks-kpi__body / __left / __details: 120px chart box, 20px
-   gap, details column flexing. Keeps this card's chart on the same line as
-   the Tasks donut and the Timeline rings. */
-.resources-kpi__body {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
 
 .resources-kpi__chart-wrap {
   flex-shrink: 0;
 }
 
-.resources-kpi__chart {
-  position: relative;
-  width: 112px;
-  height: 112px;
-}
 
-.resources-kpi__chart canvas {
-  width: 112px !important;
-  height: 112px !important;
-}
 
 .resources-kpi__chart-empty {
   width: 112px;
@@ -356,13 +276,6 @@ export default {
   color: var(--color-text-muted, #9ca3af);
 }
 
-.resources-kpi__details {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 .resources-kpi__row {
   display: flex;
@@ -371,32 +284,8 @@ export default {
   min-width: 0;
 }
 
-.resources-kpi__row-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  transform: translateY(-1px);
-}
 
-.resources-kpi__row-label {
-  font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
-  min-width: 0;
-}
 
-.resources-kpi__row-sub {
-  display: block;
-  font-size: 10px;
-  color: var(--color-text-muted, #9ca3af);
-}
 
-.resources-kpi__row-value {
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text-primary, #1a1a2e);
-  font-variant-numeric: tabular-nums;
-}
 
 </style>

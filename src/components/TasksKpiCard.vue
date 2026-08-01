@@ -1,7 +1,7 @@
 <template>
-  <div class="tasks-kpi">
-    <div class="tasks-kpi__header">
-      <div class="tasks-kpi__icon">
+  <div class="iz-kpi tasks-kpi">
+    <div class="iz-kpi__header tasks-kpi__header">
+      <div class="iz-kpi__icon tasks-kpi__icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -17,24 +17,24 @@
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
       </div>
-      <span class="tasks-kpi__title">Tasks</span>
+      <span class="iz-kpi__title tasks-kpi__title">Tasks</span>
     </div>
 
     <!-- Hero figure. The active count used to sit in the donut's centre; it
          moved up here so all four KPI cards state their headline number in the
          same place, which is what lets the strip be scanned across. -->
-    <div class="tasks-kpi__hero">
-      <span class="tasks-kpi__hero-value iz-figure">{{ inProgress }}</span>
-      <span class="tasks-kpi__hero-label">
+    <div class="iz-kpi__hero tasks-kpi__hero">
+      <span class="iz-kpi__hero-value tasks-kpi__hero-value iz-figure">{{ inProgress }}</span>
+      <span class="iz-kpi__hero-label tasks-kpi__hero-label">
         Active<template v-if="avgDays"> · {{ avgDays }} avg days</template>
       </span>
     </div>
 
-    <div class="tasks-kpi__body">
+    <div class="iz-kpi__body tasks-kpi__body">
       <!-- Left column: Donut -->
       <div class="tasks-kpi__left">
         <div class="tasks-kpi__chart-wrap">
-          <div v-if="hasData" class="tasks-kpi__chart">
+          <div v-if="hasData" class="iz-kpi__chart tasks-kpi__chart">
             <canvas ref="chartCanvas" width="160" height="160"></canvas>
           </div>
           <div v-else class="tasks-kpi__chart-empty">
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Right column: Legend -->
-      <div class="tasks-kpi__details">
+      <div class="iz-kpi__details tasks-kpi__details">
         <div class="tasks-kpi__legend">
           <div
             v-for="seg in segments"
@@ -66,7 +66,7 @@
     <!-- Oldest task — full-width footer -->
     <div
       v-if="oldestTask"
-      class="tasks-kpi__oldest"
+      class="iz-kpi__footer tasks-kpi__oldest"
       :title="
         (oldestTask.fullTitle || oldestTask.taskTitle) +
         ' — Opened ' +
@@ -296,79 +296,13 @@ export default {
 </script>
 
 <style scoped>
-.tasks-kpi {
-  background: var(--bg-card, #fff);
-  border-radius: var(--radius-card, 12px);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
-.tasks-kpi:hover {
-  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-}
 
-.tasks-kpi__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
-.tasks-kpi__icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: color-mix(in oklab, var(--chart-4) 12%, transparent);
-  color: var(--chart-4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
-.tasks-kpi__title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
 
-/* ── Body layout ── */
-/* Hero figure — same treatment across all four KPI cards: .iz-figure numeral
-   at 36px with a muted label beside it. */
-.tasks-kpi__hero {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  /* Same box as the Projects hero, which carries this padding for its
-     click target. Without it that card's numeral sits 4px lower than
-     the rest and the figure row stops being a row. */
-  padding: 4px 8px;
-  margin: -4px -8px;
-}
 
-.tasks-kpi__hero-value {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary, #1a1a2e);
-  line-height: 1;
-}
 
-.tasks-kpi__hero-label {
-  font-size: 13px;
-  color: var(--color-text-muted, #9ca3af);
-  font-weight: 400;
-}
-
-.tasks-kpi__body {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
 
 .tasks-kpi__left {
   display: flex;
@@ -382,16 +316,7 @@ export default {
   flex-shrink: 0;
 }
 
-.tasks-kpi__chart {
-  position: relative;
-  width: 112px;
-  height: 112px;
-}
 
-.tasks-kpi__chart canvas {
-  width: 112px !important;
-  height: 112px !important;
-}
 
 .tasks-kpi__chart-center {
   position: absolute;
@@ -431,14 +356,6 @@ export default {
   color: var(--color-text-muted, #9ca3af);
 }
 
-/* ── Details column ── */
-.tasks-kpi__details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-}
 
 .tasks-kpi__legend {
   display: flex;
@@ -502,19 +419,13 @@ export default {
 }
 
 /* ── Oldest task (full-width footer) ── */
+/* Band geometry from .iz-kpi__footer; the alert tint and the drill-down
+   affordance are local. */
 .tasks-kpi__oldest {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
   background: var(--color-badge-danger-bg);
-  border-radius: 8px;
   color: var(--color-badge-warning-text);
   cursor: pointer;
   transition: background 0.15s;
-  min-width: 0;
-  overflow: hidden;
-  margin-top: auto;
 }
 
 .tasks-kpi__oldest:hover {
