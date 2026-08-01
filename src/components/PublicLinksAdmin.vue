@@ -146,7 +146,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="link in filteredLinks"
+            v-for="link in pagedLinks"
             :key="link.id"
             :class="{
               'public-links-admin__row--disabled':
@@ -217,6 +217,49 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination. Rendered whenever there is more than one page — the
+           chrome is the theme's .iz-pagination primitive, the windowing is
+           local. -->
+      <div v-if="!loading && !error && pageCount > 1" class="iz-pagination">
+        <span>{{ rangeLabel }}</span>
+        <div class="iz-pagination__pages">
+          <button
+            class="iz-btn"
+            :disabled="page === 1"
+            aria-label="Previous page"
+            @click="goToPage(page - 1)"
+          >
+            ‹
+          </button>
+          <template v-for="(p, i) in pageItems">
+            <span
+              v-if="p === '…'"
+              :key="'gap-' + i"
+              class="public-links-admin__page-gap"
+              >…</span
+            >
+            <button
+              v-else
+              :key="'pg-' + p"
+              class="iz-btn"
+              :class="{ 'iz-btn--active': p === page }"
+              :aria-current="p === page ? 'page' : null"
+              @click="goToPage(p)"
+            >
+              {{ p }}
+            </button>
+          </template>
+          <button
+            class="iz-btn"
+            :disabled="page === pageCount"
+            aria-label="Next page"
+            @click="goToPage(page + 1)"
+          >
+            ›
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -240,6 +283,8 @@ export default {
       deleting: null,
       copiedLinkId: null,
       statusFilter: "",
+      page: 1,
+      pageSize: 10,
     };
   },
   computed: {
@@ -252,11 +297,62 @@ export default {
         return true;
       });
     },
+    pageCount() {
+      return Math.max(1, Math.ceil(this.filteredLinks.length / this.pageSize));
+    },
+    pagedLinks() {
+      const start = (this.page - 1) * this.pageSize;
+      return this.filteredLinks.slice(start, start + this.pageSize);
+    },
+    rangeLabel() {
+      const total = this.filteredLinks.length;
+      const start = (this.page - 1) * this.pageSize + 1;
+      return `${start}–${Math.min(start + this.pageSize - 1, total)} of ${total}`;
+    },
+    /**
+     * Page numbers to render, with "…" where the run is elided.
+     *
+     * Up to seven pages are shown in full; beyond that the list is windowed
+     * around the current page so the control keeps a stable width instead of
+     * growing a row of buttons as links accumulate. First and last are always
+     * reachable in one click.
+     */
+    pageItems() {
+      const last = this.pageCount;
+      if (last <= 7) {
+        return Array.from({ length: last }, (_, i) => i + 1);
+      }
+      const around = [this.page - 1, this.page, this.page + 1].filter(
+        (p) => p > 1 && p < last,
+      );
+      const items = [1];
+      if (around[0] > 2) items.push("…");
+      items.push(...around);
+      if (around[around.length - 1] < last - 1) items.push("…");
+      items.push(last);
+      return items;
+    },
+  },
+  watch: {
+    // Filtering changes the result set under the cursor; jumping back to the
+    // first page is less surprising than landing on a page that no longer
+    // exists.
+    statusFilter() {
+      this.page = 1;
+    },
+    // Revoking or deleting can shrink the list past the current page — clamp
+    // rather than render an empty table.
+    pageCount(count) {
+      if (this.page > count) this.page = count;
+    },
   },
   mounted() {
     this.fetchLinks();
   },
   methods: {
+    goToPage(p) {
+      this.page = Math.min(Math.max(1, p), this.pageCount);
+    },
     async fetchLinks() {
       this.loading = true;
       this.error = null;
@@ -548,6 +644,11 @@ export default {
 .public-links-admin__datetime-clear:hover {
   color: var(--color-danger);
   background: var(--color-badge-danger-bg);
+}
+
+.public-links-admin__page-gap {
+  padding: 0 4px;
+  color: var(--color-text-muted);
 }
 
 /* ─── Buttons ─── */
