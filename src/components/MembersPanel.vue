@@ -1988,4 +1988,9 @@ export default {
 
 
 
+
+.members-panel__search {
+  width: auto;
+  flex: 1;
+}
 </style>

@@ -370,9 +370,6 @@ export default {
 .projects-map__pill--on.projects-map__pill--st-waiting { color: var(--color-badge-warning-text); background: var(--color-badge-warning-bg); }
 .projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
 
-.projects-map__select,
-.projects-map__select:focus,
-
 .projects-map__toggle {
   display: inline-flex;
   align-items: center;
@@ -460,4 +457,19 @@ export default {
   cursor: pointer;
 }
 .projects-map__popup-cta:hover { background: var(--accent-hover); }
+
+/* Toolbar controls. .iz-select / .iz-input are width:100%, which is right for
+   a stacked form field and wrong for a control in a filter row.
+
+   Qualified on the parent deliberately: this block is unscoped, so these
+   selectors carry no [data-v-…] and a bare class would sit at (0,1,0) — under
+   `.iz-app .iz-select`'s (0,2,0) — and lose. */
+.projects-map__filters .projects-map__select {
+  width: auto;
+}
+
+.projects-map__filters .projects-map__search {
+  width: auto;
+  min-width: 160px;
+}
 </style>

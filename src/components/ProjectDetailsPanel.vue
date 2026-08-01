@@ -2021,7 +2021,9 @@ export default {
   outline: none;
   transition: border-color 0.15s;
   cursor: pointer;
-}
+
+  /* toolbar control — see the note on .projects-map__select */
+  width: auto;}
 
 .proj-details__tabs-status-select:focus {
   border-color: var(--accent);
