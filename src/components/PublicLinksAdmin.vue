@@ -52,7 +52,7 @@
             class="public-links-admin__field public-links-admin__field--label"
           >
             <label for="pl-label">Label (optional)</label>
-            <input
+            <input class="iz-input"
               id="pl-label"
               v-model="newLabel"
               type="text"
@@ -85,7 +85,7 @@
                 <line x1="8" y1="2" x2="8" y2="6" />
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
-              <input
+              <input class="iz-input"
                 id="pl-expires"
                 ref="dateInput"
                 v-model="newExpiresAt"
@@ -117,7 +117,7 @@
       <!-- Status Filter -->
       <div v-if="!loading && links.length > 0" class="public-links-admin__filter-row">
         <label class="public-links-admin__filter-label">Filter by status</label>
-        <select v-model="statusFilter" class="public-links-admin__filter-select">
+        <select v-model="statusFilter" class="iz-select public-links-admin__filter-select">
           <option value="">All</option>
           <option value="active">Active</option>
           <option value="revoked">Revoked</option>
@@ -649,13 +649,6 @@ export default {
   color: var(--color-text-secondary, #6b7280);
 }
 
-.public-links-admin__field input[type="text"] {
-  padding: 8px 10px;
-  border: 1px solid var(--color-border, #d1d5db);
-  border-radius: 6px;
-  font-size: 13px;
-  background: var(--bg-card);
-}
 
 /* ─── DateTime picker (matching perf-panel style) ─── */
 .public-links-admin__datetime-wrap {
@@ -904,17 +897,6 @@ export default {
   color: var(--color-text-secondary, #6b7280);
 }
 
-.public-links-admin__filter-select {
-  padding: 5px 10px;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: var(--bg-card);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
 
 .public-links-admin__filter-select:focus {
   border-color: var(--accent);

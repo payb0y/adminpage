@@ -25,7 +25,7 @@
           @click="toggleStatus(s.key)"
         >{{ s.label }}</button>
       </div>
-      <select v-model="assigneeFilter" class="projects-map__select">
+      <select v-model="assigneeFilter" class="iz-select projects-map__select">
         <option value="">All assignees</option>
         <option
           v-for="m in orgMembers"
@@ -36,7 +36,7 @@
       <input
         v-model="searchFilter"
         type="search"
-        class="projects-map__search"
+        class="iz-input projects-map__search"
         placeholder="Search name or number…"
       />
       <label class="projects-map__toggle">
@@ -371,18 +371,7 @@ export default {
 .projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
 
 .projects-map__select,
-.projects-map__search {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 4px 8px;
-  outline: none;
-}
-.projects-map__search { min-width: 160px; }
 .projects-map__select:focus,
-.projects-map__search:focus { border-color: var(--accent); }
 
 .projects-map__toggle {
   display: inline-flex;

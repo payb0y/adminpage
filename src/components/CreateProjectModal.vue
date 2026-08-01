@@ -24,7 +24,7 @@
           <input
             id="cp-name"
             type="text"
-            class="cp-modal__input"
+            class="iz-input cp-modal__input"
             v-model="form.name"
             :disabled="submitting"
             @blur="markBlurred('name')"
@@ -42,7 +42,7 @@
           <input
             id="cp-number"
             type="text"
-            class="cp-modal__input"
+            class="iz-input cp-modal__input"
             v-model="form.number"
             placeholder="e.g. P-2026-014"
             :disabled="submitting"
@@ -60,7 +60,7 @@
           </label>
           <select
             id="cp-type"
-            class="cp-modal__input"
+            class="iz-select cp-modal__input"
             v-model.number="form.type"
             :disabled="submitting"
           >
@@ -76,7 +76,7 @@
           <label class="cp-modal__label" for="cp-desc">Description</label>
           <textarea
             id="cp-desc"
-            class="cp-modal__input cp-modal__textarea"
+            class="iz-textarea cp-modal__input cp-modal__textarea"
             rows="2"
             v-model="form.description"
             :disabled="submitting"
@@ -91,7 +91,7 @@
               <input
                 id="cp-street"
                 type="text"
-                class="cp-modal__input"
+                class="iz-input cp-modal__input"
                 v-model="form.loc_street"
                 :disabled="submitting"
               />
@@ -103,7 +103,7 @@
               <input
                 id="cp-city"
                 type="text"
-                class="cp-modal__input"
+                class="iz-input cp-modal__input"
                 v-model="form.loc_city"
                 :disabled="submitting"
               />
@@ -113,7 +113,7 @@
               <input
                 id="cp-zip"
                 type="text"
-                class="cp-modal__input cp-modal__input--zip"
+                class="iz-input cp-modal__input cp-modal__input--zip"
                 v-model="form.loc_zip"
                 :disabled="submitting"
               />
@@ -131,7 +131,7 @@
             <input
               id="cp-cname"
               type="text"
-              class="cp-modal__input"
+              class="iz-input cp-modal__input"
               v-model="form.client_name"
               :disabled="submitting"
             />
@@ -141,7 +141,7 @@
             <input
               id="cp-crole"
               type="text"
-              class="cp-modal__input"
+              class="iz-input cp-modal__input"
               v-model="form.client_role"
               :disabled="submitting"
             />
@@ -151,7 +151,7 @@
             <input
               id="cp-cemail"
               type="email"
-              class="cp-modal__input"
+              class="iz-input cp-modal__input"
               v-model="form.client_email"
               :disabled="submitting"
               @blur="markBlurred('client_email')"
@@ -166,7 +166,7 @@
             <input
               id="cp-cphone"
               type="text"
-              class="cp-modal__input"
+              class="iz-input cp-modal__input"
               v-model="form.client_phone"
               :disabled="submitting"
             />
@@ -175,7 +175,7 @@
             <label class="cp-modal__label" for="cp-caddr">Address</label>
             <textarea
               id="cp-caddr"
-              class="cp-modal__input cp-modal__textarea"
+              class="iz-textarea cp-modal__input cp-modal__textarea"
               rows="2"
               v-model="form.client_address"
               :disabled="submitting"
@@ -203,7 +203,7 @@
           </div>
           <input
             type="search"
-            class="cp-modal__input"
+            class="iz-input cp-modal__input"
             v-model="memberSearch"
             placeholder="Search org members…"
             :disabled="submitting"
@@ -251,7 +251,7 @@
                 id="cp-weeks"
                 type="number"
                 min="0"
-                class="cp-modal__input"
+                class="iz-input cp-modal__input"
                 v-model.number="form.required_preparation_weeks"
                 :disabled="submitting"
                 @blur="markBlurred('required_preparation_weeks')"
@@ -266,7 +266,7 @@
               <input
                 id="cp-execdate"
                 type="date"
-                class="cp-modal__input"
+                class="iz-input cp-modal__input"
                 v-model="form.desired_execution_date"
                 :disabled="submitting"
               />
@@ -652,20 +652,6 @@ export default {
 }
 .cp-modal__required { color: var(--color-badge-danger-text); }
 
-.cp-modal__input,
-.cp-modal__textarea {
-  font-size: 13px;
-  color: var(--color-text-primary);
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  outline: none;
-  box-sizing: border-box;
-  width: 100%;
-}
-.cp-modal__input:focus,
-.cp-modal__textarea:focus { border-color: var(--accent); }
 .cp-modal__input--zip { width: 110px; min-width: 110px; }
 .cp-modal__textarea { resize: vertical; min-height: 56px; }
 

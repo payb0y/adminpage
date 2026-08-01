@@ -55,7 +55,7 @@
       <div class="members-panel__filters">
         <input
           v-model="search"
-          class="members-panel__search"
+          class="iz-input members-panel__search"
           type="text"
           placeholder="Search members…"
         />
@@ -187,7 +187,7 @@
           <div v-if="addTab === 'existing'">
             <input
               type="search"
-              class="members-panel__add-form-input"
+              class="iz-input members-panel__add-form-input"
               :value="addSearchTerm"
               @input="onAddSearchInput($event)"
               placeholder="Search by name, email, or UID (min 2 characters)…"
@@ -246,7 +246,7 @@
               <input
                 id="newuser-uid"
                 type="text"
-                class="members-panel__add-form-input"
+                class="iz-input members-panel__add-form-input"
                 v-model="newUser.uid"
                 autocomplete="off"
                 spellcheck="false"
@@ -266,7 +266,7 @@
               <input
                 id="newuser-display"
                 type="text"
-                class="members-panel__add-form-input"
+                class="iz-input members-panel__add-form-input"
                 v-model="newUser.displayName"
                 :disabled="newUserSubmitting"
                 @blur="markBlurred('displayName')"
@@ -282,7 +282,7 @@
               <input
                 id="newuser-email"
                 type="email"
-                class="members-panel__add-form-input"
+                class="iz-input members-panel__add-form-input"
                 v-model="newUser.email"
                 autocomplete="off"
                 :disabled="newUserSubmitting"
@@ -302,7 +302,7 @@
                 <input
                   id="newuser-password"
                   :type="newUserShowPassword ? 'text' : 'password'"
-                  class="members-panel__add-form-input members-panel__password-input"
+                  class="iz-input members-panel__add-form-input members-panel__password-input"
                   v-model="newUser.password"
                   :readonly="newUser.autoGenerate"
                   :disabled="newUserSubmitting"
@@ -1226,22 +1226,7 @@ export default {
   flex-wrap: wrap;
 }
 
-.members-panel__search {
-  flex: 1;
-  min-width: 120px;
-  padding: 7px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 12px;
-  color: var(--color-text-primary, #1a1a2e);
-  background: var(--bg-card);
-  outline: none;
-  transition: border-color 0.15s;
-}
 
-.members-panel__search:focus {
-  border-color: var(--accent);
-}
 
 .members-panel__search::placeholder {
   color: var(--color-text-muted);

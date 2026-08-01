@@ -37,7 +37,7 @@
         <div class="events-panel__filter-group">
           <select
             v-model="memberFilter"
-            class="events-panel__select"
+            class="iz-select events-panel__select"
             @change="currentPage = 1"
           >
             <option value="">All members</option>
@@ -49,7 +49,7 @@
         <div class="events-panel__filter-group">
           <select
             v-model="calendarFilter"
-            class="events-panel__select"
+            class="iz-select events-panel__select"
             @change="currentPage = 1"
           >
             <option value="">All calendars</option>
@@ -62,7 +62,7 @@
           <input
             v-model="searchFilter"
             type="text"
-            class="events-panel__input"
+            class="iz-input events-panel__input"
             placeholder="Search events…"
             @input="currentPage = 1"
           />
@@ -358,19 +358,7 @@ export default {
 }
 
 .events-panel__select,
-.events-panel__input {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  background: var(--bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 4px 8px;
-  outline: none;
-}
 
-.events-panel__input {
-  width: 100%;
-}
 
 .events-panel__select:focus,
 .events-panel__input:focus {

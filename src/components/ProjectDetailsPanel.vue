@@ -6,12 +6,12 @@
         <input
           v-model="tabSearch"
           type="text"
-          class="proj-details__tabs-search-input"
+          class="iz-input proj-details__tabs-search-input"
           placeholder="Search projects…"
         />
         <select
           v-model="tabStatusFilter"
-          class="proj-details__tabs-status-select"
+          class="iz-select proj-details__tabs-status-select"
         >
           <option value="">All Statuses</option>
           <option value="Active">Active</option>
@@ -21,7 +21,7 @@
         </select>
         <select
           v-model="tabTaskDueFilter"
-          class="proj-details__tabs-status-select"
+          class="iz-select proj-details__tabs-status-select"
         >
           <option value="">All Task Due</option>
           <option value="overdue">Has Overdue</option>
@@ -31,7 +31,7 @@
         </select>
         <select
           v-model="tabTaskStatusFilter"
-          class="proj-details__tabs-status-select"
+          class="iz-select proj-details__tabs-status-select"
         >
           <option value="">All Task Status</option>
           <option value="open">Has Open Tasks</option>
@@ -464,7 +464,7 @@
           >
             <input
               type="search"
-              class="proj-details__add-form-input"
+              class="iz-input proj-details__add-form-input"
               :value="getAddPanelState(selectedProject.id).search"
               @input="
                 getAddPanelState(selectedProject.id).search = $event.target.value
@@ -496,7 +496,7 @@
                 </div>
                 <select
                   :value="rowRoleFor(selectedProject.id, u.userId || u.id)"
-                  class="proj-details__add-form-role"
+                  class="iz-select proj-details__add-form-role"
                   :aria-label="
                     'DRASCI role for ' + (u.displayName || u.userId || u.id)
                   "
@@ -598,7 +598,7 @@
                 "
               >
                 <select
-                  class="proj-details__member-drasci-select"
+                  class="iz-select proj-details__member-drasci-select"
                   :value="m.drasciRole || ''"
                   :disabled="editRoleState[selectedProject.id].saving"
                   @change="
@@ -736,13 +736,13 @@
               <input
                 v-model="tbFilterName"
                 type="text"
-                class="proj-details__tb-input"
+                class="iz-input proj-details__tb-input"
                 placeholder="Task name…"
               />
             </div>
             <div class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Status</label>
-              <select v-model="tbFilterStatus" class="proj-details__tb-select">
+              <select v-model="tbFilterStatus" class="iz-select proj-details__tb-select">
                 <option value="">All</option>
                 <option value="open">Open</option>
                 <option value="done">Done</option>
@@ -751,7 +751,7 @@
             </div>
             <div class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Stack</label>
-              <select v-model="tbFilterStack" class="proj-details__tb-select">
+              <select v-model="tbFilterStack" class="iz-select proj-details__tb-select">
                 <option value="">All</option>
                 <option v-for="s in projectStacks" :key="s" :value="s">
                   {{ s }}
@@ -760,7 +760,7 @@
             </div>
             <div class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Label</label>
-              <select v-model="tbFilterLabel" class="proj-details__tb-select">
+              <select v-model="tbFilterLabel" class="iz-select proj-details__tb-select">
                 <option value="">All</option>
                 <option v-for="l in projectLabels" :key="l" :value="l">
                   {{ l }}
@@ -771,7 +771,7 @@
               <label class="proj-details__tb-label">Assignee</label>
               <select
                 v-model="tbFilterAssignee"
-                class="proj-details__tb-select"
+                class="iz-select proj-details__tb-select"
               >
                 <option value="">All</option>
                 <option v-for="a in projectAssigneeNames" :key="a" :value="a">
@@ -781,7 +781,7 @@
             </div>
             <div class="proj-details__tb-filter">
               <label class="proj-details__tb-label">Due</label>
-              <select v-model="tbFilterDue" class="proj-details__tb-select">
+              <select v-model="tbFilterDue" class="iz-select proj-details__tb-select">
                 <option value="">All</option>
                 <option value="overdue">Overdue</option>
                 <option value="today">Today</option>
