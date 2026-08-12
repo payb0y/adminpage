@@ -3,7 +3,10 @@
     <header class="projects-map__header">
       <h3 class="projects-map__title">
         Project Map
-        <span class="projects-map__count">{{ filteredProjects.length }}</span>
+        <span
+          class="projects-map__count"
+          :class="{ 'projects-map__count--filtered': isNarrowed }"
+        >{{ filteredProjects.length }}<template v-if="isNarrowed"> of {{ mappableCount }}</template></span>
       </h3>
       <div v-if="geocodingInFlight > 0" class="projects-map__chip">
         Geocoding {{ geocodingInFlight }} more in the background — they'll
@@ -22,8 +25,16 @@
             'projects-map__pill--st-' + s.key,
             { 'projects-map__pill--on': statusFilter[s.key] }
           ]"
+          :aria-pressed="statusFilter[s.key] ? 'true' : 'false'"
           @click="toggleStatus(s.key)"
-        >{{ s.label }}</button>
+        >
+          <span
+            v-if="statusFilter[s.key]"
+            class="projects-map__pill-check"
+            aria-hidden="true"
+          >✓</span>
+          {{ s.label }}
+        </button>
       </div>
       <select v-model="assigneeFilter" class="iz-select projects-map__select">
         <option value="">All assignees</option>
@@ -192,11 +203,20 @@ export default {
         { key: "archived", label: "Archived" },
       ];
     },
-    hasAnyOk() {
+    /** Projects that could be plotted at all, before any filter is applied. */
+    mappableCount() {
+      let n = 0;
       for (let i = 0; i < this.projects.length; i++) {
-        if (this.projects[i].geocodeStatus === "ok") return true;
+        if (this.projects[i].geocodeStatus === "ok") n++;
       }
-      return false;
+      return n;
+    },
+    hasAnyOk() {
+      return this.mappableCount > 0;
+    },
+    /** Filters are actually hiding something — drives the "N of M" count. */
+    isNarrowed() {
+      return this.filteredProjects.length !== this.mappableCount;
     },
     filteredProjects() {
       const out = [];
@@ -385,6 +405,12 @@ export default {
   padding: 1px 8px;
   border-radius: 999px;
 }
+/* Reads "3 of 12" and picks up the accent, so the header says at a glance that
+   what's on the map is not everything on the map. */
+.projects-map__count--filtered {
+  color: var(--accent-on-bg);
+  background: var(--accent-bg);
+}
 .projects-map__chip {
   font-size: 11px;
   color: var(--color-badge-warning-text);
@@ -404,31 +430,51 @@ export default {
   display: flex;
   gap: 4px;
 }
+/* On/off is carried by three signals at once — fill, border and a check glyph —
+   because colour alone cannot do it here: On Hold and Archived are both neutral,
+   and the tints available to them sit within a few percent lightness of the
+   panel ground. Off is deliberately the recessed state: no fill, hairline
+   border, muted text. */
 .projects-map__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   font-weight: 600;
   border-radius: 12px;
   padding: 3px 10px;
-  border: 1.5px solid transparent;
+  border: 1.5px solid var(--color-border);
   cursor: pointer;
-  background: var(--bg-inset);
+  background: transparent;
+  /* --color-text-muted measured 3.24:1 here — below AA for 11px. The off state
+     is signalled by the flat border, absent fill and lighter weight, so the
+     label itself does not need to be dim as well. */
   color: var(--color-text-secondary);
   user-select: none;
 }
 .projects-map__pill:hover {
-  filter: brightness(0.97);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 .projects-map__pill--on {
-  background: var(--bg-card);
   border-color: currentColor;
+  font-weight: 700;
+}
+.projects-map__pill--on:hover {
+  filter: brightness(0.97);
+}
+.projects-map__pill-check {
+  font-size: 10px;
+  line-height: 1;
 }
 .projects-map__pill--on.projects-map__pill--st-active { color: var(--color-badge-success-text); background: var(--color-badge-success-bg); }
 .projects-map__pill--on.projects-map__pill--st-waiting { color: var(--color-badge-warning-text); background: var(--color-badge-warning-bg); }
 .projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
-/* No info badge pair exists in the theme, and success is already spoken for by
-   Active — done borrows the accent tint, archived stays deliberately muted. */
+/* No info badge pair exists in the theme and success is already spoken for by
+   Active, so Done borrows the accent tint. Archived takes --bg-inset rather than
+   --bg-subtle: the latter is #faf6fa, indistinguishable from the panel ground. */
 .projects-map__pill--on.projects-map__pill--st-done { color: var(--accent-on-bg); background: var(--accent-bg); }
-.projects-map__pill--on.projects-map__pill--st-archived { color: var(--color-text-muted); background: var(--bg-subtle); }
+.projects-map__pill--on.projects-map__pill--st-archived { color: var(--color-text-secondary); background: var(--bg-inset); }
 
 .projects-map__toggle {
   display: inline-flex;
@@ -439,17 +485,22 @@ export default {
   cursor: pointer;
 }
 
+/* Only rendered while a filter is active, so it is styled as a live affordance
+   rather than a dormant one — it doubles as the "you are filtering" signal. */
 .projects-map__clear {
   font-size: 11px;
   font-weight: 600;
-  background: var(--bg-card);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+  background: transparent;
+  /* Border keeps the vivid --accent; the label takes --accent-on-bg because
+     --accent on a white card measured 4.36:1, just under AA. On hover the two
+     become the theme's intended tint/text pair. */
+  color: var(--accent-on-bg);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 3px 10px;
   cursor: pointer;
 }
-.projects-map__clear:hover { background: var(--bg-inset); }
+.projects-map__clear:hover { background: var(--accent-bg); }
 
 .projects-map__container {
   height: 360px;
