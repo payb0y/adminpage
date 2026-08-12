@@ -7,6 +7,7 @@
 <script>
 import { themeColor } from "../lib/izChart";
 import {
+
   Chart,
   LineController,
   LineElement,
