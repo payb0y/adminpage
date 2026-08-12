@@ -48,6 +48,13 @@
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
+      <StorageMonitoringPanel
+        :storage="storageData"
+        :loading="storageLoading"
+        :error="storageError"
+        @retry="$emit('retry-storage')"
+      />
+
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
         :projects="(projectGeocodes && projectGeocodes.projects) || []"
@@ -108,6 +115,7 @@ import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
+import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
 
 export default {
   name: "Dashboard",
@@ -121,6 +129,7 @@ export default {
     CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
+    StorageMonitoringPanel,
   },
   props: {
     data: {
@@ -148,6 +157,18 @@ export default {
     projectGeocodesLoading: {
       type: Boolean,
       default: false,
+    },
+    storageData: {
+      type: Object,
+      default: null,
+    },
+    storageLoading: {
+      type: Boolean,
+      default: false,
+    },
+    storageError: {
+      type: String,
+      default: null,
     },
   },
   data: function () {
@@ -186,10 +207,11 @@ export default {
     },
     isOrgAdmin: function () {
       var ov = this.data && this.data.orgOverview;
-      var profile = ov && ov.profile;
-      var adminUid = profile && profile.adminUid;
       var currentUid = ov && ov.currentUid;
-      return !!currentUid && !!adminUid && currentUid === adminUid;
+      var members = (ov && ov.members) || [];
+      return members.some(function (member) {
+        return member.userId === currentUid && member.role === "admin";
+      });
     },
   },
   methods: {

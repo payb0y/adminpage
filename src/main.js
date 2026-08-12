@@ -21,6 +21,9 @@ if (mountEl) {
         upcomingEvents: [],
         projectGeocodes: { projects: [], geocodingInFlight: 0 },
         projectGeocodesLoading: false,
+        storageData: null,
+        storageLoading: false,
+        storageError: null,
         loading: true,
         error: null,
       };
@@ -77,11 +80,15 @@ if (mountEl) {
           upcomingEvents: this.upcomingEvents,
           projectGeocodes: this.projectGeocodes,
           projectGeocodesLoading: this.projectGeocodesLoading,
+          storageData: this.storageData,
+          storageLoading: this.storageLoading,
+          storageError: this.storageError,
         },
         on: {
           reload: () => {
             this.fetchData();
           },
+          retryStorage: () => this.fetchStorage(),
         },
       });
     },
@@ -104,6 +111,9 @@ if (mountEl) {
         this.fetchBackupJobs();
         this.fetchUpcomingEvents();
         this.fetchProjectGeocodes();
+        if (this.dashboardData && this.dashboardData.orgOverview) {
+          this.fetchStorage();
+        }
       },
       retry() {
         this.error = null;
@@ -165,6 +175,20 @@ if (mountEl) {
           this.projectGeocodes = { projects: [], geocodingInFlight: 0 };
         } finally {
           this.projectGeocodesLoading = false;
+        }
+      },
+      async fetchStorage() {
+        this.storageLoading = true;
+        this.storageError = null;
+        try {
+          const url = generateUrl("/apps/adminpage/api/storage");
+          const response = await axios.get(url);
+          this.storageData = response.data;
+        } catch (e) {
+          console.error("Failed to load storage monitoring", e);
+          this.storageError = this.friendlyError(e);
+        } finally {
+          this.storageLoading = false;
         }
       },
     },

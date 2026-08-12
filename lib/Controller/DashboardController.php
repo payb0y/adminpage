@@ -12,6 +12,7 @@ use OCA\AdminPage\Service\GeocodeService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
 use OCA\AdminPage\Service\PublicTokenService;
+use OCA\AdminPage\Service\StorageMonitoringService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -32,6 +33,7 @@ class DashboardController extends Controller {
     private KpiService $kpiService;
     private OrgOverviewService $orgOverviewService;
     private PublicTokenService $publicTokenService;
+    private StorageMonitoringService $storageMonitoringService;
     private IUserSession $userSession;
     private LoggerInterface $logger;
 
@@ -47,6 +49,7 @@ class DashboardController extends Controller {
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
         PublicTokenService $publicTokenService,
+        StorageMonitoringService $storageMonitoringService,
         IUserSession $userSession,
         LoggerInterface $logger
     ) {
@@ -60,6 +63,7 @@ class DashboardController extends Controller {
         $this->kpiService = $kpiService;
         $this->orgOverviewService = $orgOverviewService;
         $this->publicTokenService = $publicTokenService;
+        $this->storageMonitoringService = $storageMonitoringService;
         $this->userSession = $userSession;
         $this->logger = $logger;
     }
@@ -146,6 +150,25 @@ class DashboardController extends Controller {
         ];
 
         return new JSONResponse($data);
+        });
+    }
+
+    /**
+     * @NoAdminRequired
+     * @NoCSRFRequired
+     */
+    public function getStorage(): JSONResponse {
+        return $this->guard(function () {
+            $user = $this->userSession->getUser();
+            $orgId = $user === null ? null : $this->orgOverviewService->resolveOrgId($user->getUID());
+            if ($orgId === null) {
+                return new JSONResponse([
+                    'error' => 'forbidden',
+                    'message' => 'Organization administrator access is required.',
+                ], Http::STATUS_FORBIDDEN);
+            }
+
+            return new JSONResponse($this->storageMonitoringService->getOrganizationStorage($orgId));
         });
     }
 

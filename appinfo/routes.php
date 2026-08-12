@@ -5,6 +5,7 @@ return [
         // Authenticated routes
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
         ['name' => 'dashboard#getData', 'url' => '/api/data', 'verb' => 'GET'],
+        ['name' => 'dashboard#getStorage', 'url' => '/api/storage', 'verb' => 'GET'],
         ['name' => 'dashboard#getUpcomingTasks', 'url' => '/api/upcoming-tasks', 'verb' => 'GET'],
         ['name' => 'dashboard#getUpcomingEvents', 'url' => '/api/upcoming-events', 'verb' => 'GET'],
         ['name' => 'dashboard#getProjectGeocode', 'url' => '/api/projects/{projectId}/geocode', 'verb' => 'GET'],

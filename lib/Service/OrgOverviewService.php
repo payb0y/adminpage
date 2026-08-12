@@ -9,10 +9,7 @@ use OCP\IDBConnection;
 /**
  * Returns all data scoped to the organization the logged-in admin belongs to.
  *
- * Look-up order:
- *  1. oc_organizations.admin_uid  = current user UID  (org owner/creator)
- *  2. oc_organization_members.user_id = current UID   (member with admin role)
- *  3. Fallback: null (user is not associated with any org)
+ * Organization access is granted through organization_members.role = admin.
  */
 class OrgOverviewService {
 
@@ -65,13 +62,11 @@ class OrgOverviewService {
     }
 
     public function resolveOrgId(string $uid): ?int {
-        // adminpage is admin-only: resolve strictly via organization ownership.
-        // Plain members (no admin_uid match) intentionally get null → empty state.
-        $sql = "SELECT id FROM *PREFIX*organizations WHERE admin_uid = ? LIMIT 1";
+        $sql = "SELECT organization_id FROM *PREFIX*organization_members WHERE user_uid = ? AND role = ? LIMIT 1";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$uid]);
+        $stmt->execute([$uid, 'admin']);
         $row = $stmt->fetch();
-        return $row ? (int)$row['id'] : null;
+        return $row ? (int)$row['organization_id'] : null;
     }
 
     // ─────────────────────────────────────────────────────────────────────
