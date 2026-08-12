@@ -20,11 +20,17 @@ class GeocodeService {
     private const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
     private const HTTP_TIMEOUT_SECONDS = 10;
 
-    /** Mirrors DeckService::statusLabel — kept local so this service stays free of inter-service deps. */
+    /**
+     * Mirrors DeckService::statusLabel — kept local so this service stays free of inter-service deps.
+     * Canonical encoding is owned by projectcreatoraio's ProjectStatus enum, which
+     * writes oc_custom_projects.status.
+     */
     private const STATUS_LABELS = [
-        0 => 'Active',
-        1 => 'Waiting on Customer',
-        2 => 'On Hold',
+        0 => 'Archived',
+        1 => 'Active',
+        2 => 'Waiting on Customer',
+        3 => 'On Hold',
+        4 => 'Done',
     ];
 
     private const MAX_FRESH_GEOCODES_PER_REQUEST = 10;
@@ -340,7 +346,7 @@ class GeocodeService {
                 'name'          => (string)$r['name'],
                 'number'        => (string)($r['number'] ?? ''),
                 'status'        => $status,
-                'statusLabel'   => self::STATUS_LABELS[$status] ?? 'Active',
+                'statusLabel'   => self::STATUS_LABELS[$status] ?? 'Unknown',
                 'completionPct' => $completion,
                 'totalTasks'    => (int)$stats['totalTasks'],
                 'doneTasks'    => (int)$stats['doneTasks'],

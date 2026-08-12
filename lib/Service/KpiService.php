@@ -54,7 +54,12 @@ class KpiService {
 
     /**
      * Count projects grouped by status.
-     * Status mapping: 0 = Active, 1 = Waiting on Customer, 2 = On Hold, 3 = Done
+     *
+     * Status mapping: 0 = Archived, 1 = Active, 2 = Waiting on Customer,
+     * 3 = On Hold, 4 = Done — the canonical encoding from projectcreatoraio's
+     * ProjectStatus enum, which owns writes to oc_custom_projects.status.
+     * Archived projects are deliberately counted into no bucket: the Projects
+     * KPI card reports on live work.
      */
     private function countProjectsByStatus(int $orgId): array {
         $sql = "
@@ -72,10 +77,10 @@ class KpiService {
         $map = ['active' => 0, 'waiting' => 0, 'on_hold' => 0, 'done' => 0];
         while ($row = $result->fetch()) {
             switch ((int)$row['status']) {
-                case 0: $map['active']  = (int)$row['cnt']; break;
-                case 1: $map['waiting'] = (int)$row['cnt']; break;
-                case 2: $map['on_hold'] = (int)$row['cnt']; break;
-                case 3: $map['done']    = (int)$row['cnt']; break;
+                case 1: $map['active']  = (int)$row['cnt']; break;
+                case 2: $map['waiting'] = (int)$row['cnt']; break;
+                case 3: $map['on_hold'] = (int)$row['cnt']; break;
+                case 4: $map['done']    = (int)$row['cnt']; break;
             }
         }
         return $map;

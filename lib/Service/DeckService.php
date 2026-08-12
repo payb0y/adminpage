@@ -878,12 +878,19 @@ class DeckService {
         return $result;
     }
 
+    /**
+     * Canonical encoding, owned by projectcreatoraio's ProjectStatus enum
+     * (lib/Enum/ProjectStatus.php) — that app writes oc_custom_projects.status.
+     * Keep in sync with GeocodeService::STATUS_LABELS and
+     * KpiService::countProjectsByStatus.
+     */
     private function statusLabel(int $status): string {
         switch ($status) {
-            case 0: return 'Active';
-            case 1: return 'Waiting on Customer';
-            case 2: return 'On Hold';
-            case 3: return 'Done';
+            case 0: return 'Archived';
+            case 1: return 'Active';
+            case 2: return 'Waiting on Customer';
+            case 3: return 'On Hold';
+            case 4: return 'Done';
             default: return 'Unknown';
         }
     }

@@ -61,6 +61,12 @@
       class="iz-empty projects-map__state"
     >
       No projects match these filters.
+      <button
+        v-if="hiddenByStatusCount > 0"
+        type="button"
+        class="projects-map__clear"
+        @click="showAllStatuses"
+      >Show {{ hiddenByStatusCount }} hidden by status</button>
       <button type="button" class="projects-map__clear" @click="clearFilters">Clear filters</button>
     </div>
 
@@ -75,15 +81,42 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
-const STATUS_KEY_BY_NUM = { 0: "active", 1: "waiting", 2: "hold" };
+// Canonical encoding, owned by projectcreatoraio's ProjectStatus enum — that app
+// writes oc_custom_projects.status. Mirrors GeocodeService::STATUS_LABELS.
+const STATUS_KEY_BY_NUM = {
+  0: "archived",
+  1: "active",
+  2: "waiting",
+  3: "hold",
+  4: "done",
+};
 const STATUS_COLOR = {
-  active:  "#166534",
-  waiting: "#b45309",
-  hold:    "#6b7280",
+  active:   "#166534",
+  waiting:  "#b45309",
+  hold:     "#6b7280",
+  done:     "#1e40af",
+  archived: "#b4b8c0",
 };
 
+// Done and archived projects are finished work: the map opens on live projects
+// only, and both are opt-in. clearFilters() returns here, not to all-on.
+const DEFAULT_STATUS_FILTER = {
+  active:   true,
+  waiting:  true,
+  hold:     true,
+  done:     false,
+  archived: false,
+};
+
+// Anything outside 0–4 is corrupt data. Fall back to "active" rather than
+// returning undefined, so a bad row still gets a pin instead of vanishing from
+// the map with no pill that can bring it back.
+function statusKey(project) {
+  return STATUS_KEY_BY_NUM[project.status] || "active";
+}
+
 function pinHtml(project) {
-  const key = STATUS_KEY_BY_NUM[project.status] || "active";
+  const key = statusKey(project);
   const color = STATUS_COLOR[key];
   const overdue = (project.overdueTasks || 0) > 0;
   const overdueDot = overdue
@@ -139,7 +172,7 @@ export default {
   },
   data() {
     return {
-      statusFilter: { active: true, waiting: true, hold: true },
+      statusFilter: Object.assign({}, DEFAULT_STATUS_FILTER),
       assigneeFilter: "",
       searchFilter: "",
       overdueOnly: false,
@@ -152,9 +185,11 @@ export default {
   computed: {
     statusOptions() {
       return [
-        { key: "active",  label: "Active" },
-        { key: "waiting", label: "Waiting on Customer" },
-        { key: "hold",    label: "On Hold" },
+        { key: "active",   label: "Active" },
+        { key: "waiting",  label: "Waiting on Customer" },
+        { key: "hold",     label: "On Hold" },
+        { key: "done",     label: "Done" },
+        { key: "archived", label: "Archived" },
       ];
     },
     hasAnyOk() {
@@ -164,32 +199,34 @@ export default {
       return false;
     },
     filteredProjects() {
-      const q = (this.searchFilter || "").trim().toLowerCase();
-      const assignee = this.assigneeFilter;
-      const overdue = this.overdueOnly;
-      const sf = this.statusFilter;
       const out = [];
       for (let i = 0; i < this.projects.length; i++) {
         const p = this.projects[i];
-        if (p.geocodeStatus !== "ok") continue;
-        const sk = STATUS_KEY_BY_NUM[p.status] || "active";
-        if (!sf[sk]) continue;
-        if (assignee && (!p.assignees || p.assignees.indexOf(assignee) === -1)) continue;
-        if (overdue && !(p.overdueTasks > 0)) continue;
-        if (q) {
-          const nm = (p.name || "").toLowerCase();
-          const num = (p.number || "").toLowerCase();
-          if (nm.indexOf(q) === -1 && num.indexOf(q) === -1) continue;
-        }
+        if (!this.matchesNonStatusFilters(p)) continue;
+        if (!this.statusFilter[statusKey(p)]) continue;
         out.push(p);
       }
       return out;
     },
+    /**
+     * Projects excluded *only* by a switched-off status pill. Drives the empty
+     * state's "show them" affordance, so an org whose projects are all done or
+     * archived isn't left staring at a map that Clear all can't repopulate.
+     */
+    hiddenByStatusCount() {
+      let n = 0;
+      for (let i = 0; i < this.projects.length; i++) {
+        const p = this.projects[i];
+        if (!this.matchesNonStatusFilters(p)) continue;
+        if (!this.statusFilter[statusKey(p)]) n++;
+      }
+      return n;
+    },
     anyFilterActive() {
+      for (const key in DEFAULT_STATUS_FILTER) {
+        if (this.statusFilter[key] !== DEFAULT_STATUS_FILTER[key]) return true;
+      }
       return (
-        !this.statusFilter.active ||
-        !this.statusFilter.waiting ||
-        !this.statusFilter.hold ||
         this.assigneeFilter !== "" ||
         this.searchFilter !== "" ||
         this.overdueOnly
@@ -221,11 +258,30 @@ export default {
     toggleStatus(key) {
       this.$set(this.statusFilter, key, !this.statusFilter[key]);
     },
+    /** Every filter except the status pills, which are applied separately. */
+    matchesNonStatusFilters(p) {
+      if (p.geocodeStatus !== "ok") return false;
+      if (this.assigneeFilter
+        && (!p.assignees || p.assignees.indexOf(this.assigneeFilter) === -1)) return false;
+      if (this.overdueOnly && !(p.overdueTasks > 0)) return false;
+      const q = (this.searchFilter || "").trim().toLowerCase();
+      if (q) {
+        const nm = (p.name || "").toLowerCase();
+        const num = (p.number || "").toLowerCase();
+        if (nm.indexOf(q) === -1 && num.indexOf(q) === -1) return false;
+      }
+      return true;
+    },
     clearFilters() {
-      this.statusFilter = { active: true, waiting: true, hold: true };
+      this.statusFilter = Object.assign({}, DEFAULT_STATUS_FILTER);
       this.assigneeFilter = "";
       this.searchFilter = "";
       this.overdueOnly = false;
+    },
+    showAllStatuses() {
+      const all = {};
+      for (const key in DEFAULT_STATUS_FILTER) all[key] = true;
+      this.statusFilter = all;
     },
     ensureMap() {
       if (this._map) return;
@@ -369,6 +425,10 @@ export default {
 .projects-map__pill--on.projects-map__pill--st-active { color: var(--color-badge-success-text); background: var(--color-badge-success-bg); }
 .projects-map__pill--on.projects-map__pill--st-waiting { color: var(--color-badge-warning-text); background: var(--color-badge-warning-bg); }
 .projects-map__pill--on.projects-map__pill--st-hold { color: var(--color-text-secondary); background: var(--color-border); }
+/* No info badge pair exists in the theme, and success is already spoken for by
+   Active — done borrows the accent tint, archived stays deliberately muted. */
+.projects-map__pill--on.projects-map__pill--st-done { color: var(--accent-on-bg); background: var(--accent-bg); }
+.projects-map__pill--on.projects-map__pill--st-archived { color: var(--color-text-muted); background: var(--bg-subtle); }
 
 .projects-map__toggle {
   display: inline-flex;
