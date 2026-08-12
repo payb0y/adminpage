@@ -26,9 +26,12 @@ final class StorageMonitoringService {
     ) {
     }
 
-    public function getOrganizationStorage(int $organizationId): array {
+    public function getOrganizationStorage(int $organizationId, bool $refresh = false): array {
         $cache = $this->cacheFactory->createDistributed('adminpage_storage');
         $cacheKey = 'organization_' . $organizationId;
+        if ($refresh) {
+            $cache->remove($cacheKey);
+        }
         $cached = $cache->get($cacheKey);
         if (is_array($cached)) {
             return $cached;

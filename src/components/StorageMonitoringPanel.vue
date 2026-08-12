@@ -5,7 +5,12 @@
         <p class="storage-monitor__eyebrow">Capacity monitoring</p>
         <h2 id="storage-monitor-title" class="storage-monitor__title">Storage pulse</h2>
       </div>
-      <span v-if="storage" class="iz-pill iz-pill--neutral">Updated {{ updatedAt }}</span>
+      <div v-if="storage" class="storage-monitor__actions">
+        <span class="iz-pill iz-pill--neutral">Updated {{ updatedAt }}</span>
+        <button class="iz-btn iz-btn--secondary" type="button" :disabled="loading" @click="$emit('retry')">
+          {{ loading ? "Refreshing..." : "Refresh" }}
+        </button>
+      </div>
     </header>
 
     <div v-if="loading && !storage" class="storage-monitor__state">
@@ -115,6 +120,7 @@ export default {
 <style scoped>
 .storage-monitor { margin-bottom: var(--spacing-xl); }
 .storage-monitor__header, .storage-monitor__summary { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-md); }
+.storage-monitor__actions { display: flex; align-items: center; gap: var(--spacing-sm); }
 .storage-monitor__eyebrow { margin: 0 0 var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--iz-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .storage-monitor__title { margin: 0; padding: 0; border: 0; color: var(--color-text-primary); }
 .storage-monitor__summary { margin-top: var(--spacing-lg); }

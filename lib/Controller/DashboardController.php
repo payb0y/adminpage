@@ -157,8 +157,8 @@ class DashboardController extends Controller {
      * @NoAdminRequired
      * @NoCSRFRequired
      */
-    public function getStorage(): JSONResponse {
-        return $this->guard(function () {
+    public function getStorage(bool $refresh = false): JSONResponse {
+        return $this->guard(function () use ($refresh) {
             $user = $this->userSession->getUser();
             $orgId = $user === null ? null : $this->orgOverviewService->resolveOrgId($user->getUID());
             if ($orgId === null) {
@@ -168,7 +168,7 @@ class DashboardController extends Controller {
                 ], Http::STATUS_FORBIDDEN);
             }
 
-            return new JSONResponse($this->storageMonitoringService->getOrganizationStorage($orgId));
+            return new JSONResponse($this->storageMonitoringService->getOrganizationStorage($orgId, $refresh));
         });
     }
 

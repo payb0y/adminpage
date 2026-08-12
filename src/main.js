@@ -88,7 +88,7 @@ if (mountEl) {
           reload: () => {
             this.fetchData();
           },
-          retryStorage: () => this.fetchStorage(),
+          retryStorage: () => this.fetchStorage(true),
         },
       });
     },
@@ -177,12 +177,12 @@ if (mountEl) {
           this.projectGeocodesLoading = false;
         }
       },
-      async fetchStorage() {
+      async fetchStorage(refresh = false) {
         this.storageLoading = true;
         this.storageError = null;
         try {
           const url = generateUrl("/apps/adminpage/api/storage");
-          const response = await axios.get(url);
+          const response = await axios.get(url, { params: { refresh: refresh ? 1 : 0 } });
           this.storageData = response.data;
         } catch (e) {
           console.error("Failed to load storage monitoring", e);
