@@ -57,8 +57,8 @@
       </p>
 
       <div class="storage-monitor__lists">
-        <StorageEntityList title="People" empty-text="No organization members found." :items="storage.users || []" />
-        <StorageEntityList title="Projects" empty-text="No projects found." :items="storage.projects || []" />
+        <StorageEntityList title="Private" empty-text="No organization members found." :items="storage.users || []" />
+        <StorageEntityList title="Public" empty-text="No projects found." :items="storage.projects || []" />
       </div>
     </template>
   </section>
