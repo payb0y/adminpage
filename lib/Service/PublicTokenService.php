@@ -118,18 +118,35 @@ class PublicTokenService {
     /**
      * Revoke (disable) a public link by ID.
      */
-    public function revokeToken(int $id): void {
-        $sql = "UPDATE *PREFIX*adminpage_public_links SET enabled = 0 WHERE id = ?";
+    /**
+     * Disable one link belonging to $orgId.
+     *
+     * Scoped by org_id as well as id, exactly like listTokens(): the id comes
+     * straight from the request, so filtering on it alone would let any caller
+     * act on another organization's link by guessing a number.
+     *
+     * @return bool whether a row of THIS organization matched
+     */
+    public function revokeToken(int $id, int $orgId): bool {
+        $sql = "UPDATE *PREFIX*adminpage_public_links SET enabled = 0 WHERE id = ? AND org_id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
+        $result = $stmt->execute([$id, $orgId]);
+        return $result->rowCount() > 0;
     }
 
     /**
      * Delete a public link by ID.
      */
-    public function deleteToken(int $id): void {
-        $sql = "DELETE FROM *PREFIX*adminpage_public_links WHERE id = ?";
+    /**
+     * Permanently remove one link belonging to $orgId. Scoped like
+     * revokeToken() above, and for the same reason.
+     *
+     * @return bool whether a row of THIS organization matched
+     */
+    public function deleteToken(int $id, int $orgId): bool {
+        $sql = "DELETE FROM *PREFIX*adminpage_public_links WHERE id = ? AND org_id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
+        $result = $stmt->execute([$id, $orgId]);
+        return $result->rowCount() > 0;
     }
 }

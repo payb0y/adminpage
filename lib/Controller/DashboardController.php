@@ -343,7 +343,13 @@ class DashboardController extends Controller {
      * @NoCSRFRequired
      */
     public function revokePublicLink(int $id): JSONResponse {
-        $this->publicTokenService->revokeToken($id);
+        $orgId = $this->callerOrgId();
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'No organization found'], 404);
+        }
+        if (!$this->publicTokenService->revokeToken($id, $orgId)) {
+            return new JSONResponse(['error' => 'Link not found'], 404);
+        }
         return new JSONResponse(['status' => 'revoked']);
     }
 
@@ -352,8 +358,32 @@ class DashboardController extends Controller {
      * @NoCSRFRequired
      */
     public function deletePublicLink(int $id): JSONResponse {
-        $this->publicTokenService->deleteToken($id);
+        $orgId = $this->callerOrgId();
+        if ($orgId === null) {
+            return new JSONResponse(['error' => 'No organization found'], 404);
+        }
+        if (!$this->publicTokenService->deleteToken($id, $orgId)) {
+            return new JSONResponse(['error' => 'Link not found'], 404);
+        }
         return new JSONResponse(['status' => 'deleted']);
+    }
+
+    /**
+     * The organization the signed-in caller administers, or null.
+     *
+     * resolveOrgId() only matches a membership row with role = 'admin', so this
+     * is the org-admin check as well as the scope. These actions carry
+     * @NoAdminRequired, which lets any signed-in account reach them, and the id
+     * they act on arrives in the request -- deriving the organization from the
+     * session, never from a parameter, is what keeps one organization out of
+     * another's links.
+     */
+    private function callerOrgId(): ?int {
+        $user = $this->userSession->getUser();
+        if ($user === null) {
+            return null;
+        }
+        return $this->orgOverviewService->resolveOrgId($user->getUID());
     }
 
     /**
