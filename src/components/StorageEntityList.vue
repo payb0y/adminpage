@@ -1,8 +1,8 @@
 <template>
   <section class="storage-list">
-    <header class="storage-list__header">
-      <h3>{{ title }}</h3>
-      <span>{{ items.length }}</span>
+    <header class="storage-list__head">
+      <p class="iz-section-title">{{ title }}</p>
+      <span class="iz-pill iz-pill--muted">{{ items.length }}</span>
     </header>
     <p v-if="items.length === 0" class="storage-list__empty">{{ emptyText }}</p>
     <ol v-else class="storage-list__items">
@@ -15,7 +15,7 @@
           <span>{{ formatBytes(item.usedBytes) }}</span>
           <span>of {{ formatBytes(item.quotaBytes) }}</span>
         </div>
-        <div class="storage-list__meter iz-meter" role="progressbar" :aria-label="item.name + ' storage used'" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="item.percentage || 0">
+        <div class="storage-list__meter iz-meter iz-meter--thin" role="progressbar" :aria-label="item.name + ' storage used'" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="item.percentage || 0">
           <span :class="['iz-meter__fill', meterClass(item.status)]" :style="{ width: meterWidth(item.percentage) }"></span>
         </div>
       </li>
@@ -48,7 +48,7 @@ export default {
     },
     meterWidth: function (percentage) { return Math.min(100, Math.max(0, percentage || 0)) + "%"; },
     pillClass: function (status) {
-      return { healthy: "iz-pill--success", warning: "iz-pill--warning", critical: "iz-pill--danger" }[status] || "iz-pill--neutral";
+      return { healthy: "iz-pill--success", warning: "iz-pill--warning", critical: "iz-pill--danger" }[status] || "iz-pill--muted";
     },
     meterClass: function (status) {
       return { healthy: "iz-meter__fill--ok", warning: "iz-meter__fill--warn", critical: "iz-meter__fill--danger" }[status] || "iz-meter__fill--neutral";
@@ -62,9 +62,13 @@ export default {
 
 <style scoped>
 .storage-list { min-width: 0; }
-.storage-list__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm); }
-.storage-list__header h3 { margin: 0; padding: 0; border: 0; color: var(--color-text-primary); }
-.storage-list__header span, .storage-list__empty { color: var(--color-text-secondary); }
+/* .iz-section-title supplies the eyebrow and .iz-pill--muted the count; only
+   the row that pairs them is local. The title's own bottom margin is moved to
+   the row: left on the flex item it grows the line box, which pushes the pill
+   off the title's centre line. */
+.storage-list__head { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
+.storage-list__head .iz-section-title { margin-bottom: 0; }
+.storage-list__empty { color: var(--color-text-secondary); }
 .storage-list__items { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--spacing-sm); }
 .storage-list__item { border-top: 1px solid var(--color-border); padding-top: var(--spacing-sm); }
 .storage-list__identity, .storage-list__amount { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-sm); }

@@ -157,6 +157,55 @@
       <!-- ── Divider ── -->
       <div class="insights-panel__divider"></div>
 
+      <!-- ── Sub-section: Capacity ──
+           Sits next to Backups because both are about bytes on disk. The
+           status pill and the Updated/Refresh controls live here rather than
+           in StorageMonitoringPanel so the row matches its five siblings; the
+           panel below renders the figures only. -->
+      <section class="insights-panel__section" aria-labelledby="insights-capacity-title">
+        <div id="insights-capacity-title" class="insights-panel__section-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="22" y1="12" x2="2" y2="12" />
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+            <line x1="6" y1="16" x2="6.01" y2="16" />
+            <line x1="10" y1="16" x2="10.01" y2="16" />
+          </svg>
+          Capacity
+          <span v-if="storage" :class="['iz-pill', storagePillClass]">{{ storageStatus }}</span>
+          <span class="insights-panel__section-actions">
+            <span v-if="storage" class="insights-panel__section-meta">Updated {{ storageUpdatedAt }}</span>
+            <button
+              class="iz-btn iz-btn--ghost iz-btn--sm"
+              type="button"
+              :disabled="storageLoading"
+              @click="$emit('retry-storage')"
+            >
+              {{ storageLoading ? "Refreshing..." : "Refresh" }}
+            </button>
+          </span>
+        </div>
+        <StorageMonitoringPanel
+          :embedded="true"
+          :storage="storage"
+          :loading="storageLoading"
+          :error="storageError"
+          @retry="$emit('retry-storage')"
+        />
+      </section>
+
+      <!-- ── Divider ── -->
+      <div class="insights-panel__divider"></div>
+
       <!-- ── Sub-section: Upcoming Events ── -->
       <div class="insights-panel__section">
         <div class="insights-panel__section-title">
@@ -191,6 +240,7 @@ import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
 import UpcomingEventsPanel from "./UpcomingEventsPanel.vue";
+import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
 
 export default {
   name: "OrgInsightsPanel",
@@ -200,6 +250,7 @@ export default {
     SubscriptionPanel,
     BackupsPanel,
     UpcomingEventsPanel,
+    StorageMonitoringPanel,
   },
   props: {
     profile: {
@@ -250,11 +301,48 @@ export default {
       type: String,
       default: null,
     },
+    storage: {
+      type: Object,
+      default: null,
+    },
+    storageLoading: {
+      type: Boolean,
+      default: false,
+    },
+    storageError: {
+      type: String,
+      default: null,
+    },
   },
   data: function () {
     return {
       collapsed: true,
     };
+  },
+  computed: {
+    storageSummary: function () {
+      return (this.storage && this.storage.summary) || {};
+    },
+    storageStatus: function () {
+      var percentage = this.storageSummary.percentage;
+      if (percentage === null || percentage === undefined) return "Capacity unavailable";
+      if (percentage >= 100) return "Action needed";
+      if (percentage >= 80) return "Watch closely";
+      return "Healthy";
+    },
+    storagePillClass: function () {
+      var percentage = this.storageSummary.percentage;
+      if (percentage === null || percentage === undefined) return "iz-pill--muted";
+      if (percentage >= 100) return "iz-pill--danger";
+      if (percentage >= 80) return "iz-pill--warning";
+      return "iz-pill--success";
+    },
+    storageUpdatedAt: function () {
+      if (!this.storageSummary.calculatedAt) return "recently";
+      return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(
+        new Date(this.storageSummary.calculatedAt)
+      );
+    },
   },
 };
 </script>
@@ -337,6 +425,26 @@ export default {
   padding: 1px 7px;
   border-radius: 8px;
   margin-left: 2px;
+}
+
+/* ─── Controls in a section title row ───
+   Capacity is the first section to carry any. The title row is uppercase and
+   letter-spaced and both inherit, so a button dropped in reads "REFRESH" at
+   0.03em — reset them here rather than on each control. */
+.insights-panel__section-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.insights-panel__section-meta {
+  font-size: var(--iz-fs-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Divider ─── */

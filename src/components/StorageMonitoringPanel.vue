@@ -1,35 +1,22 @@
 <template>
-  <section class="storage-monitor iz-panel" aria-labelledby="storage-monitor-title">
-    <header class="storage-monitor__header">
-      <div>
-        <p class="storage-monitor__eyebrow">Capacity monitoring</p>
-        <h2 id="storage-monitor-title" class="storage-monitor__title">Storage pulse</h2>
-      </div>
-      <div v-if="storage" class="storage-monitor__actions">
-        <span class="iz-pill iz-pill--neutral">Updated {{ updatedAt }}</span>
-        <button class="iz-btn iz-btn--secondary" type="button" :disabled="loading" @click="$emit('retry')">
-          {{ loading ? "Refreshing..." : "Refresh" }}
-        </button>
-      </div>
-    </header>
-
-    <div v-if="loading && !storage" class="storage-monitor__state">
+  <!-- No header of its own: embedded under Organization Insights, the section
+       title row (icon, "Capacity", status pill, Updated + Refresh) is owned by
+       OrgInsightsPanel, the same way every other sub-section's title is. -->
+  <div :class="['storage-monitor', embedded ? 'iz-panel--flush' : 'iz-panel']">
+    <div v-if="loading && !storage" class="storage-monitor__state iz-empty">
       <span class="iz-spinner" aria-hidden="true"></span>
       <span>Calculating current storage usage...</span>
     </div>
-    <div v-else-if="error && !storage" class="storage-monitor__state storage-monitor__state--error">
+    <div v-else-if="error && !storage" class="storage-monitor__state iz-error">
       <span>{{ error }}</span>
-      <button class="iz-btn iz-btn--secondary" type="button" @click="$emit('retry')">Try again</button>
+      <button class="iz-btn iz-btn--sm" type="button" @click="$emit('retry')">Try again</button>
     </div>
 
     <template v-else-if="storage">
-      <div class="storage-monitor__summary">
-        <div class="storage-monitor__headline">
-          <strong>{{ formatBytes(summary.usedBytes) }}</strong>
-          <span>of {{ formatBytes(summary.capacityBytes) }} configured capacity</span>
-        </div>
-        <span :class="['iz-pill', summaryPillClass]">{{ summaryStatus }}</span>
-      </div>
+      <p class="storage-monitor__headline">
+        <strong>{{ formatBytes(summary.usedBytes) }}</strong>
+        <span>of {{ formatBytes(summary.capacityBytes) }} configured capacity</span>
+      </p>
       <div class="storage-monitor__meter iz-meter" role="progressbar" aria-label="Organization storage used" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="summary.percentage || 0">
         <span class="iz-meter__fill" :style="{ width: meterWidth(summary.percentage) }"></span>
       </div>
@@ -52,7 +39,7 @@
         </div>
       </div>
 
-      <p v-if="!summary.complete" class="storage-monitor__notice iz-note">
+      <p v-if="!summary.complete" class="storage-monitor__notice iz-inset">
         Some usage or quota measurements are unavailable. Totals include known measurements only.
       </p>
 
@@ -61,7 +48,7 @@
         <StorageEntityList title="Public" empty-text="No projects found." :items="storage.projects || []" />
       </div>
     </template>
-  </section>
+  </div>
 </template>
 
 <script>
@@ -74,6 +61,7 @@ export default {
     storage: { type: Object, default: null },
     loading: { type: Boolean, default: false },
     error: { type: String, default: null },
+    embedded: { type: Boolean, default: false },
   },
   computed: {
     summary: function () {
@@ -82,24 +70,6 @@ export default {
     attentionCount: function () {
       var thresholds = this.storage.thresholds || {};
       return (thresholds.warningCount || 0) + (thresholds.criticalCount || 0);
-    },
-    summaryStatus: function () {
-      var percentage = this.summary.percentage;
-      if (percentage === null) return "Capacity unavailable";
-      if (percentage >= 100) return "Action needed";
-      if (percentage >= 80) return "Watch closely";
-      return "Healthy";
-    },
-    summaryPillClass: function () {
-      var percentage = this.summary.percentage;
-      if (percentage === null) return "iz-pill--neutral";
-      if (percentage >= 100) return "iz-pill--danger";
-      if (percentage >= 80) return "iz-pill--warning";
-      return "iz-pill--success";
-    },
-    updatedAt: function () {
-      if (!this.summary.calculatedAt) return "recently";
-      return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(new Date(this.summary.calculatedAt));
     },
   },
   methods: {
@@ -118,22 +88,23 @@ export default {
 </script>
 
 <style scoped>
-.storage-monitor { margin-bottom: var(--spacing-xl); }
-.storage-monitor__header, .storage-monitor__summary { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-md); }
-.storage-monitor__actions { display: flex; align-items: center; gap: var(--spacing-sm); }
-.storage-monitor__eyebrow { margin: 0 0 var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--iz-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-.storage-monitor__title { margin: 0; padding: 0; border: 0; color: var(--color-text-primary); }
-.storage-monitor__summary { margin-top: var(--spacing-lg); }
-.storage-monitor__headline { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--spacing-sm); color: var(--color-text-secondary); }
-.storage-monitor__headline strong { color: var(--color-text-primary); font-size: var(--iz-fs-2xl); font-variant-numeric: tabular-nums; }
-.storage-monitor__meter { margin-top: var(--spacing-md); width: 100%; }
-.storage-monitor__metrics { margin-top: var(--spacing-lg); }
-.storage-monitor__notice { margin-top: var(--spacing-md); }
-.storage-monitor__lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-lg); margin-top: var(--spacing-xl); }
-.storage-monitor__state { min-height: 180px; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); color: var(--color-text-secondary); }
-.storage-monitor__state--error { flex-direction: column; }
-@media (max-width: 768px) {
-  .storage-monitor__header, .storage-monitor__summary { align-items: flex-start; flex-direction: column; }
+/* Layout only. Surface, radius and padding come from .iz-panel / --flush; the
+   figure, meter, metrics, notice and state boxes are all primitives. */
+.storage-monitor__headline { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--spacing-sm); margin: 0; color: var(--color-text-secondary); }
+/* --iz-fs-xl, not --iz-fs-2xl: 2xl is the ramp's page-level figure and, two
+   levels into Insights, outranks the .iz-metric__value row right beneath it. */
+.storage-monitor__headline strong { color: var(--color-text-primary); font-size: var(--iz-fs-xl); font-variant-numeric: tabular-nums; }
+.storage-monitor__meter { margin-top: var(--spacing-sm); width: 100%; }
+.storage-monitor__metrics { margin-top: var(--spacing-md); }
+.storage-monitor__notice { margin-top: var(--spacing-md); margin-bottom: 0; }
+.storage-monitor__lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-lg); margin-top: var(--spacing-lg); }
+/* .iz-empty / .iz-error supply the box; only the inline arrangement is local. */
+.storage-monitor__state { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); }
+
+/* The breakpoint is on the viewport but the section now sits inside Insights'
+   own padding (page 1200 − 2×24, then body − 2×24), so the columns run out of
+   room before the viewport does. */
+@media (max-width: 900px) {
   .storage-monitor__lists { grid-template-columns: 1fr; }
 }
 </style>

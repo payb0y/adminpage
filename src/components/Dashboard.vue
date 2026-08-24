@@ -48,13 +48,6 @@
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
-      <StorageMonitoringPanel
-        :storage="storageData"
-        :loading="storageLoading"
-        :error="storageError"
-        @retry="$emit('retry-storage')"
-      />
-
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
         :projects="(projectGeocodes && projectGeocodes.projects) || []"
@@ -87,7 +80,11 @@
         :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
         :admin-uid="(data.orgOverview.profile && data.orgOverview.profile.adminUid) || null"
         :current-uid="data.orgOverview.currentUid || null"
+        :storage="storageData"
+        :storage-loading="storageLoading"
+        :storage-error="storageError"
         @reload="$emit('reload')"
+        @retry-storage="$emit('retry-storage')"
       />
 
       <!-- ── Public Dashboard Links Management ── -->
@@ -115,7 +112,6 @@ import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
-import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
 
 export default {
   name: "Dashboard",
@@ -129,7 +125,6 @@ export default {
     CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
-    StorageMonitoringPanel,
   },
   props: {
     data: {
