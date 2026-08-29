@@ -473,17 +473,17 @@ class DeckService {
         }
 
         return [
-            'progressDetails'   => $this->buildProgressDetails($projectMap),
+            'progressDetails'   => $this->buildProgressDetails($projectMap, $cardAssignees),
             'memberDetails'     => $this->buildMemberDetails($taskRows, $cardAssignees, $projectMap),
             'delayDetails'      => $this->buildDelayDetails($projectMap, $cardAssignees),
-            'completionDetails' => $this->buildCompletionDetails($projectMap),
+            'completionDetails' => $this->buildCompletionDetails($projectMap, $cardAssignees),
         ];
     }
 
     /**
      * Progress detail: per-project list of tasks with status and due info.
      */
-    private function buildProgressDetails(array $projectMap): array {
+    private function buildProgressDetails(array $projectMap, array $cardAssignees = []): array {
         $result = [];
         foreach ($projectMap as $proj) {
             $total = 0;
@@ -503,6 +503,12 @@ class DeckService {
                     'stack'      => $t['stack_title'],
                     'due'        => $t['duedate'],
                     'created_at' => !empty($t['card_created_at']) ? date('Y-m-d H:i:s', (int)$t['card_created_at']) : null,
+                    // The dashboard's member filter re-aggregates these cards
+                    // per assignee. It cannot match on project name: this
+                    // array is keyed by cp.name ("Test2") while the member
+                    // rollup sees b.title ("Test2 - Main Board"), so the
+                    // scoping has to happen on the task, not on the label.
+                    'assignees'  => $cardAssignees[(int)$t['task_id']] ?? [],
                 ];
             }
             $result[] = [
@@ -662,7 +668,7 @@ class DeckService {
     /**
      * Completion detail: per-project list of completed tasks with completion date.
      */
-    private function buildCompletionDetails(array $projectMap): array {
+    private function buildCompletionDetails(array $projectMap, array $cardAssignees = []): array {
         $result = [];
         foreach ($projectMap as $proj) {
             $completed = [];
@@ -680,6 +686,7 @@ class DeckService {
                         'stack'        => $t['stack_title'],
                         'due'          => $t['duedate'],
                         'created_at'   => $t['card_created_at'] ? date('Y-m-d H:i:s', (int)$t['card_created_at']) : null,
+                        'assignees'    => $cardAssignees[(int)$t['task_id']] ?? [],
                     ];
                 }
             }

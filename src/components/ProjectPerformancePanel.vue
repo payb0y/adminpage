@@ -87,6 +87,47 @@
               ✕
             </button>
           </div>
+          <div v-if="showAssignees" class="perf-panel__member-scope">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="perf-panel__filter-icon"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <select
+              v-model="memberFilter"
+              class="iz-select iz-select--sm perf-panel__member-scope-select"
+              aria-label="Scope the panel to one member"
+            >
+              <option value="">All members</option>
+              <option
+                v-for="m in memberFilterOptions"
+                :key="'mfo-' + m.userId"
+                :value="m.userId"
+              >
+                {{ m.displayName || m.userId }}
+              </option>
+            </select>
+            <button
+              v-if="memberFilter"
+              class="perf-panel__date-range-clear"
+              title="Clear member filter"
+              @click.stop="memberFilter = ''"
+            >
+              ✕
+            </button>
+          </div>
           <div class="perf-panel__completion-filter">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -310,45 +351,165 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
           <p class="perf-panel__card-desc">
-            Tasks completed per member vs assigned tasks
+            Projects, tasks and status per member
           </p>
-          <div class="perf-panel__member-list">
+
+          <!-- Every control below stops the click. The card itself opens the
+               details modal, so an unguarded input or chip opens it too — the
+               filter would be unusable. -->
+          <div class="perf-panel__member-filters" @click.stop>
+            <label class="perf-panel__member-search">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <line x1="20" y1="20" x2="16.2" y2="16.2" />
+              </svg>
+              <input
+                v-model="memberSearch"
+                class="iz-input iz-input--sm"
+                type="search"
+                placeholder="Find a member"
+                aria-label="Find a member"
+              />
+            </label>
+            <select
+              v-model="memberProject"
+              class="iz-select iz-select--sm"
+              aria-label="Filter by project"
+            >
+              <option value="all">All projects</option>
+              <option
+                v-for="p in memberProjectOptions"
+                :key="'mpo-' + p"
+                :value="p"
+              >
+                {{ p }}
+              </option>
+            </select>
+          </div>
+
+          <div
+            class="perf-panel__member-chips"
+            role="group"
+            aria-label="Filter by status"
+            @click.stop
+          >
+            <button
+              class="iz-chip"
+              :class="{ 'iz-chip--active': memberBucket === 'all' }"
+              :aria-pressed="memberBucket === 'all' ? 'true' : 'false'"
+              @click="memberBucket = 'all'"
+            >
+              All
+              <span class="perf-panel__member-chip-n">{{
+                memberBucketTotals.all
+              }}</span>
+            </button>
+            <button
+              v-for="b in memberBuckets"
+              :key="'mbc-' + b.key"
+              class="iz-chip"
+              :class="{ 'iz-chip--active': memberBucket === b.key }"
+              :aria-pressed="memberBucket === b.key ? 'true' : 'false'"
+              @click="memberBucket = b.key"
+            >
+              <span
+                class="perf-panel__member-dot"
+                :style="{ background: b.color }"
+              ></span>
+              {{ b.label }}
+              <span class="perf-panel__member-chip-n">{{
+                memberBucketTotals[b.key]
+              }}</span>
+            </button>
+          </div>
+
+          <div class="perf-panel__member-legend">
+            <span v-for="b in memberBuckets" :key="'mlg-' + b.key">
+              <i :style="{ background: b.color }"></i>{{ b.label }}
+            </span>
+          </div>
+
+          <div v-if="previewMemberRollup.length" class="perf-panel__member-list">
             <div
-              v-for="(item, idx) in previewMemberPerformance"
-              :key="'mem-' + idx"
+              v-for="mem in previewMemberRollup"
+              :key="'mem-' + mem.name"
               class="perf-panel__member-item"
             >
               <div class="perf-panel__member-row">
                 <div class="perf-panel__member-info">
                   <span class="perf-panel__member-avatar">{{
-                    item.name.charAt(0).toUpperCase()
+                    mem.name.charAt(0).toUpperCase()
                   }}</span>
-                  <span class="perf-panel__bar-label">{{ item.name }}</span>
+                  <span class="perf-panel__bar-label">{{ mem.name }}</span>
                 </div>
                 <span class="perf-panel__member-stats">
-                  <span class="perf-panel__member-count"
-                    >{{ item.done }}/{{ item.total }}</span
-                  >
-                  <span class="perf-panel__bar-value"
-                    >{{ item.progress }}%</span
-                  >
+                  <span class="perf-panel__member-count">{{
+                    mem.projects.length === 1
+                      ? "1 project"
+                      : mem.projects.length + " projects"
+                  }}</span>
+                  <span class="perf-panel__bar-value">{{
+                    mem.total === 1 ? "1 task" : mem.total + " tasks"
+                  }}</span>
                 </span>
               </div>
-              <div class="perf-panel__bar-track">
-                <div
-                  class="perf-panel__bar-fill"
-                  :style="{ width: item.progress + '%' }"
-                ></div>
+
+              <div class="perf-panel__member-bar">
+                <template v-for="b in memberBuckets">
+                  <span
+                    v-if="mem.counts[b.key] > 0"
+                    :key="'mseg-' + mem.name + '-' + b.key"
+                    class="perf-panel__member-seg"
+                    :class="{
+                      'perf-panel__member-seg--dim':
+                        memberBucket !== 'all' && memberBucket !== b.key,
+                    }"
+                    :style="{ flexGrow: mem.counts[b.key], background: b.color }"
+                    :title="mem.counts[b.key] + ' ' + b.label.toLowerCase()"
+                  ></span>
+                </template>
+              </div>
+
+              <div class="perf-panel__member-counts">
+                <span
+                  v-for="b in memberBuckets"
+                  :key="'mcnt-' + mem.name + '-' + b.key"
+                >
+                  <i :style="{ background: b.color }"></i
+                  ><b>{{ mem.counts[b.key] }}</b> {{ b.label.toLowerCase() }}
+                </span>
+              </div>
+
+              <div class="perf-panel__member-projects">
+                <span
+                  v-for="p in mem.projects"
+                  :key="'mprj-' + mem.name + '-' + p.name"
+                  class="perf-panel__member-project"
+                  :title="p.name"
+                >
+                  {{ p.name }} <b>{{ p.total }}</b>
+                </span>
               </div>
             </div>
           </div>
+          <div v-else class="iz-empty perf-panel__member-empty">
+            {{ memberEmptyMessage }}
+          </div>
+
           <div
-            v-if="effectiveMemberPerformance.length > memberPreviewLimit"
+            v-if="filteredMemberRollup.length > memberPreviewLimit"
             class="perf-panel__bar-hint"
           >
-            Showing {{ previewMemberPerformance.length }} of
-            {{ effectiveMemberPerformance.length }} members (click for full
-            details)
+            Showing {{ previewMemberRollup.length }} of
+            {{ filteredMemberRollup.length }} members (click for full details)
           </div>
         </div>
       </div>
@@ -1203,6 +1364,9 @@ export default {
       type: Array,
       required: true,
     },
+    /* Still part of the panel's contract with Dashboard.vue, but the card
+       no longer reads it: it needs per-project and per-status counts, which
+       only performanceDetails.memberDetails carries. See memberRollup. */
     memberPerformance: {
       type: Array,
       required: true,
@@ -1274,6 +1438,12 @@ export default {
       showDatePicker: false,
       perfDateStep: "from",
       perfCalendarBase: new Date(),
+      // Global member scope (Filters Row) — see hasScopeFilter
+      memberFilter: "",
+      // Member Performance card filters
+      memberSearch: "",
+      memberProject: "all",
+      memberBucket: "all",
     };
   },
   computed: {
@@ -1283,12 +1453,210 @@ export default {
     memberPreviewLimit: function () {
       return 5;
     },
+    /* ── Member Performance card ──────────────────────────────────
+       Rolled up from memberDetails, not from the memberPerformance prop:
+       the card now shows per-project and per-status counts, and
+       memberDetails is the only shape carrying a task's project and due
+       date. dateFilteredMemberDetails already applies the panel's date
+       range, so the rollup inherits it.
+
+       Archived tasks are left out of every bucket, and so out of the
+       card's totals. DeckService::fetchTaskRowsForBoards tests archived
+       BEFORE the Approved/Done stack, so a finished card that someone
+       archived reads as 'archived', never 'done' — counting those would
+       let tidying up a board drag a member's completion rate down. */
+    memberBuckets: function () {
+      return [
+        { key: "done", label: "Done", color: "var(--color-success)" },
+        { key: "progress", label: "In progress", color: "var(--chart-5)" },
+        { key: "overdue", label: "Overdue", color: "var(--color-danger)" },
+      ];
+    },
+    memberRollup: function () {
+      /* Date-only string compare, matching the CAST(duedate AS DATE) the
+         SQL uses. Parsing to Date would read 'YYYY-MM-DD' as UTC midnight
+         and compare it against local midnight — an off-by-one for anyone
+         east of Greenwich. */
+      var now = new Date();
+      var todayStr =
+        now.getFullYear() +
+        "-" +
+        ("0" + (now.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + now.getDate()).slice(-2);
+
+      var list = this.dateFilteredMemberDetails;
+      var result = [];
+
+      for (var i = 0; i < list.length; i++) {
+        var mem = list[i];
+        var byProject = {};
+        var order = [];
+        var counts = { done: 0, progress: 0, overdue: 0 };
+        var total = 0;
+
+        for (var j = 0; j < (mem.tasks || []).length; j++) {
+          var t = mem.tasks[j];
+          if (t.status === "archived") continue;
+
+          var bucket = "progress";
+          if (t.status === "done") {
+            bucket = "done";
+          } else if (t.due && String(t.due).substring(0, 10) < todayStr) {
+            bucket = "overdue";
+          }
+
+          var name = t.project || "Unassigned project";
+          if (!byProject[name]) {
+            byProject[name] = {
+              name: name,
+              total: 0,
+              done: 0,
+              progress: 0,
+              overdue: 0,
+            };
+            order.push(name);
+          }
+          byProject[name][bucket]++;
+          byProject[name].total++;
+          counts[bucket]++;
+          total++;
+        }
+
+        if (total === 0) continue;
+
+        result.push({
+          name: mem.name,
+          total: total,
+          counts: counts,
+          projects: order
+            .map(function (n) {
+              return byProject[n];
+            })
+            .sort(function (a, b) {
+              return b.total - a.total;
+            }),
+        });
+      }
+      return result;
+    },
+    memberProjectOptions: function () {
+      var seen = {};
+      var out = [];
+      this.memberRollup.forEach(function (mem) {
+        mem.projects.forEach(function (p) {
+          if (!seen[p.name]) {
+            seen[p.name] = true;
+            out.push(p.name);
+          }
+        });
+      });
+      return out.sort();
+    },
+    /* Chip counts answer "how much work is in this state?" for the
+       current search and project, so they must not narrow themselves by
+       the bucket already selected. */
+    memberBucketTotals: function () {
+      var self = this;
+      var q = this.memberSearch.trim().toLowerCase();
+      var totals = { all: 0, done: 0, progress: 0, overdue: 0 };
+
+      this.memberRollup.forEach(function (mem) {
+        if (q && mem.name.toLowerCase().indexOf(q) === -1) return;
+        mem.projects.forEach(function (p) {
+          if (self.memberProject !== "all" && p.name !== self.memberProject) {
+            return;
+          }
+          totals.done += p.done;
+          totals.progress += p.progress;
+          totals.overdue += p.overdue;
+          totals.all += p.total;
+        });
+      });
+      return totals;
+    },
+    filteredMemberRollup: function () {
+      var self = this;
+      var q = this.memberSearch.trim().toLowerCase();
+      var bucket = this.memberBucket;
+      var rows = [];
+
+      this.memberRollup.forEach(function (mem) {
+        if (q && mem.name.toLowerCase().indexOf(q) === -1) return;
+
+        var projects = [];
+        var counts = { done: 0, progress: 0, overdue: 0 };
+        var total = 0;
+
+        mem.projects.forEach(function (p) {
+          if (self.memberProject !== "all" && p.name !== self.memberProject) {
+            return;
+          }
+          if (bucket !== "all" && p[bucket] === 0) return;
+          projects.push(p);
+          counts.done += p.done;
+          counts.progress += p.progress;
+          counts.overdue += p.overdue;
+          total += p.total;
+        });
+
+        if (total === 0) return;
+        rows.push({
+          name: mem.name,
+          total: total,
+          counts: counts,
+          projects: projects,
+        });
+      });
+
+      rows.sort(function (a, b) {
+        if (bucket !== "all") {
+          var diff = b.counts[bucket] - a.counts[bucket];
+          if (diff !== 0) return diff;
+        }
+        return b.total - a.total;
+      });
+      return rows;
+    },
+    previewMemberRollup: function () {
+      return this.filteredMemberRollup.slice(0, this.memberPreviewLimit);
+    },
+    memberEmptyMessage: function () {
+      if (this.memberSearch.trim()) {
+        return 'No member matches "' + this.memberSearch.trim() + '".';
+      }
+      if (this.memberProject !== "all") {
+        return "Nobody is assigned on this project.";
+      }
+      if (this.memberBucket !== "all") {
+        return "No task is in this state.";
+      }
+      return "No member assignment data available";
+    },
     hasDateFilter: function () {
       return !!(this.perfDateFrom || this.perfDateTo);
     },
+    hasMemberFilter: function () {
+      return !!this.memberFilter;
+    },
+    /* Either filter forces every card to re-aggregate from performanceDetails
+       instead of using its own top-level prop, because only the detail rows
+       carry the per-task created_at and assignees the scoping needs. */
+    hasScopeFilter: function () {
+      return this.hasDateFilter || this.hasMemberFilter;
+    },
+    memberFilterOptions: function () {
+      var list = (this.orgMembers || []).slice();
+      list.sort(function (a, b) {
+        var an = (a.displayName || a.userId || "").toLowerCase();
+        var bn = (b.displayName || b.userId || "").toLowerCase();
+        return an < bn ? -1 : an > bn ? 1 : 0;
+      });
+      return list;
+    },
     /* ── Date-filtered card data (re-aggregated from detail tasks) ── */
     effectiveProjectProgress: function () {
-      if (!this.hasDateFilter) return this.projectProgress || [];
+      if (!this.hasScopeFilter) return this.projectProgress || [];
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var list = this.details.progressDetails || [];
@@ -1302,6 +1670,7 @@ export default {
           var ca = (t.created_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           total++;
           if (t.status === "done") done++;
         }
@@ -1312,40 +1681,8 @@ export default {
       }
       return result;
     },
-    effectiveMemberPerformance: function () {
-      if (!this.hasDateFilter) return this.memberPerformance || [];
-      var from = this.perfDateFrom;
-      var to = this.perfDateTo;
-      var list = this.details.memberDetails || [];
-      var result = [];
-      for (var i = 0; i < list.length; i++) {
-        var member = list[i];
-        var total = 0;
-        var done = 0;
-        for (var j = 0; j < (member.tasks || []).length; j++) {
-          var t = member.tasks[j];
-          var ca = (t.created_at || "").substring(0, 10);
-          if (from && ca < from) continue;
-          if (to && ca > to) continue;
-          total++;
-          if (t.status === "done") done++;
-        }
-        if (total > 0) {
-          result.push({
-            name: member.name,
-            total: total,
-            done: done,
-            progress: Math.round((done / total) * 100),
-          });
-        }
-      }
-      if (result.length === 0) {
-        result.push({ name: "No Assignments", total: 0, done: 0, progress: 0 });
-      }
-      return result;
-    },
     effectiveDelayProjects: function () {
-      if (!this.hasDateFilter) return this.taskDelayProjects || [];
+      if (!this.hasScopeFilter) return this.taskDelayProjects || [];
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var list = this.details.delayDetails || [];
@@ -1360,6 +1697,7 @@ export default {
           var ca = (t.createdAt || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           if (t.category === "delayed") delayed++;
           else if (t.category === "blocked") blocked++;
           else onTime++;
@@ -1382,7 +1720,7 @@ export default {
       return result;
     },
     effectiveCompletionProjects: function () {
-      if (!this.hasDateFilter) return this.taskCompletionProjects || [];
+      if (!this.hasScopeFilter) return this.taskCompletionProjects || [];
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var list = this.details.completionDetails || [];
@@ -1395,6 +1733,7 @@ export default {
           var ca = (t.completed_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           completedDates.push(new Date(t.completed_at));
         }
         if (completedDates.length === 0) {
@@ -1488,18 +1827,6 @@ export default {
         })
         .slice(0, this.progressPreviewLimit);
     },
-    previewMemberPerformance: function () {
-      return this.effectiveMemberPerformance
-        .slice()
-        .sort(function (a, b) {
-          var progressDiff = (b.progress || 0) - (a.progress || 0);
-          if (progressDiff !== 0) {
-            return progressDiff;
-          }
-          return (b.done || 0) - (a.done || 0);
-        })
-        .slice(0, this.memberPreviewLimit);
-    },
     filteredDelayProjects: function () {
       var q = (this.delaySearch || "").toLowerCase();
       var statusFilter = this.delayStatusFilter;
@@ -1580,6 +1907,7 @@ export default {
           if (from && ca < from) continue;
           if (to && ca > to) continue;
         }
+        if (!this.matchesMember(t)) continue;
         if (t.category === "delayed") delayed++;
         else if (t.category === "blocked") blocked++;
         else onTime++;
@@ -1607,7 +1935,7 @@ export default {
     },
     dateFilteredProgressDetails: function () {
       var list = this.details.progressDetails || [];
-      if (!this.hasDateFilter) return list;
+      if (!this.hasScopeFilter) return list;
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var result = [];
@@ -1621,6 +1949,7 @@ export default {
           var ca = (t.created_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           tasks.push(t);
           total++;
           if (t.status === "done") done++;
@@ -1638,12 +1967,16 @@ export default {
     },
     dateFilteredMemberDetails: function () {
       var list = this.details.memberDetails || [];
-      if (!this.hasDateFilter) return list;
+      if (!this.hasScopeFilter) return list;
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var result = [];
       for (var i = 0; i < list.length; i++) {
         var mem = list[i];
+        /* Scoped by name, not through matchesMember: these tasks carry no
+           assignees array — they are already this member's by construction,
+           so the assignee test would reject every one of them. */
+        if (this.memberFilter && mem.name !== this.memberFilter) continue;
         var tasks = [];
         var total = 0;
         var done = 0;
@@ -1670,7 +2003,7 @@ export default {
     },
     dateFilteredDelayDetails: function () {
       var list = this.details.delayDetails || [];
-      if (!this.hasDateFilter) return list;
+      if (!this.hasScopeFilter) return list;
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var result = [];
@@ -1687,6 +2020,7 @@ export default {
           var ca = (t.createdAt || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           tasks.push(t);
           if (t.createdAt) {
             var created = new Date(t.createdAt);
@@ -1713,7 +2047,7 @@ export default {
     },
     dateFilteredCompletionDetails: function () {
       var list = this.details.completionDetails || [];
-      if (!this.hasDateFilter) return list;
+      if (!this.hasScopeFilter) return list;
       var from = this.perfDateFrom;
       var to = this.perfDateTo;
       var result = [];
@@ -1725,6 +2059,7 @@ export default {
           var ca = (t.completed_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
+          if (!this.matchesMember(t)) continue;
           tasks.push(t);
         }
         result.push({
@@ -1952,6 +2287,29 @@ export default {
         day: "2-digit",
         month: "short",
         year: "numeric",
+      });
+    },
+    /* True when a task belongs to the member the Filters Row is scoped to.
+       Detail rows carry `assignees` (a list of uids) for exactly this — the
+       scoping cannot be done on the project label, because progressDetails is
+       keyed by cp.name ("Test2") while the assignee rollup sees b.title
+       ("Test2 - Main Board"). */
+    matchesMember: function (task) {
+      if (!this.memberFilter) return true;
+      var assignees = (task && task.assignees) || [];
+      return assignees.indexOf(this.memberFilter) !== -1;
+    },
+    /* Entry point for the Progression KPI card. Mirrors
+       filterProjectsByStatus: set the filter, then bring the panel into view,
+       since the card that was clicked sits a screen above it. */
+    filterByCompletion: function (band) {
+      this.completionRateFilter = band || "";
+      this.collapsed = false;
+      var self = this;
+      this.$nextTick(function () {
+        if (self.$el && self.$el.scrollIntoView) {
+          self.$el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     },
     filterProjectsByStatus: function (statusLabel) {
@@ -2217,6 +2575,21 @@ export default {
   color: var(--accent);
   flex-shrink: 0;
   margin-right: 2px;
+}
+
+/* Member scope — layout only. The control's chrome is .iz-select from the
+   theme; the width override is here because the primitive is width:100% for
+   a stacked form field and this is a toolbar row (USING-THE-THEME.md §5). */
+.perf-panel__member-scope {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.perf-panel__member-scope .iz-select {
+  width: auto;
+  max-width: 190px;
+  min-width: 130px;
 }
 
 .perf-panel__cr-badge {
@@ -2628,7 +3001,7 @@ export default {
 .perf-panel__member-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 
 .perf-panel__member-row {
@@ -2670,6 +3043,172 @@ export default {
   font-size: 11px;
   font-weight: 500;
   color: var(--color-text-muted, #9ca3af);
+}
+
+/* ── Member Performance filters ──
+   Layout only. The chrome is .iz-input / .iz-select / .iz-chip from the
+   theme; what is set here is what a toolbar row needs and a stacked form
+   field does not — the primitives are width:100% by design
+   (USING-THE-THEME.md §5). Scoped CSS makes these (0,3,0), so they win
+   over the theme's (0,2,0) without !important. */
+.perf-panel__member-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
+  align-items: center;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.perf-panel__member-search {
+  position: relative;
+  display: flex;
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+.perf-panel__member-search svg {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.perf-panel__member-filters .iz-input {
+  padding-left: 26px;
+}
+
+.perf-panel__member-filters .iz-select {
+  width: auto;
+  flex: 0 1 170px;
+  min-width: 120px;
+}
+
+.perf-panel__member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.perf-panel__member-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.perf-panel__member-chip-n {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.perf-panel__member-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 8px 0 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.perf-panel__member-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.perf-panel__member-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+/* Segmented status bar. The 2px gaps are the encoding, not decoration:
+   they keep two adjacent fills from reading as one longer one. */
+.perf-panel__member-bar {
+  display: flex;
+  gap: 2px;
+  height: 9px;
+}
+
+.perf-panel__member-seg {
+  flex-basis: 0;
+  min-width: 3px;
+  border-radius: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.perf-panel__member-seg:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.perf-panel__member-seg:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.perf-panel__member-seg--dim {
+  opacity: 0.26;
+}
+
+.perf-panel__member-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.perf-panel__member-counts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.perf-panel__member-counts i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.perf-panel__member-counts b {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.perf-panel__member-projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.perf-panel__member-project {
+  font-size: 10.5px;
+  color: var(--color-text-secondary);
+  background: var(--bg-inset);
+  border-radius: var(--radius-sm, 6px);
+  padding: 2px 7px;
+  max-width: 165px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perf-panel__member-project b {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.perf-panel__member-empty {
+  margin: 4px 0;
 }
 
 /* Modal member header */

@@ -52,13 +52,16 @@
           @filter-projects="onFilterProjects"
           @create-project="onCreateProject"
         />
+        <ProgressionKpiCard
+          :projects="data.projectProgress || []"
+          @filter-progress="onFilterProgress"
+        />
         <TasksKpiCard
           v-if="tasksKpi"
           :kpi="tasksKpi"
           @filter-tasks="onFilterTasks"
           @goto-oldest-task="onGotoOldestTask"
         />
-        <ResourcesKpiCard v-if="resourcesKpi" :kpi="resourcesKpi" />
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
@@ -85,6 +88,7 @@
 
       <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->
       <OrgInsightsPanel
+        :resources="resourcesKpi"
         :profile="data.orgOverview.profile || {}"
         :members="data.orgOverview.members || []"
         :subscription="data.orgOverview.subscription || {}"
@@ -124,7 +128,7 @@
 <script>
 import ProjectsKpiCard from "./ProjectsKpiCard.vue";
 import TasksKpiCard from "./TasksKpiCard.vue";
-import ResourcesKpiCard from "./ResourcesKpiCard.vue";
+import ProgressionKpiCard from "./ProgressionKpiCard.vue";
 import TimelineKpiCard from "./TimelineKpiCard.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import ProjectsMapPanel from "./ProjectsMapPanel.vue";
@@ -138,7 +142,7 @@ export default {
   components: {
     ProjectsKpiCard,
     TasksKpiCard,
-    ResourcesKpiCard,
+    ProgressionKpiCard,
     TimelineKpiCard,
     ProjectPerformancePanel,
     ProjectsMapPanel,
@@ -240,6 +244,11 @@ export default {
     onFilterProjects: function (statusLabel) {
       if (this.$refs.perfPanel) {
         this.$refs.perfPanel.filterProjectsByStatus(statusLabel);
+      }
+    },
+    onFilterProgress: function (band) {
+      if (this.$refs.perfPanel) {
+        this.$refs.perfPanel.filterByCompletion(band);
       }
     },
     onFilterTasks: function (filterType, filterValue) {

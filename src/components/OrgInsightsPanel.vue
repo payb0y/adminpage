@@ -206,6 +206,50 @@
       <!-- ── Divider ── -->
       <div class="insights-panel__divider"></div>
 
+      <!-- ── Sub-section: Resources ──
+           Moved out of the KPI strip: item counts belong beside Capacity's
+           storage bytes, the same question at a different grain. Rendered as
+           figures rather than the donut the KPI card used — four counts that
+           do not sum to a meaningful whole are not a chart. -->
+      <div v-if="resourceCells.length" class="insights-panel__section">
+        <div class="insights-panel__section-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          Resources
+        </div>
+        <div class="insights-panel__resources">
+          <div
+            v-for="cell in resourceCells"
+            :key="'res-' + cell.label"
+            class="insights-panel__resource"
+          >
+            <span class="insights-panel__resource-value">{{ cell.value }}</span>
+            <span class="insights-panel__resource-label">{{ cell.label }}</span>
+            <span
+              v-if="cell.sub"
+              class="insights-panel__resource-sub"
+              >{{ cell.sub }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Divider ── -->
+      <div v-if="resourceCells.length" class="insights-panel__divider"></div>
+
       <!-- ── Sub-section: Upcoming Events ── -->
       <div class="insights-panel__section">
         <div class="insights-panel__section-title">
@@ -253,6 +297,13 @@ export default {
     StorageMonitoringPanel,
   },
   props: {
+    /* The `resources` entry from the dashboard's kpis array — the same object
+       ResourcesKpiCard used to render in the strip. Null when the org has
+       none, which hides the section. */
+    resources: {
+      type: Object,
+      default: null,
+    },
     profile: {
       type: Object,
       default: function () {
@@ -320,6 +371,27 @@ export default {
     };
   },
   computed: {
+    /* KpiService ships these as {value, label} strings, with the file and note
+       counts pre-formatted as "23 pub / 161 priv". Split that into a figure
+       and a sub-line so the four cells share one baseline. */
+    resourceCells: function () {
+      var metrics = (this.resources && this.resources.metrics) || [];
+      var cells = [];
+      for (var i = 0; i < metrics.length; i++) {
+        var raw = String(metrics[i].value === undefined ? "" : metrics[i].value);
+        var split = raw.match(/^(\d+)\s*pub\s*\/\s*(\d+)\s*priv$/i);
+        if (split) {
+          cells.push({
+            label: metrics[i].label,
+            value: String(Number(split[1]) + Number(split[2])),
+            sub: split[1] + " public · " + split[2] + " private",
+          });
+        } else {
+          cells.push({ label: metrics[i].label, value: raw, sub: "" });
+        }
+      }
+      return cells;
+    },
     storageSummary: function () {
       return (this.storage && this.storage.summary) || {};
     },
@@ -400,6 +472,40 @@ export default {
 }
 
 /* ─── Sub-section Title ─── */
+.insights-panel__resources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.insights-panel__resource {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-el, 8px);
+  background: var(--bg-subtle);
+}
+
+.insights-panel__resource-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.insights-panel__resource-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.insights-panel__resource-sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 .insights-panel__section-title {
   display: flex;
   align-items: center;
