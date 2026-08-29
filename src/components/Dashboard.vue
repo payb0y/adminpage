@@ -29,6 +29,20 @@
     </div>
 
     <template v-else>
+      <div v-if="isOrgAdmin" class="adminpage-dashboard__toolbar">
+        <button
+          type="button"
+          class="iz-btn iz-btn--ghost"
+          @click="showOrganizationSettings = true"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63h.01A1.7 1.7 0 0 0 10 3.07V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9v.01A1.7 1.7 0 0 0 20.93 10H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z" />
+          </svg>
+          Organization settings
+        </button>
+      </div>
+
       <!-- ── KPI Strip ── -->
       <section class="adminpage-dashboard__kpi-strip">
         <ProjectsKpiCard
@@ -99,6 +113,11 @@
       @cancel="showCreateModal = false"
       @created="onProjectCreated"
     />
+    <OrganizationPdfModal
+      v-if="showOrganizationSettings && organizationId"
+      :organization-id="organizationId"
+      @close="showOrganizationSettings = false"
+    />
   </div>
 </template>
 
@@ -112,6 +131,7 @@ import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
+import OrganizationPdfModal from "./OrganizationPdfModal.vue";
 
 export default {
   name: "Dashboard",
@@ -125,6 +145,7 @@ export default {
     CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
+    OrganizationPdfModal,
   },
   props: {
     data: {
@@ -169,9 +190,15 @@ export default {
   data: function () {
     return {
       showCreateModal: false,
+      showOrganizationSettings: false,
     };
   },
   computed: {
+    organizationId: function () {
+      var profile = this.data && this.data.orgOverview && this.data.orgOverview.profile;
+      var id = Number(profile && profile.id);
+      return Number.isFinite(id) && id > 0 ? id : null;
+    },
     projectsKpi: function () {
       return (
         (this.data.kpis || []).find(function (k) {
@@ -336,6 +363,12 @@ export default {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
+}
+
+.adminpage-dashboard__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-md);
 }
 
 /* ─── Empty State ─── */
