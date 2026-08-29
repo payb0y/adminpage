@@ -764,7 +764,7 @@ export default {
       return (
         name +
         " loses access to this organization's projects immediately. Their " +
-        "Nextcloud account is not deleted."
+        "In Zicht account is not deleted."
       );
     },
     filteredMembers: function () {
