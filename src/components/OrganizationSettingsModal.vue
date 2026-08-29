@@ -1,10 +1,10 @@
 <template>
-  <div class="iz-modal-backdrop org-pdf-modal__backdrop" @click.self="close">
-    <div class="iz-modal org-pdf-modal" role="dialog" aria-modal="true" aria-labelledby="org-pdf-title">
+  <div class="iz-modal-backdrop org-settings__backdrop" @click.self="close">
+    <div class="iz-modal org-settings" role="dialog" aria-modal="true" aria-labelledby="org-settings-title">
       <header class="iz-modal__header">
         <div>
-          <p class="org-pdf-modal__eyebrow">Organization-wide default</p>
-          <h3 id="org-pdf-title" class="org-pdf-modal__title">Default project PDF</h3>
+          <p class="org-settings__eyebrow">Organization-wide configuration</p>
+          <h3 id="org-settings-title" class="org-settings__title">Organization settings</h3>
         </div>
         <button
           type="button"
@@ -15,7 +15,28 @@
         >&times;</button>
       </header>
 
-      <div class="iz-modal__body org-pdf-modal__body">
+      <div class="iz-tabs org-settings__tabs" role="tablist" aria-label="Organization settings">
+        <button
+          type="button"
+          class="iz-tab"
+          :class="{ 'iz-tab--active': activeTab === 'pdf' }"
+          role="tab"
+          :aria-selected="activeTab === 'pdf'"
+          :disabled="busy"
+          @click="activeTab = 'pdf'"
+        >Default project PDF</button>
+        <button
+          type="button"
+          class="iz-tab"
+          :class="{ 'iz-tab--active': activeTab === 'ocr' }"
+          role="tab"
+          :aria-selected="activeTab === 'ocr'"
+          :disabled="busy"
+          @click="activeTab = 'ocr'"
+        >OCR document types</button>
+      </div>
+
+      <div v-if="activeTab === 'pdf'" class="iz-modal__body org-pdf-modal__body">
         <p class="org-pdf-modal__intro">
           This PDF is automatically added to the shared folder of every new project in your organization.
         </p>
@@ -92,7 +113,13 @@
         </template>
       </div>
 
-      <footer class="iz-modal__footer org-pdf-modal__footer">
+      <OrganizationOcrSettings
+        v-else
+        :organization-id="organizationId"
+        @lock-change="ocrLocked = $event"
+      />
+
+      <footer v-if="activeTab === 'pdf'" class="iz-modal__footer org-pdf-modal__footer">
         <button
           v-if="hasCustomPdf && !loading"
           type="button"
@@ -129,6 +156,7 @@
 
 <script>
 import ConfirmDialog from "./ConfirmDialog.vue";
+import OrganizationOcrSettings from "./OrganizationOcrSettings.vue";
 import {
   deleteOrganizationPdf,
   getOrganizationPdfInfo,
@@ -136,14 +164,16 @@ import {
 } from "../services/projectCreatorApi";
 
 export default {
-  name: "OrganizationPdfModal",
-  components: { ConfirmDialog },
+  name: "OrganizationSettingsModal",
+  components: { ConfirmDialog, OrganizationOcrSettings },
   props: {
     organizationId: { type: Number, required: true },
   },
   data: function () {
     return {
       loading: true,
+      activeTab: "pdf",
+      ocrLocked: false,
       uploading: false,
       resetting: false,
       hasCustomPdf: false,
@@ -157,7 +187,7 @@ export default {
   },
   computed: {
     busy: function () {
-      return this.uploading || this.resetting;
+      return this.uploading || this.resetting || this.ocrLocked;
     },
   },
   mounted: function () {
@@ -272,18 +302,20 @@ export default {
 </script>
 
 <style scoped>
-.org-pdf-modal {
-  width: min(620px, 100%);
+.org-settings {
+  width: min(980px, 100%);
+  max-height: min(860px, calc(100vh - (2 * var(--spacing-lg))));
+  overflow: hidden;
 }
 
-.org-pdf-modal__eyebrow,
-.org-pdf-modal__title,
+.org-settings__eyebrow,
+.org-settings__title,
 .org-pdf-modal__intro,
 .org-pdf-modal__error {
   margin: 0;
 }
 
-.org-pdf-modal__eyebrow {
+.org-settings__eyebrow {
   color: var(--color-text-muted);
   font-size: var(--iz-fs-xs);
   font-weight: 700;
@@ -291,10 +323,14 @@ export default {
   text-transform: uppercase;
 }
 
-.org-pdf-modal__title {
+.org-settings__title {
   padding: 0;
   border: 0;
   font-size: var(--iz-fs-lg);
+}
+
+.org-settings__tabs {
+  padding: 0 var(--spacing-lg);
 }
 
 .org-pdf-modal__body,
@@ -306,6 +342,7 @@ export default {
 
 .org-pdf-modal__body {
   gap: var(--spacing-md);
+  overflow-y: auto;
 }
 
 .org-pdf-modal__intro,

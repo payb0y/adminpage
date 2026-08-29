@@ -113,7 +113,7 @@
       @cancel="showCreateModal = false"
       @created="onProjectCreated"
     />
-    <OrganizationPdfModal
+    <OrganizationSettingsModal
       v-if="showOrganizationSettings && organizationId"
       :organization-id="organizationId"
       @close="showOrganizationSettings = false"
@@ -131,7 +131,7 @@ import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
-import OrganizationPdfModal from "./OrganizationPdfModal.vue";
+import OrganizationSettingsModal from "./OrganizationSettingsModal.vue";
 
 export default {
   name: "Dashboard",
@@ -145,7 +145,7 @@ export default {
     CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
-    OrganizationPdfModal,
+    OrganizationSettingsModal,
   },
   props: {
     data: {
