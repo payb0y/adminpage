@@ -22,21 +22,36 @@
         </svg>
         Organization Insights
       </h3>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="insights-panel__chevron"
-        :class="{ 'insights-panel__chevron--rotated': collapsed }"
-      >
-        <polyline points="18 15 12 9 6 15" />
-      </svg>
+      <div class="insights-panel__header-actions">
+        <!-- Stops the click reaching the header, which toggles collapse. -->
+        <button
+          v-if="canManage"
+          type="button"
+          class="iz-btn iz-btn--ghost iz-btn--sm"
+          @click.stop="$emit('open-settings')"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63h.01A1.7 1.7 0 0 0 10 3.07V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9v.01A1.7 1.7 0 0 0 20.93 10H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z" />
+          </svg>
+          Organization settings
+        </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="insights-panel__chevron"
+          :class="{ 'insights-panel__chevron--rotated': collapsed }"
+        >
+          <polyline points="18 15 12 9 6 15" />
+        </svg>
+      </div>
     </div>
 
     <div v-show="!collapsed" class="insights-panel__body">
@@ -344,6 +359,10 @@ export default {
       type: Number,
       default: null,
     },
+    canManage: {
+      type: Boolean,
+      default: false,
+    },
     adminUid: {
       type: String,
       default: null,
@@ -456,6 +475,12 @@ export default {
 
 .insights-panel__title svg {
   color: var(--accent);
+}
+
+.insights-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .insights-panel__chevron {
