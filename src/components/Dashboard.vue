@@ -70,6 +70,8 @@
         :performance-details="data.performanceDetails"
         :project-details="data.projectDetails || []"
         :org-members="(data.orgOverview && data.orgOverview.members) || []"
+        :upcoming-events="upcomingEvents"
+        :project-signatures="data.projectSignatures || {}"
       />
 
       <!-- ── Organization Insights (Org + KPIs + Members + Subscription) ── -->
@@ -81,7 +83,6 @@
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
         :backup-jobs="backupJobs"
-        :upcoming-events="upcomingEvents"
         :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
         :admin-uid="(data.orgOverview.profile && data.orgOverview.profile.adminUid) || null"
         :current-uid="data.orgOverview.currentUid || null"

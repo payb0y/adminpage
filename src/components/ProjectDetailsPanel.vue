@@ -435,7 +435,31 @@
         </div>
       </div>
 
-      <!-- ── Row 2c — Team Members (list + add + inline DRASCI edit) ── -->
+      <!-- ── Row 2c — Upcoming Meetings (this project's team) ──
+           Gated on showAssignees, the panel's existing "not the public share
+           view" signal: the card keeps its empty state when the team has no
+           meetings, and is absent entirely from a public link. -->
+      <div v-if="showAssignees" class="proj-details__row">
+        <div class="proj-details__card proj-details__card--full">
+          <div class="proj-details__card-header">
+            <h4 class="proj-details__card-title">
+              Upcoming Meetings
+              <span class="proj-details__count">{{ projectMeetings.length }}</span>
+              <span
+                v-if="!linkedMeetings.length"
+                class="proj-details__card-hint"
+              >the team's meetings — none are linked to this project</span>
+            </h4>
+          </div>
+          <div
+            v-if="projectMembersLoading[selectedProject.id]"
+            class="proj-details__members-state"
+          >Loading…</div>
+          <UpcomingEventsPanel v-else :embedded="true" :events="projectMeetings" />
+        </div>
+      </div>
+
+      <!-- ── Row 2d — Team Members (list + add + inline DRASCI edit) ── -->
       <div class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
           <div class="proj-details__card-header">
@@ -727,6 +751,20 @@
               ></span>
               {{ statusCounts.open }} Open
             </button>
+            <button
+              v-if="signatureCount"
+              class="proj-details__tb-summary-pill proj-details__tb-summary-pill--sign"
+              :class="{
+                'proj-details__tb-summary-pill--active':
+                  tbFilterStatus === 'tosign',
+              }"
+              @click="toggleStatusFilter('tosign')"
+            >
+              <span
+                class="proj-details__tb-summary-dot proj-details__tb-summary-dot--sign"
+              ></span>
+              {{ signatureCount }} To sign
+            </button>
           </div>
 
           <!-- Filters -->
@@ -909,7 +947,7 @@
 
           <!-- Count -->
           <div class="proj-details__tb-count">
-            {{ filteredTasks.length }} of {{ projectTasks.length }} tasks
+            {{ browserRows.length }} of {{ browserTotal }} rows
           </div>
 
           <!-- Table with sortable headers -->
@@ -971,13 +1009,45 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="filteredTasks.length === 0">
+                <tr v-if="browserRows.length === 0">
                   <td :colspan="showAssignees ? 7 : 6" class="proj-details__tb-empty">
                     No tasks match the current filters
                   </td>
                 </tr>
-                <tr v-for="task in paginatedTasks" :key="'tb-' + task.id">
-                  <td class="proj-details__tb-cell-title">{{ task.title }}</td>
+                <tr
+                  v-for="task in paginatedTasks"
+                  :key="'tb-' + task.id"
+                  :class="{
+                    'proj-details__tb-row--sign': task.kind === 'signature',
+                  }"
+                >
+                  <td class="proj-details__tb-cell-title">
+                    <a
+                      v-if="task.kind === 'signature'"
+                      :href="task.signUrl"
+                      class="proj-details__tb-sign-link"
+                      :title="'Sent for signature by ' + task.requestedBy"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 19l7-7 3 3-7 7-3-3z" />
+                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+                        <path d="M2 2l7.586 7.586" />
+                      </svg>
+                      {{ task.title }}
+                    </a>
+                    <template v-else>{{ task.title }}</template>
+                  </td>
                   <td>
                     <span class="proj-details__tb-stack-badge">{{
                       task.stack
@@ -987,7 +1057,7 @@
                     <span
                       class="proj-details__tb-status"
                       :class="'proj-details__tb-status--' + task.status"
-                      >{{ task.status }}</span
+                      >{{ task.statusLabel || task.status }}</span
                     >
                   </td>
                   <td>
@@ -1063,6 +1133,7 @@
 import DonutChart from "./DonutChart.vue";
 import TimelineChart from "./TimelineChart.vue";
 import ProjectMap from "./ProjectMap.vue";
+import UpcomingEventsPanel from "./UpcomingEventsPanel.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
@@ -1085,7 +1156,7 @@ const DRASCI_OPTIONS = [
 
 export default {
   name: "ProjectDetailsPanel",
-  components: { DonutChart, TimelineChart, ProjectMap },
+  components: { DonutChart, TimelineChart, ProjectMap, UpcomingEventsPanel },
   directives: {
     "click-outside": {
       bind: function (el, binding) {
@@ -1121,6 +1192,18 @@ export default {
       type: Array,
       default: function () {
         return [];
+      },
+    },
+    upcomingEvents: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
+    projectSignatures: {
+      type: Object,
+      default: function () {
+        return {};
       },
     },
   },
@@ -1260,6 +1343,44 @@ export default {
         }) || null
       );
     },
+    /* Meetings explicitly linked to this project, via the calendar fork's
+       oc_calendar_project_events table (CalendarService attaches projectId).
+       Nothing deployed writes that table yet, so this is empty in practice —
+       see projectMeetings for what happens then. */
+    linkedMeetings: function () {
+      if (!this.selectedProject) return [];
+      var pid = this.selectedProject.id;
+      var out = [];
+      for (var i = 0; i < this.upcomingEvents.length; i++) {
+        if (this.upcomingEvents[i].projectId === pid) {
+          out.push(this.upcomingEvents[i]);
+        }
+      }
+      return out;
+    },
+    /* Fallback while the link table is unwritten: a project's meetings are the
+       meetings of the people on it, i.e. every upcoming event whose calendar
+       owner is in this project's member list. Members are fetched lazily on
+       selection, so this stays empty until projectMembersById fills in. */
+    teamMeetings: function () {
+      if (!this.selectedProject) return [];
+      var members = this.projectMembersById[this.selectedProject.id] || [];
+      var uids = {};
+      for (var i = 0; i < members.length; i++) {
+        uids[members[i].userId] = true;
+      }
+      var out = [];
+      for (var j = 0; j < this.upcomingEvents.length; j++) {
+        if (uids[this.upcomingEvents[j].member]) {
+          out.push(this.upcomingEvents[j]);
+        }
+      }
+      return out;
+    },
+    projectMeetings: function () {
+      var linked = this.linkedMeetings;
+      return linked.length ? linked : this.teamMeetings;
+    },
     hasClientInfo: function () {
       if (!this.selectedProject) return false;
       var p = this.selectedProject;
@@ -1293,6 +1414,75 @@ export default {
     projectTasks: function () {
       if (!this.selectedProject) return [];
       return this.selectedProject.tasks || [];
+    },
+    /* Documents waiting on the viewer's signature in this project, shaped as
+       Task Browser rows so they can share the table. Gated on showAssignees:
+       a public share link must not reveal who still owes a signature. */
+    projectSignatureRows: function () {
+      if (!this.selectedProject || !this.showAssignees) return [];
+      var list = this.projectSignatures[this.selectedProject.id] || [];
+      return list.map(function (s) {
+        return {
+          id: "sig-" + s.signUuid,
+          kind: "signature",
+          title: s.fileName,
+          stack: "Signatures",
+          status: "tosign",
+          statusLabel: "to sign",
+          labels: s.signatureFlow
+            ? ["Signature", s.signatureFlow]
+            : ["Signature"],
+          assignees: s.signerName ? [s.signerName] : [],
+          due: null,
+          dueBucket: "nodue",
+          createdAt: s.requestedAt,
+          requestedBy: s.requestedBy,
+          // "signatures", not "libresign": this stack ships LibreSign
+          // rebranded, so the app id differs from the oc_libresign_* tables.
+          signUrl: generateUrl("/apps/signatures/p/sign/" + s.signUuid),
+        };
+      });
+    },
+    signatureCount: function () {
+      return this.projectSignatureRows.length;
+    },
+    filteredSignatures: function () {
+      var self = this;
+      // A signature has no Deck stack, no status but "to sign" and no due
+      // date, so a filter on any of those three excludes the whole set.
+      if (this.tbFilterStatus && this.tbFilterStatus !== "tosign") return [];
+      if (this.tbFilterStack && this.tbFilterStack !== "Signatures") return [];
+      if (this.tbFilterDue && this.tbFilterDue !== "nodue") return [];
+      return this.projectSignatureRows.filter(function (r) {
+        if (
+          self.tbFilterName &&
+          r.title.toLowerCase().indexOf(self.tbFilterName.toLowerCase()) === -1
+        )
+          return false;
+        if (self.tbFilterLabel && r.labels.indexOf(self.tbFilterLabel) === -1)
+          return false;
+        if (
+          self.tbFilterAssignee &&
+          r.assignees.indexOf(self.tbFilterAssignee) === -1
+        )
+          return false;
+        if (self.tbFilterDateFrom || self.tbFilterDateTo) {
+          if (!r.createdAt) return false;
+          var d = String(r.createdAt).substring(0, 10);
+          if (self.tbFilterDateFrom && d < self.tbFilterDateFrom) return false;
+          if (self.tbFilterDateTo && d > self.tbFilterDateTo) return false;
+        }
+        return true;
+      });
+    },
+    /* Signatures pinned above the cards whatever the sort: having no due date
+       they would otherwise sink to the bottom under the default Due sort,
+       which is the opposite of the point of showing them here. */
+    browserRows: function () {
+      return this.filteredSignatures.concat(this.sortedTasks);
+    },
+    browserTotal: function () {
+      return this.projectTasks.length + this.signatureCount;
     },
     projectStacks: function () {
       if (!this.selectedProject) return [];
@@ -1428,11 +1618,11 @@ export default {
       return arr;
     },
     totalPages: function () {
-      return Math.max(1, Math.ceil(this.sortedTasks.length / this.tbPageSize));
+      return Math.max(1, Math.ceil(this.browserRows.length / this.tbPageSize));
     },
     paginatedTasks: function () {
       var start = (this.tbPage - 1) * this.tbPageSize;
-      return this.sortedTasks.slice(start, start + this.tbPageSize);
+      return this.browserRows.slice(start, start + this.tbPageSize);
     },
   },
   methods: {
@@ -2575,6 +2765,21 @@ export default {
 .proj-details__tb-summary-dot--info {
   background: var(--accent);
 }
+.proj-details__tb-summary-dot--sign {
+  background: var(--color-badge-warning-text);
+}
+
+/* The one pill that is tinted rather than neutral: a signature is the only
+   row in this table that asks the viewer personally to do something. */
+.proj-details__tb-summary-pill--sign {
+  background: var(--color-badge-warning-bg);
+  border-color: var(--color-badge-warning-text);
+  color: var(--color-badge-warning-text);
+}
+.proj-details__tb-summary-pill--sign:hover {
+  background: var(--color-badge-warning-bg);
+  filter: brightness(0.97);
+}
 
 /* ── #6 Sortable headers ── */
 .proj-details__th-sort {
@@ -2869,6 +3074,29 @@ export default {
   background: var(--bg-subtle);
 }
 
+/* Signature rows: a left edge and a tint so they read as a different kind of
+   work without breaking the table's rhythm. */
+.proj-details__tb-row--sign > td {
+  background: var(--color-badge-warning-bg);
+}
+.proj-details__tb-row--sign > td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-badge-warning-text);
+}
+.proj-details__tb-sign-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.proj-details__tb-sign-link:hover {
+  border-bottom-color: var(--color-badge-warning-text);
+}
+.proj-details__tb-sign-link svg {
+  flex-shrink: 0;
+  color: var(--color-badge-warning-text);
+}
 .proj-details__tb-cell-title {
   font-weight: 500;
   max-width: 260px;
@@ -2904,6 +3132,10 @@ export default {
 .proj-details__tb-status--done {
   background: var(--accent-bg);
   color: var(--accent-on-bg);
+}
+.proj-details__tb-status--tosign {
+  background: var(--color-badge-warning-bg);
+  color: var(--color-badge-warning-text);
 }
 .proj-details__tb-status--archived {
   background: var(--bg-subtle);
@@ -3067,6 +3299,12 @@ export default {
 }
 
 /* ───────── Team Members card ───────── */
+.proj-details__card-hint {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
 .proj-details__count {
   display: inline-block;
   margin-left: 6px;

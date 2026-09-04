@@ -805,6 +805,8 @@
             :show-team-workload="showTeamWorkload"
             :show-assignees="showAssignees"
             :org-members="orgMembers"
+            :upcoming-events="upcomingEvents"
+            :project-signatures="projectSignatures"
           />
         </div>
       </div>
@@ -1398,6 +1400,21 @@ export default {
       type: Array,
       default: function () {
         return [];
+      },
+    },
+    /* Org-wide upcoming meetings. Empty in the public share view, which never
+       fetches them; the card there is hidden by showAssignees instead. */
+    upcomingEvents: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
+    /* projectId => documents waiting on the viewer's signature. */
+    projectSignatures: {
+      type: Object,
+      default: function () {
+        return {};
       },
     },
     showTeamWorkload: {

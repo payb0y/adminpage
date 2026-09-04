@@ -12,6 +12,7 @@ use OCA\AdminPage\Service\GeocodeService;
 use OCA\AdminPage\Service\KpiService;
 use OCA\AdminPage\Service\OrgOverviewService;
 use OCA\AdminPage\Service\PublicTokenService;
+use OCA\AdminPage\Service\SignatureService;
 use OCA\AdminPage\Service\StorageMonitoringService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -33,6 +34,7 @@ class DashboardController extends Controller {
     private KpiService $kpiService;
     private OrgOverviewService $orgOverviewService;
     private PublicTokenService $publicTokenService;
+    private SignatureService $signatureService;
     private StorageMonitoringService $storageMonitoringService;
     private IUserSession $userSession;
     private LoggerInterface $logger;
@@ -49,6 +51,7 @@ class DashboardController extends Controller {
         KpiService $kpiService,
         OrgOverviewService $orgOverviewService,
         PublicTokenService $publicTokenService,
+        SignatureService $signatureService,
         StorageMonitoringService $storageMonitoringService,
         IUserSession $userSession,
         LoggerInterface $logger
@@ -63,6 +66,7 @@ class DashboardController extends Controller {
         $this->kpiService = $kpiService;
         $this->orgOverviewService = $orgOverviewService;
         $this->publicTokenService = $publicTokenService;
+        $this->signatureService = $signatureService;
         $this->storageMonitoringService = $storageMonitoringService;
         $this->userSession = $userSession;
         $this->logger = $logger;
@@ -119,12 +123,15 @@ class DashboardController extends Controller {
                 'taskCompletionProjects' => [],
                 'performanceDetails' => null,
                 'projectDetails' => [],
+                'projectSignatures' => (object)[],
             ]);
         }
 
         // All services scoped to the resolved orgId
         $orgOverview = $this->orgOverviewService->getOrgOverview($uid);
         $perfData    = $this->deckService->getProjectPerformanceData($orgId);
+
+        $projectDetails = $this->deckService->getProjectDetailsList($orgId);
 
         $data = [
             // Organization overview (profile, subscription, members, projects, usage)
@@ -146,7 +153,15 @@ class DashboardController extends Controller {
             'performanceDetails' => $this->deckService->getPerformanceDetails($orgId),
 
             // Per-project detail data (includes embedded task list)
-            'projectDetails' => $this->deckService->getProjectDetailsList($orgId),
+            'projectDetails' => $projectDetails,
+
+            // projectId => documents waiting on THIS user's signature. Keyed by
+            // project so the task browser can look its own up; cast to object so
+            // an empty map serializes as {} rather than [].
+            'projectSignatures' => (object)$this->signatureService->getPendingByProject(
+                array_map('intval', array_column($projectDetails, 'id')),
+                $uid
+            ),
         ];
 
         return new JSONResponse($data);

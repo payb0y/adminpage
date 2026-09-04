@@ -16,7 +16,7 @@
       >
         <polyline points="20 6 9 17 4 12" />
       </svg>
-      <p class="events-panel__empty-text">No upcoming events</p>
+      <p class="events-panel__empty-text">No upcoming meetings</p>
     </div>
 
     <template v-else>
@@ -63,7 +63,7 @@
             v-model="searchFilter"
             type="text"
             class="iz-input events-panel__input"
-            placeholder="Search events…"
+            placeholder="Search meetings…"
             @input="currentPage = 1"
           />
         </div>
@@ -71,7 +71,7 @@
 
       <!-- No results after filtering -->
       <div v-if="filteredEvents.length === 0" class="iz-empty events-panel__empty">
-        <p class="events-panel__empty-text">No events match your filters.</p>
+        <p class="events-panel__empty-text">No meetings match your filters.</p>
       </div>
 
       <!-- Event list -->
@@ -114,7 +114,7 @@
         >&#8250;</button>
       </div>
       <div v-if="filteredEvents.length > 0" class="events-panel__showing-hint">
-        Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} events
+        Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} meetings
       </div>
     </template>
   </div>

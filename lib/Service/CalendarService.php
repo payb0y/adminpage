@@ -8,11 +8,16 @@ use OCP\IDBConnection;
 use Sabre\VObject\Reader;
 
 /**
- * Org-wide upcoming calendar events.
+ * Org-wide upcoming meetings.
  *
  * Resolves every organization member's calendars, finds VEVENT objects whose
  * series overlaps the upcoming window, and expands recurrences (via Sabre\VObject)
  * to the next concrete occurrence per event.
+ *
+ * Nextcloud's auto-generated `contact_birthdays` calendar is excluded. Its rows
+ * are VEVENTs like any other, but they are yearly recurrences derived from
+ * address book BDAY fields — nobody scheduled them, and a birthday landing
+ * inside the window would otherwise sit in the list as if it were a meeting.
  */
 class CalendarService {
 
@@ -66,7 +71,58 @@ class CalendarService {
             return $a['start'] <=> $b['start'];
         });
 
-        return array_slice($events, 0, self::MAX_EVENTS);
+        $events = array_slice($events, 0, self::MAX_EVENTS);
+
+        $links = $this->resolveProjectLinks(array_column($events, 'uid'));
+        foreach ($events as &$event) {
+            $event['projectId'] = $links[$event['uid']] ?? null;
+        }
+        unset($event);
+
+        return $events;
+    }
+
+    /**
+     * Event UID → project id, via the calendar fork's link table.
+     *
+     * That feature has only half landed: the migration has run, and one
+     * proposal row carries a project_id, but the deployed calendar app
+     * (6.5.4) declares no project_id on ProposalDetailsEntry and never writes
+     * oc_calendar_project_events — so today this returns an empty map and
+     * every caller falls back. Wrapped in a try/catch so an install whose
+     * migration never ran degrades to "no links" instead of a 500.
+     *
+     * @param string[] $eventUids
+     * @return array<string, int>
+     */
+    private function resolveProjectLinks(array $eventUids): array {
+        if (empty($eventUids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($eventUids), '?'));
+        $sql = "
+            SELECT event_uid, project_id
+            FROM *PREFIX*calendar_project_events
+            WHERE event_uid IN ({$placeholders})
+        ";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $idx = 1;
+            foreach ($eventUids as $uid) {
+                $stmt->bindValue($idx++, $uid, \PDO::PARAM_STR);
+            }
+            $stmt->execute();
+            $rows = $stmt->fetchAll();
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        $links = [];
+        foreach ($rows as $row) {
+            $links[(string)$row['event_uid']] = (int)$row['project_id'];
+        }
+        return $links;
     }
 
     /**
@@ -114,6 +170,7 @@ class CalendarService {
             FROM *PREFIX*calendars
             WHERE principaluri IN ({$placeholders})
               AND deleted_at IS NULL
+              AND uri <> 'contact_birthdays'
         ";
         $stmt = $this->db->prepare($sql);
         $idx = 1;
