@@ -83,13 +83,12 @@
         :subscription="data.orgOverview.subscription || {}"
         :usage-summary="data.orgOverview.usageSummary || {}"
         :backup-jobs="backupJobs"
-        :org-id="(data.orgOverview.profile && data.orgOverview.profile.id) || null"
+        :org-id="organizationId"
         :admin-uid="(data.orgOverview.profile && data.orgOverview.profile.adminUid) || null"
         :current-uid="data.orgOverview.currentUid || null"
         :storage="storageData"
         :storage-loading="storageLoading"
         :storage-error="storageError"
-        @open-settings="showOrganizationSettings = true"
         @reload="$emit('reload')"
         @retry-storage="$emit('retry-storage')"
       />
@@ -106,11 +105,6 @@
       @cancel="showCreateModal = false"
       @created="onProjectCreated"
     />
-    <OrganizationSettingsModal
-      v-if="showOrganizationSettings && organizationId"
-      :organization-id="organizationId"
-      @close="showOrganizationSettings = false"
-    />
   </div>
 </template>
 
@@ -124,7 +118,6 @@ import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
 import OrgInsightsPanel from "./OrgInsightsPanel.vue";
 import PublicLinksAdmin from "./PublicLinksAdmin.vue";
-import OrganizationSettingsModal from "./OrganizationSettingsModal.vue";
 
 export default {
   name: "Dashboard",
@@ -138,7 +131,6 @@ export default {
     CreateProjectModal,
     OrgInsightsPanel,
     PublicLinksAdmin,
-    OrganizationSettingsModal,
   },
   props: {
     data: {
@@ -183,7 +175,6 @@ export default {
   data: function () {
     return {
       showCreateModal: false,
-      showOrganizationSettings: false,
     };
   },
   computed: {

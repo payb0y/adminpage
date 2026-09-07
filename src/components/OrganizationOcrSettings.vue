@@ -1,137 +1,108 @@
 <template>
   <div class="ocr-settings">
-    <p v-if="error" class="ocr-settings__error" role="alert">{{ error }}</p>
+    <p class="ocr-settings__intro">
+      Define the fields OCR should extract from each kind of document.
+    </p>
+
+    <p v-if="error && !editorOpen" class="ocr-settings__error" role="alert">{{ error }}</p>
 
     <div v-if="loading" class="iz-empty ocr-settings__loading">
-      Loading OCR document types...
+      Loading OCR document types…
     </div>
 
-    <div v-else class="ocr-settings__layout">
-      <aside class="ocr-settings__sidebar">
+    <template v-else>
+      <div class="ocr-settings__toolbar">
+        <span class="ocr-settings__count">
+          {{ documentTypes.length }}
+          {{ documentTypes.length === 1 ? "type" : "types" }} configured
+        </span>
         <button
           type="button"
-          class="iz-btn iz-btn--primary ocr-settings__new"
+          class="iz-btn iz-btn--primary iz-btn--sm"
           :disabled="actionBusy"
           @click="startCreate"
         >
           <span aria-hidden="true">+</span>
           New document type
         </button>
+      </div>
 
-        <div class="ocr-settings__type-list">
-          <span class="iz-label">Configured types</span>
-          <p v-if="documentTypes.length === 0" class="iz-empty ocr-settings__empty">
-            No document types defined yet.
-          </p>
-          <template v-else>
-            <button
-              v-for="documentType in documentTypes"
-              :key="documentType.id"
-              type="button"
-              class="iz-btn ocr-settings__type"
-              :class="Number(selectedTypeId) === Number(documentType.id) ? 'iz-btn--primary' : 'iz-btn--ghost'"
-              :disabled="actionBusy"
-              @click="selectType(documentType)"
-            >
-              <span class="ocr-settings__type-copy">
-                <strong>{{ documentType.name }}</strong>
-                <small>{{ fieldCount(documentType) }} fields</small>
-              </span>
-              <span
-                class="ocr-settings__status"
-                :class="{ 'ocr-settings__status--active': documentType.is_active }"
-                :title="documentType.is_active ? 'Active' : 'Inactive'"
-              />
-            </button>
-          </template>
-        </div>
-      </aside>
+      <!-- A new type edits at the top: it has no row in the list to sit under. -->
+      <OcrTypeEditor
+        v-if="editorOpen && !form.id"
+        class="ocr-settings__editor ocr-settings__editor--new"
+        :form="form"
+        :busy="actionBusy"
+        :save-label="saveLabel"
+        :error="error"
+        @add-field="addField"
+        @remove-field="removeField"
+        @save="saveType"
+        @reset="closeEditor"
+        @request-delete="showDeleteConfirmation = true"
+      />
 
-      <main class="ocr-settings__editor">
-        <div class="ocr-settings__scroll">
-          <div>
-            <h4 class="ocr-settings__title">{{ form.id ? "Edit document type" : "Create document type" }}</h4>
-            <p class="ocr-settings__intro">
-              Define the fields OCR should extract from documents of this type.
-            </p>
-          </div>
+      <p
+        v-if="documentTypes.length === 0 && !editorOpen"
+        class="iz-empty ocr-settings__empty"
+      >
+        No document types defined yet.
+      </p>
 
-          <section class="ocr-settings__section">
-            <div class="ocr-settings__section-heading">
-              <div>
-                <h5>General information</h5>
-                <p>Name this schema and choose whether it is available in projects.</p>
-              </div>
-              <label class="ocr-settings__active">
-                <input v-model="form.is_active" type="checkbox" :disabled="actionBusy" />
-                Active
-              </label>
-            </div>
-            <label class="ocr-settings__field">
-              <span class="iz-label">Document type name</span>
-              <input
-                v-model="form.name"
-                class="iz-input"
-                type="text"
-                placeholder="e.g. Invoice"
-                :disabled="actionBusy"
-              />
-            </label>
-          </section>
-
-          <section class="ocr-settings__section">
-            <div class="ocr-settings__section-heading">
-              <div>
-                <h5>Extraction fields</h5>
-                <p>Add every data point that OCR must extract from this document type.</p>
-              </div>
-            </div>
-
-            <div class="ocr-settings__fields">
-              <div v-for="(field, index) in form.fields" :key="`field-${index}`" class="iz-panel ocr-settings__field-row">
-                <label class="ocr-settings__field">
-                  <span class="iz-label">Field name</span>
-                  <input
-                    v-model="field.name"
-                    class="iz-input"
-                    type="text"
-                    placeholder="e.g. Total amount"
-                    :disabled="actionBusy"
-                  />
-                </label>
-                <button
-                  type="button"
-                  class="iz-btn iz-btn--ghost"
-                  :disabled="actionBusy || form.fields.length === 1"
-                  @click="removeField(index)"
-                >Remove</button>
-              </div>
-            </div>
-
-            <button type="button" class="iz-btn" :disabled="actionBusy" @click="addField">
-              <span aria-hidden="true">+</span>
-              Add another field
-            </button>
-          </section>
-        </div>
-
-        <footer class="iz-modal__footer ocr-settings__actions">
+      <div v-else-if="documentTypes.length" class="ocr-settings__type-list">
+        <template v-for="documentType in documentTypes">
           <button
-            v-if="form.id"
+            :key="'type-' + documentType.id"
             type="button"
-            class="iz-btn iz-btn--danger"
+            class="ocr-settings__type"
+            :class="{ 'ocr-settings__type--open': isOpen(documentType) }"
+            :aria-expanded="isOpen(documentType) ? 'true' : 'false'"
             :disabled="actionBusy"
-            @click="showDeleteConfirmation = true"
-          >Delete type</button>
-          <span class="ocr-settings__actions-right">
-            <button type="button" class="iz-btn" :disabled="actionBusy" @click="resetForm">Reset</button>
-            <button type="button" class="iz-btn iz-btn--primary" :disabled="actionBusy" @click="saveType">
-              {{ saveLabel }}
-            </button>
-          </span>
-        </footer>
-      </main>
-    </div>
+            @click="toggleType(documentType)"
+          >
+            <span class="ocr-settings__type-copy">
+              <strong>{{ documentType.name }}</strong>
+              <small>{{ fieldCount(documentType) }} fields</small>
+            </span>
+            <span
+              class="ocr-settings__status"
+              :class="{ 'ocr-settings__status--active': documentType.is_active }"
+              :title="documentType.is_active ? 'Active' : 'Inactive'"
+            ></span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="ocr-settings__chevron"
+              :class="{ 'ocr-settings__chevron--rotated': isOpen(documentType) }"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <OcrTypeEditor
+            v-if="isOpen(documentType)"
+            :key="'editor-' + documentType.id"
+            class="ocr-settings__editor"
+            :form="form"
+            :busy="actionBusy"
+            :save-label="saveLabel"
+            :error="error"
+            @add-field="addField"
+            @remove-field="removeField"
+            @save="saveType"
+            @reset="resetForm"
+            @request-delete="showDeleteConfirmation = true"
+          />
+        </template>
+      </div>
+    </template>
 
     <ConfirmDialog
       v-if="showDeleteConfirmation"
@@ -150,6 +121,7 @@
 
 <script>
 import ConfirmDialog from "./ConfirmDialog.vue";
+import OcrTypeEditor from "./OcrTypeEditor.vue";
 import {
   createOrganizationDocumentType,
   deleteOrganizationDocumentType,
@@ -170,9 +142,17 @@ function emptyForm() {
   };
 }
 
+/**
+ * OCR document types, as a list that expands one editor at a time.
+ *
+ * This used to be a two-pane sidebar + editor, which worked at modal height.
+ * It now renders inline in Organization Insights, where a persistent split
+ * pane would dominate the panel — hence the accordion, and hence the editor
+ * living in OcrTypeEditor so both an existing type and a new one use it.
+ */
 export default {
   name: "OrganizationOcrSettings",
-  components: { ConfirmDialog },
+  components: { ConfirmDialog, OcrTypeEditor },
   props: {
     organizationId: { type: Number, required: true },
   },
@@ -186,6 +166,7 @@ export default {
       showDeleteConfirmation: false,
       documentTypes: [],
       selectedTypeId: null,
+      editorOpen: false,
       form: emptyForm(),
     };
   },
@@ -228,7 +209,9 @@ export default {
             return;
           }
         }
-        this.startCreate();
+        // Nothing selected, or what was selected is gone: fall back to a
+        // closed list rather than the modal's old always-open create form.
+        this.closeEditor();
       } catch (error) {
         console.error("Failed to load organization OCR document types", error);
         this.error = this.errorMessage(error, "Could not load OCR document types.");
@@ -244,15 +227,35 @@ export default {
     fieldCount(documentType) {
       return Array.isArray(documentType.fields) ? documentType.fields.length : 0;
     },
+    isOpen(documentType) {
+      return (
+        this.editorOpen && Number(this.selectedTypeId) === Number(documentType.id)
+      );
+    },
+    closeEditor() {
+      this.selectedTypeId = null;
+      this.editorOpen = false;
+      this.form = emptyForm();
+      this.error = "";
+    },
     startCreate() {
       this.selectedTypeId = null;
       this.form = emptyForm();
       this.error = "";
+      this.editorOpen = true;
+    },
+    toggleType(documentType) {
+      if (this.isOpen(documentType)) {
+        this.closeEditor();
+        return;
+      }
+      this.selectType(documentType);
     },
     selectType(documentType) {
       this.selectedTypeId = Number(documentType.id);
       this.applyType(documentType);
       this.error = "";
+      this.editorOpen = true;
     },
     applyType(documentType) {
       const fields = Array.isArray(documentType.fields) && documentType.fields.length
@@ -274,7 +277,7 @@ export default {
         this.error = "";
         return;
       }
-      this.startCreate();
+      this.closeEditor();
     },
     addField() {
       this.form.fields.push(emptyField());
@@ -327,6 +330,7 @@ export default {
         await deleteOrganizationDocumentType(this.organizationId, this.form.id);
         this.showDeleteConfirmation = false;
         this.selectedTypeId = null;
+        this.editorOpen = false;
         await this.loadDocumentTypes();
       } catch (error) {
         console.error("Failed to delete organization OCR document type", error);
@@ -352,70 +356,83 @@ export default {
 <style scoped>
 .ocr-settings {
   display: flex;
-  min-height: 0;
-  flex: 1;
   flex-direction: column;
-  overflow: hidden;
+  gap: var(--spacing-md, 12px);
+}
+
+.ocr-settings__intro {
+  margin: 0;
+  font-size: var(--iz-fs-sm);
+  color: var(--color-text-muted);
 }
 
 .ocr-settings__error {
-  margin: var(--spacing-md) var(--spacing-lg) 0;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-sm);
+  margin: 0;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border-radius: var(--radius-sm, 6px);
   background: var(--color-badge-danger-bg);
   color: var(--color-badge-danger-text);
+  font-size: var(--iz-fs-sm);
 }
 
-.ocr-settings__loading {
-  padding: var(--spacing-xl);
+.ocr-settings__loading,
+.ocr-settings__empty {
+  padding: var(--spacing-lg, 16px);
 }
 
-.ocr-settings__layout {
-  display: grid;
-  min-height: 0;
-  flex: 1;
-  grid-template-columns: 260px minmax(0, 1fr);
-}
-
-.ocr-settings__sidebar {
+.ocr-settings__toolbar {
   display: flex;
-  min-height: 0;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  border-right: 1px solid var(--color-border);
-  overflow-y: auto;
+  align-items: center;
+  gap: var(--spacing-md, 12px);
 }
 
-.ocr-settings__new {
-  justify-content: center;
+.ocr-settings__count {
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.ocr-settings__type-list,
-.ocr-settings__type-copy,
-.ocr-settings__editor,
-.ocr-settings__scroll,
-.ocr-settings__section,
-.ocr-settings__fields,
-.ocr-settings__field {
+.ocr-settings__toolbar .iz-btn {
+  margin-left: auto;
+}
+
+.ocr-settings__type-list {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-xs, 6px);
 }
 
-.ocr-settings__type-list,
-.ocr-settings__fields,
-.ocr-settings__field {
-  gap: var(--spacing-xs);
-}
-
-button.ocr-settings__type {
+/* A row and its editor read as one object: the open row loses its bottom
+   radius so the editor below continues it. */
+.ocr-settings__type {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 11px);
   width: 100%;
-  min-height: auto;
-  justify-content: space-between;
+  padding: var(--spacing-sm, 10px) var(--spacing-md, 13px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 7px);
+  background: var(--bg-card);
+  color: var(--color-text-primary);
   text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ocr-settings__type:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.ocr-settings__type--open {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .ocr-settings__type-copy {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -426,11 +443,21 @@ button.ocr-settings__type {
   white-space: nowrap;
 }
 
+.ocr-settings__type-copy strong {
+  font-size: var(--iz-fs-sm);
+}
+
+.ocr-settings__type-copy small {
+  font-size: var(--iz-fs-xs);
+  color: var(--color-text-muted);
+}
+
 .ocr-settings__status {
-  width: var(--spacing-xs);
-  height: var(--spacing-xs);
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
   flex: 0 0 auto;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-text-muted);
 }
 
@@ -438,124 +465,24 @@ button.ocr-settings__type {
   background: var(--color-success);
 }
 
-.ocr-settings__empty {
-  margin: 0;
-  padding: var(--spacing-lg) var(--spacing-sm);
+.ocr-settings__chevron {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  transition: transform 0.15s;
 }
 
+.ocr-settings__chevron--rotated {
+  transform: rotate(180deg);
+}
+
+/* The editor is a sibling of its row, so pull it flush against it. */
 .ocr-settings__editor {
-  min-width: 0;
-  min-height: 0;
+  margin-top: calc(-1 * var(--spacing-xs, 6px));
 }
 
-.ocr-settings__scroll {
-  flex: 1;
-  gap: var(--spacing-xl);
-  padding: var(--spacing-xl);
-  overflow-y: auto;
-}
-
-.ocr-settings__title,
-.ocr-settings__intro,
-.ocr-settings__section-heading h5,
-.ocr-settings__section-heading p {
-  margin: 0;
-}
-
-.ocr-settings__title {
-  padding: 0;
-  border: 0;
-  font-size: var(--iz-fs-lg);
-}
-
-.ocr-settings__intro,
-.ocr-settings__section-heading p {
-  color: var(--color-text-secondary);
-}
-
-.ocr-settings__section {
-  gap: var(--spacing-md);
-}
-
-.ocr-settings__section-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.ocr-settings__section-heading h5 {
-  padding: 0;
-  border: 0;
-  font-size: var(--iz-fs-md);
-}
-
-.ocr-settings__active {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.ocr-settings__field-row {
-  display: grid;
-  align-items: end;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--spacing-sm);
-}
-
-.ocr-settings__actions {
-  justify-content: space-between;
-}
-
-.ocr-settings__actions-right {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-left: auto;
-}
-
-@media (max-width: 760px) {
-  .ocr-settings__layout {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-
-  .ocr-settings__sidebar {
-    flex: 0 0 auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-    overflow: visible;
-  }
-
-  .ocr-settings__editor {
-    overflow: visible;
-  }
-
-  .ocr-settings__scroll {
-    flex: 0 0 auto;
-    padding: var(--spacing-lg);
-    overflow: visible;
-  }
-
-  .ocr-settings__field-row {
-    grid-template-columns: 1fr;
-  }
-
-  .ocr-settings__actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .ocr-settings__actions-right {
-    margin-left: 0;
-  }
-
-  .ocr-settings__actions-right .iz-btn {
-    flex: 1;
-  }
+.ocr-settings__editor--new {
+  margin-top: 0;
+  border-top: 1px solid var(--accent);
+  border-radius: var(--radius-sm, 7px);
 }
 </style>

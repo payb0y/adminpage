@@ -22,36 +22,21 @@
         </svg>
         Organization Insights
       </h3>
-      <div class="insights-panel__header-actions">
-        <!-- Stops the click reaching the header, which toggles collapse. -->
-        <button
-          v-if="canManage"
-          type="button"
-          class="iz-btn iz-btn--ghost iz-btn--sm"
-          @click.stop="$emit('open-settings')"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63h.01A1.7 1.7 0 0 0 10 3.07V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9v.01A1.7 1.7 0 0 0 20.93 10H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z" />
-          </svg>
-          Organization settings
-        </button>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="insights-panel__chevron"
-          :class="{ 'insights-panel__chevron--rotated': collapsed }"
-        >
-          <polyline points="18 15 12 9 6 15" />
-        </svg>
-      </div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="insights-panel__chevron"
+        :class="{ 'insights-panel__chevron--rotated': collapsed }"
+      >
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
     </div>
 
     <div v-show="!collapsed" class="insights-panel__body">
@@ -261,6 +246,57 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Divider ── -->
+      <div v-if="showSettings" class="insights-panel__divider"></div>
+
+      <!-- ── Sub-section: Project defaults ──
+           What the Organization settings modal used to hold. The two blocks
+           are one section because they answer the same question: what does a
+           new project start with. -->
+      <div v-if="showSettings" class="insights-panel__section">
+        <div class="insights-panel__section-title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="4" y1="21" x2="4" y2="14" />
+            <line x1="4" y1="10" x2="4" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12" y2="3" />
+            <line x1="20" y1="21" x2="20" y2="16" />
+            <line x1="20" y1="12" x2="20" y2="3" />
+            <line x1="1" y1="14" x2="7" y2="14" />
+            <line x1="9" y1="8" x2="15" y2="8" />
+            <line x1="17" y1="16" x2="23" y2="16" />
+          </svg>
+          Project defaults
+          <span class="insights-panel__section-actions">
+            <span class="insights-panel__section-meta">Applies to every new project</span>
+          </span>
+        </div>
+
+        <!-- The panel body is v-show, so without this gate both children would
+             mount on page load and fire their projectcreatoraio requests for a
+             section nobody has opened. -->
+        <template v-if="settingsSeen">
+          <div class="insights-panel__settings-block">
+            <h4 class="insights-panel__settings-sub">Default project PDF</h4>
+            <OrganizationPdfSettings :organization-id="orgId" />
+          </div>
+          <div class="insights-panel__settings-block">
+            <h4 class="insights-panel__settings-sub">OCR document types</h4>
+            <OrganizationOcrSettings :organization-id="orgId" />
+          </div>
+        </template>
+      </div>
     </div>
   </section>
 </template>
@@ -271,6 +307,8 @@ import MembersPanel from "./MembersPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
 import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
+import OrganizationPdfSettings from "./OrganizationPdfSettings.vue";
+import OrganizationOcrSettings from "./OrganizationOcrSettings.vue";
 
 export default {
   name: "OrgInsightsPanel",
@@ -280,6 +318,8 @@ export default {
     SubscriptionPanel,
     BackupsPanel,
     StorageMonitoringPanel,
+    OrganizationPdfSettings,
+    OrganizationOcrSettings,
   },
   props: {
     /* The `resources` entry from the dashboard's kpis array — the same object
@@ -351,9 +391,19 @@ export default {
   data: function () {
     return {
       collapsed: true,
+      // Flipped the first time the panel is expanded; see the settings section.
+      settingsSeen: false,
     };
   },
+  watch: {
+    collapsed: function (isCollapsed) {
+      if (!isCollapsed) this.settingsSeen = true;
+    },
+  },
   computed: {
+    showSettings: function () {
+      return this.canManage && Boolean(this.orgId);
+    },
     /* KpiService ships these as {value, label} strings, with the file and note
        counts pre-formatted as "23 pub / 161 priv". Split that into a figure
        and a sub-line so the four cells share one baseline. */
@@ -439,12 +489,6 @@ export default {
 
 .insights-panel__title svg {
   color: var(--accent);
-}
-
-.insights-panel__header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .insights-panel__chevron {
@@ -540,6 +584,20 @@ export default {
   font-weight: 500;
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Project defaults section ─── */
+.insights-panel__settings-block + .insights-panel__settings-block {
+  margin-top: var(--spacing-lg, 22px);
+  padding-top: var(--spacing-lg, 22px);
+  border-top: 1px dashed var(--bg-subtle);
+}
+
+.insights-panel__settings-sub {
+  margin: 0 0 var(--spacing-sm, 8px);
+  font-size: var(--iz-fs-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 /* ─── Divider ─── */
