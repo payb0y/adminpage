@@ -309,8 +309,10 @@ export default {
       if (this.filteredProjects.length === 0) return;
       this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true })
         .setView([52.3676, 4.9041], 6);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        // OSM requires a Referer; override Nextcloud only for tiles, without page paths.
+        referrerPolicy: "strict-origin",
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
       }).addTo(this._map);

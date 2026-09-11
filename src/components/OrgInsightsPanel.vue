@@ -1,8 +1,28 @@
 <template>
   <section class="insights-panel">
     <!-- ── Collapsible Header ── -->
-    <div class="insights-panel__header" @click="collapsed = !collapsed">
-      <h3 class="insights-panel__title">
+    <h3 class="insights-panel__heading">
+      <button type="button" class="insights-panel__header" :aria-expanded="String(!collapsed)" :aria-controls="'insights-body-' + _uid" @click="collapsed = !collapsed">
+        <span class="insights-panel__title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+            <line x1="12" y1="22.08" x2="12" y2="12" />
+          </svg>
+          Organization Insights
+        </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -13,289 +33,271 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
+          class="insights-panel__chevron"
+          :class="{ 'insights-panel__chevron--rotated': collapsed }"
         >
-          <path
-            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-          />
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-          <line x1="12" y1="22.08" x2="12" y2="12" />
+          <polyline points="18 15 12 9 6 15" />
         </svg>
-        Organization Insights
-      </h3>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="insights-panel__chevron"
-        :class="{ 'insights-panel__chevron--rotated': collapsed }"
-      >
-        <polyline points="18 15 12 9 6 15" />
-      </svg>
-    </div>
+      </button>
+    </h3>
 
-    <div v-show="!collapsed" class="insights-panel__body">
-      <!-- ── Sub-section: Organization ── -->
-      <div class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          Organization
-        </div>
-        <OrganizationPanel :embedded="true" :profile="profile" />
-      </div>
-
-      <!-- ── Divider ── -->
-      <div class="insights-panel__divider"></div>
-
-      <!-- ── Sub-section: Team Members ── -->
-      <div class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          Team Members
-          <span class="insights-panel__badge">{{ members.length }}</span>
-        </div>
-        <MembersPanel
-          :embedded="true"
-          :members="members"
-          :org-id="orgId"
-          :admin-uid="adminUid"
-          :current-uid="currentUid"
-          :owner-uid="adminUid"
-          @reload="$emit('reload')"
-        />
-      </div>
-
-      <!-- ── Divider ── -->
-      <div class="insights-panel__divider"></div>
-
-      <!-- ── Sub-section: Subscription & Plan ── -->
-      <div class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-            <line x1="1" y1="10" x2="23" y2="10" />
-          </svg>
-          Subscription &amp; Plan
-        </div>
-        <SubscriptionPanel
-          :embedded="true"
-          :subscription="subscription"
-          :usage-summary="usageSummary"
-        />
-      </div>
-
-      <!-- ── Divider ── -->
-      <div class="insights-panel__divider"></div>
-
-      <!-- ── Sub-section: Backups ── -->
-      <div class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <ellipse cx="12" cy="5" rx="9" ry="3" />
-            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-          </svg>
-          Backups
-          <span v-if="backupJobs.length" class="insights-panel__badge">{{ backupJobs.length }}</span>
-        </div>
-        <BackupsPanel :embedded="true" :jobs="backupJobs" />
-      </div>
-
-      <!-- ── Divider ── -->
-      <div class="insights-panel__divider"></div>
-
-      <!-- ── Sub-section: Capacity ──
-           Sits next to Backups because both are about bytes on disk. The
-           status pill and the Updated/Refresh controls live here rather than
-           in StorageMonitoringPanel so the row matches its five siblings; the
-           panel below renders the figures only. -->
-      <section class="insights-panel__section" aria-labelledby="insights-capacity-title">
-        <div id="insights-capacity-title" class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="22" y1="12" x2="2" y2="12" />
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-            <line x1="6" y1="16" x2="6.01" y2="16" />
-            <line x1="10" y1="16" x2="10.01" y2="16" />
-          </svg>
-          Capacity
-          <span v-if="storage" :class="['iz-pill', storagePillClass]">{{ storageStatus }}</span>
-          <span class="insights-panel__section-actions">
-            <span v-if="storage" class="insights-panel__section-meta">Updated {{ storageUpdatedAt }}</span>
-            <button
-              class="iz-btn iz-btn--ghost iz-btn--sm"
-              type="button"
-              :disabled="storageLoading"
-              @click="$emit('retry-storage')"
+    <div :id="'insights-body-' + _uid" v-show="!collapsed" class="insights-panel__body">
+      <nav class="insights-panel__nav" aria-label="Organization insights sections">
+        <button
+          v-for="item in navigationItems"
+          :key="item.id"
+          type="button"
+          class="insights-panel__nav-item"
+          :class="{ 'insights-panel__nav-item--active': activeSection === item.id }"
+          :aria-current="activeSection === item.id ? 'true' : null"
+          :aria-controls="'insights-section-' + _uid + '-' + item.id"
+          @click="activeSection = item.id"
+        >
+          <span class="insights-panel__nav-label">{{ item.label }}</span>
+          <span v-if="item.summary" class="insights-panel__nav-summary">{{ item.summary }}</span>
+          <span v-if="item.id === 'capacity' && storageAttentionCount" class="iz-pill iz-pill--warning">{{ storageAttentionCount }} need attention</span>
+        </button>
+      </nav>
+      <div class="insights-panel__content">
+        <!-- ── Sub-section: Organization ── -->
+        <div class="insights-panel__section" v-show="activeSection === 'organization'" :id="'insights-section-' + _uid + '-organization'" role="region" aria-label="Organization">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              {{ storageLoading ? "Refreshing..." : "Refresh" }}
-            </button>
-          </span>
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Organization
+          </div>
+          <OrganizationPanel :embedded="true" :profile="profile" />
         </div>
-        <StorageMonitoringPanel
-          :embedded="true"
-          :storage="storage"
-          :loading="storageLoading"
-          :error="storageError"
-          @retry="$emit('retry-storage')"
-        />
-      </section>
 
-      <!-- ── Divider ── -->
-      <div class="insights-panel__divider"></div>
 
-      <!-- ── Sub-section: Resources ──
-           Moved out of the KPI strip: item counts belong beside Capacity's
-           storage bytes, the same question at a different grain. Rendered as
-           figures rather than the donut the KPI card used — four counts that
-           do not sum to a meaningful whole are not a chart. -->
-      <div v-if="resourceCells.length" class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
-          Resources
-        </div>
-        <div class="insights-panel__resources">
-          <div
-            v-for="cell in resourceCells"
-            :key="'res-' + cell.label"
-            class="insights-panel__resource"
-          >
-            <span class="insights-panel__resource-value">{{ cell.value }}</span>
-            <span class="insights-panel__resource-label">{{ cell.label }}</span>
-            <span
-              v-if="cell.sub"
-              class="insights-panel__resource-sub"
-              >{{ cell.sub }}</span
+        <!-- ── Sub-section: Team Members ── -->
+        <div class="insights-panel__section" v-show="activeSection === 'members'" :id="'insights-section-' + _uid + '-members'" role="region" aria-label="Team Members">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Team Members
+            <span class="insights-panel__badge">{{ members.length }}</span>
           </div>
-        </div>
-      </div>
-
-      <!-- ── Divider ── -->
-      <div v-if="showSettings" class="insights-panel__divider"></div>
-
-      <!-- ── Sub-section: Project defaults ──
-           What the Organization settings modal used to hold. The two blocks
-           are one section because they answer the same question: what does a
-           new project start with. -->
-      <div v-if="showSettings" class="insights-panel__section">
-        <div class="insights-panel__section-title">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="4" y1="21" x2="4" y2="14" />
-            <line x1="4" y1="10" x2="4" y2="3" />
-            <line x1="12" y1="21" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12" y2="3" />
-            <line x1="20" y1="21" x2="20" y2="16" />
-            <line x1="20" y1="12" x2="20" y2="3" />
-            <line x1="1" y1="14" x2="7" y2="14" />
-            <line x1="9" y1="8" x2="15" y2="8" />
-            <line x1="17" y1="16" x2="23" y2="16" />
-          </svg>
-          Project defaults
-          <span class="insights-panel__section-actions">
-            <span class="insights-panel__section-meta">Applies to every new project</span>
-          </span>
+          <MembersPanel
+            :embedded="true"
+            :members="members"
+            :org-id="orgId"
+            :admin-uid="adminUid"
+            :current-uid="currentUid"
+            :owner-uid="adminUid"
+            @reload="$emit('reload')"
+          />
         </div>
 
-        <!-- The panel body is v-show, so without this gate both children would
-             mount on page load and fire their projectcreatoraio requests for a
-             section nobody has opened. -->
-        <template v-if="settingsSeen">
-          <div class="insights-panel__settings-block">
-            <h4 class="insights-panel__settings-sub">Default project PDF</h4>
-            <OrganizationPdfSettings :organization-id="orgId" />
+
+        <!-- ── Sub-section: Subscription & Plan ── -->
+        <div class="insights-panel__section" v-show="activeSection === 'subscription'" :id="'insights-section-' + _uid + '-subscription'" role="region" aria-label="Subscription &amp; Plan">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+              <line x1="1" y1="10" x2="23" y2="10" />
+            </svg>
+            Subscription &amp; Plan
           </div>
-          <div class="insights-panel__settings-block">
-            <h4 class="insights-panel__settings-sub">OCR document types</h4>
-            <OrganizationOcrSettings :organization-id="orgId" />
+          <SubscriptionPanel
+            :embedded="true"
+            :subscription="subscription"
+            :usage-summary="usageSummary"
+          />
+        </div>
+
+
+        <!-- ── Sub-section: Backups ── -->
+        <div class="insights-panel__section" v-show="activeSection === 'backups'" :id="'insights-section-' + _uid + '-backups'" role="region" aria-label="Backups">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+            </svg>
+            Backups
+            <span v-if="backupJobs.length" class="insights-panel__badge">{{ backupJobs.length }}</span>
           </div>
-        </template>
+          <BackupsPanel :embedded="true" :jobs="backupJobs" />
+        </div>
+
+
+        <!-- Capacity retains its status and refresh controls in the detail pane. -->
+        <section class="insights-panel__section" v-show="activeSection === 'capacity'" :id="'insights-section-' + _uid + '-capacity'" role="region" aria-label="Capacity">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="22" y1="12" x2="2" y2="12" />
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+              <line x1="6" y1="16" x2="6.01" y2="16" />
+              <line x1="10" y1="16" x2="10.01" y2="16" />
+            </svg>
+            Capacity
+            <span v-if="storage" :class="['iz-pill', storagePillClass]">{{ storageStatus }}</span>
+            <span class="insights-panel__section-actions">
+              <span v-if="storage" class="insights-panel__section-meta">Updated {{ storageUpdatedAt }}</span>
+              <button
+                class="iz-btn iz-btn--ghost iz-btn--sm"
+                type="button"
+                :disabled="storageLoading"
+                @click="$emit('retry-storage')"
+              >
+                {{ storageLoading ? "Refreshing..." : "Refresh" }}
+              </button>
+            </span>
+          </div>
+          <StorageMonitoringPanel
+            :embedded="true"
+            :storage="storage"
+            :loading="storageLoading"
+            :error="storageError"
+            @retry="$emit('retry-storage')"
+          />
+        </section>
+
+
+        <!-- ── Sub-section: Resources ──
+             Moved out of the KPI strip: item counts belong beside Capacity's
+             storage bytes, the same question at a different grain. Rendered as
+             figures rather than the donut the KPI card used — four counts that
+             do not sum to a meaningful whole are not a chart. -->
+        <div v-if="resourceCells.length" class="insights-panel__section" v-show="activeSection === 'resources'" :id="'insights-section-' + _uid + '-resources'" role="region" aria-label="Resources">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            Resources
+          </div>
+          <div class="insights-panel__resources">
+            <div
+              v-for="cell in resourceCells"
+              :key="'res-' + cell.label"
+              class="insights-panel__resource"
+            >
+              <span class="insights-panel__resource-value">{{ cell.value }}</span>
+              <span class="insights-panel__resource-label">{{ cell.label }}</span>
+              <span
+                v-if="cell.sub"
+                class="insights-panel__resource-sub"
+                >{{ cell.sub }}</span
+              >
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ── Sub-section: Project defaults ──
+             What the Organization settings modal used to hold. The two blocks
+             are one section because they answer the same question: what does a
+             new project start with. -->
+        <div v-if="showSettings" class="insights-panel__section" v-show="activeSection === 'settings'" :id="'insights-section-' + _uid + '-settings'" role="region" aria-label="Project defaults">
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="1" y1="14" x2="7" y2="14" />
+              <line x1="9" y1="8" x2="15" y2="8" />
+              <line x1="17" y1="16" x2="23" y2="16" />
+            </svg>
+            Project defaults
+            <span class="insights-panel__section-actions">
+              <span class="insights-panel__section-meta">Applies to every new project</span>
+            </span>
+          </div>
+
+          <!-- Load on first selection, then preserve form state between sections. -->
+          <template v-if="settingsSeen">
+            <div class="insights-panel__settings-block">
+              <h4 class="insights-panel__settings-sub">Default project PDF</h4>
+              <OrganizationPdfSettings :organization-id="orgId" />
+            </div>
+            <div class="insights-panel__settings-block">
+              <h4 class="insights-panel__settings-sub">OCR document types</h4>
+              <OrganizationOcrSettings :organization-id="orgId" />
+            </div>
+          </template>
+        </div>
       </div>
     </div>
   </section>
@@ -391,16 +393,42 @@ export default {
   data: function () {
     return {
       collapsed: true,
-      // Flipped the first time the panel is expanded; see the settings section.
+      activeSection: "organization",
+      // Mount defaults on first selection and preserve edits between sections.
       settingsSeen: false,
     };
   },
   watch: {
-    collapsed: function (isCollapsed) {
-      if (!isCollapsed) this.settingsSeen = true;
+    activeSection: function (section) {
+      if (section === "settings" && this.showSettings) this.settingsSeen = true;
+    },
+    showSettings: function (visible) {
+      if (!visible) {
+        this.settingsSeen = false;
+        if (this.activeSection === "settings") this.activeSection = "organization";
+      }
+    },
+    resourceCells: function (cells) {
+      if (!cells.length && this.activeSection === "resources") this.activeSection = "organization";
     },
   },
   computed: {
+    navigationItems: function () {
+      var items = [
+        { id: "organization", label: "Organization", summary: this.profile.name },
+        { id: "members", label: "Team Members", summary: this.members.length + " members" },
+        { id: "subscription", label: "Subscription & Plan", summary: [this.subscription.planName, this.subscription.status].filter(Boolean).join(" · ") },
+        { id: "backups", label: "Backups", summary: this.backupJobs.length ? this.backupJobs.length + " jobs" : "No backup jobs" },
+        { id: "capacity", label: "Capacity", summary: this.storageLoading ? "Refreshing…" : this.storageError ? "Unable to refresh storage" : this.storageStatus },
+      ];
+      if (this.resourceCells.length) items.push({ id: "resources", label: "Resources", summary: "Files, notes and collaboration" });
+      if (this.showSettings) items.push({ id: "settings", label: "Project defaults", summary: "PDF template and OCR types" });
+      return items;
+    },
+    storageAttentionCount: function () {
+      var thresholds = (this.storage && this.storage.thresholds) || {};
+      return (thresholds.warningCount || 0) + (thresholds.criticalCount || 0);
+    },
     showSettings: function () {
       return this.canManage && Boolean(this.orgId);
     },
@@ -461,7 +489,19 @@ export default {
   overflow: hidden;
 }
 
+.insights-panel__heading {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 .insights-panel__header {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -501,7 +541,65 @@ export default {
 }
 
 .insights-panel__body {
-  padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  border-top: 1px solid var(--color-border);
+}
+
+.insights-panel__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px);
+  border-right: 1px solid var(--color-border);
+  align-self: start;
+}
+
+.insights-panel__nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs, 4px);
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-el, 8px);
+  background: transparent;
+  color: var(--color-text-primary);
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.insights-panel__nav-item:hover {
+  background: var(--bg-subtle);
+}
+
+.insights-panel__nav-item--active,
+.insights-panel__nav-item--active:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.insights-panel__nav-label {
+  font-size: var(--iz-fs-sm, 13px);
+  font-weight: 600;
+}
+
+.insights-panel__nav-summary {
+  font-size: var(--iz-fs-xs, 12px);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.insights-panel__content {
+  container-type: inline-size;
+  min-width: 0;
+  padding: var(--spacing-lg, 24px);
 }
 
 /* ─── Sub-section Title ─── */
@@ -546,8 +644,7 @@ export default {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   margin-bottom: 12px;
   padding: 4px 0;
 }
@@ -600,15 +697,34 @@ export default {
   color: var(--color-text-primary);
 }
 
-/* ─── Divider ─── */
-.insights-panel__divider {
-  height: 1px;
-  background: var(--bg-subtle);
-  margin: var(--spacing-lg, 24px) 0;
+/* Embedded panels now respond to the available detail width, including
+   desktop layouts narrowed by the section navigation. */
+@container (max-width: 620px) {
+  .insights-panel__section ::v-deep .org-panel__details,
+  .insights-panel__section ::v-deep .sub-panel__details,
+  .insights-panel__section ::v-deep .sub-panel__meters,
+  .insights-panel__section ::v-deep .storage-monitor__lists {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insights-panel__section ::v-deep .org-panel__detail-row,
+  .insights-panel__section ::v-deep .sub-panel__detail-row {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm, 8px);
+    overflow-wrap: anywhere;
+  }
 }
 
-/* ─── Section spacing ─── */
-.insights-panel__section {
-  /* no extra styles needed, just a grouping element */
+@media (max-width: 768px) {
+  .insights-panel__body { grid-template-columns: minmax(0, 1fr); }
+  .insights-panel__nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .insights-panel__content { padding: var(--spacing-md, 16px); }
+  .insights-panel__section-title,
+  .insights-panel__section-actions { flex-wrap: wrap; }
 }
 </style>
