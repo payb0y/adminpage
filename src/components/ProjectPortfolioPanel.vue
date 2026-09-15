@@ -13,9 +13,9 @@
             <rect x="3" y="4" width="18" height="16" rx="2" />
             <path d="M8 2v4M16 2v4M3 9h18" />
           </svg>
-          Projectportfolio - Initiatiefase
+          Project portfolio - Initiation phase
         </span>
-        <span class="portfolio__toggle-meta">{{ trackedProjects }} projecten</span>
+        <span class="portfolio__toggle-meta">{{ trackedProjects }} projects</span>
         <svg class="portfolio__chevron" :class="{ 'portfolio__chevron--open': !collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="6 9 12 15 18 9" />
         </svg>
@@ -25,40 +25,40 @@
     <div v-show="!collapsed" :id="'portfolio-body-' + _uid" class="portfolio__body">
       <div class="portfolio__toolbar iz-card iz-card--flat" aria-label="Portfolio filters">
         <div class="portfolio__filter-group">
-          <span class="iz-label">Weergave</span>
+          <span class="iz-label">View</span>
           <div class="portfolio__segmented">
-            <span class="portfolio__segment">Mijn projecten</span>
+            <span class="portfolio__segment">My projects</span>
             <span class="portfolio__segment portfolio__segment--active">Team</span>
-            <span class="portfolio__segment">Alle projecten</span>
+            <span class="portfolio__segment">All projects</span>
           </div>
         </div>
         <div class="portfolio__filter-group">
-          <span class="iz-label">Periode</span>
+          <span class="iz-label">Period</span>
           <span class="portfolio__control">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
             {{ periodLabel }}
           </span>
           <div class="portfolio__segmented portfolio__segmented--compact">
-            <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Vorige</button>
-            <button type="button" class="portfolio__segment" @click="resetPeriod">Deze 6 weken</button>
-            <button type="button" class="portfolio__segment" @click="movePeriod(42)">Volgende</button>
+            <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Previous</button>
+            <button type="button" class="portfolio__segment" @click="resetPeriod">Current 6 weeks</button>
+            <button type="button" class="portfolio__segment" @click="movePeriod(42)">Next</button>
           </div>
         </div>
         <div class="portfolio__capacity">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z" /></svg>
           <label class="portfolio__team-select">
-            <strong>Capaciteit (Team)</strong>
+            <strong>Capacity (Team)</strong>
             <select class="iz-select" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length">
               <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
             </select>
           </label>
-          <small v-if="selectedTeam">{{ formatNumber(selectedTeam.fte) }} FTE x {{ formatNumber(selectedTeam.projectsPerFte) }} projecten/FTE</small>
-          <small v-if="teamsLoading">Teams laden...</small>
+          <small v-if="selectedTeam">{{ formatNumber(selectedTeam.fte) }} FTE x {{ formatNumber(selectedTeam.projectsPerFte) }} projects/FTE</small>
+          <small v-if="teamsLoading">Loading teams...</small>
           <small v-else-if="teamError" class="portfolio__team-error">
             {{ teamError }}
-            <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchTeams">Opnieuw proberen</button>
+            <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchTeams">Retry</button>
           </small>
-          <small v-else-if="!teams.length">Geen teams beschikbaar.</small>
+          <small v-else-if="!teams.length">No teams available.</small>
         </div>
       </div>
 
@@ -82,16 +82,16 @@
       <div class="portfolio__overview-grid">
         <section class="iz-card portfolio__status-card">
           <header class="iz-panel__header">
-            <h4 class="iz-panel__title">Processtatus - Initiatiefase</h4>
+            <h4 class="iz-panel__title">Process status - Initiation phase</h4>
           </header>
           <div class="portfolio__status-content">
-            <div v-if="portfolioLoading" class="portfolio__status-state iz-empty">Projectvoortgang laden...</div>
+            <div v-if="portfolioLoading" class="portfolio__status-state iz-empty">Loading project progress...</div>
             <div v-else-if="portfolioError" class="portfolio__status-state iz-error">
               <span>{{ portfolioError }}</span>
-              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchPortfolio">Opnieuw proberen</button>
+              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchPortfolio">Retry</button>
             </div>
-            <div v-else class="portfolio__donut" :style="donutStyle" role="img" :aria-label="trackedProjects + ' projecten verdeeld over vijf voortgangscategorieën'">
-              <span><strong>{{ trackedProjects }}</strong><small>projecten</small></span>
+            <div v-else class="portfolio__donut" :style="donutStyle" role="img" :aria-label="trackedProjects + ' projects across five progress categories'">
+              <span><strong>{{ trackedProjects }}</strong><small>projects</small></span>
             </div>
             <div v-if="!portfolioLoading && !portfolioError" class="portfolio__legend">
               <div v-for="status in displayStatuses" :key="status.key" class="portfolio__legend-row">
@@ -105,7 +105,7 @@
             </div>
           </div>
           <p v-if="untrackedProjectCount && !portfolioLoading && !portfolioError" class="portfolio__untracked">
-            {{ untrackedProjectCount }} {{ untrackedProjectCount === 1 ? 'project kon' : 'projecten konden' }} niet aan een actief Deck-bord worden gekoppeld.
+            {{ untrackedProjectCount }} {{ untrackedProjectCount === 1 ? 'project could' : 'projects could' }} not be linked to an active Deck board.
           </p>
         </section>
 
@@ -113,17 +113,17 @@
           <header class="iz-panel__header">
             <h4 class="iz-panel__title portfolio__danger-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.3 3.5 2.4 18a2 2 0 0 0 1.8 3h15.6a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0z" /><path d="M12 9v4M12 17h.01" /></svg>
-              Open planningsgaten ({{ planningGaps.length }})
+              Open planning gaps ({{ planningGaps.length }})
             </h4>
-            <span class="portfolio__link">Bekijk alle projecten</span>
+            <span class="portfolio__link">View all projects</span>
           </header>
           <div class="portfolio__gap-list">
-            <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Capaciteit laden...</div>
+            <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Loading capacity...</div>
             <div v-else-if="capacityError" class="portfolio__status-state iz-error">
               <span>{{ capacityError }}</span>
-              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchCapacity">Opnieuw proberen</button>
+              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchCapacity">Retry</button>
             </div>
-            <div v-else-if="!planningGaps.length" class="portfolio__status-state iz-empty">Geen open planningsgaten.</div>
+            <div v-else-if="!planningGaps.length" class="portfolio__status-state iz-empty">No open planning gaps.</div>
             <div v-else v-for="gap in planningGaps" :key="gap.id || gap.name" class="iz-row iz-row--card portfolio__gap-row">
               <svg class="portfolio__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
               <span class="portfolio__gap-copy"><strong>{{ gap.name }}</strong><small>{{ gap.note }}</small></span>
@@ -137,12 +137,12 @@
 
       <section class="iz-card portfolio__workload">
         <header class="iz-panel__header portfolio__workload-header">
-          <h4 class="iz-panel__title">Werkvoorbereidingsbelasting per week</h4>
-          <span v-if="capacity" class="portfolio__capacity-note"><strong>{{ capacity.team.name }}</strong>: {{ formatNumber(capacity.team.capacity) }} gelijktijdige projecten</span>
+          <h4 class="iz-panel__title">Weekly work preparation load</h4>
+          <span v-if="capacity" class="portfolio__capacity-note"><strong>{{ capacity.team.name }}</strong>: {{ formatNumber(capacity.team.capacity) }} concurrent projects</span>
         </header>
-        <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Capaciteit laden...</div>
+        <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Loading capacity...</div>
         <div v-else-if="capacityError" class="portfolio__status-state iz-error">{{ capacityError }}</div>
-        <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">Geen capaciteitsgegevens beschikbaar.</div>
+        <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">No capacity data available.</div>
         <div v-else class="portfolio__weeks">
           <article v-for="week in weeks" :key="week.label" class="iz-card iz-card--flat portfolio-week">
             <header><strong>{{ week.label }}</strong><small>{{ formatDate(week.start) }} - {{ formatDate(week.end) }}</small></header>
@@ -151,7 +151,7 @@
               <span>{{ item.label }}</span>
               <strong>{{ item.value }}</strong>
             </div>
-            <div class="portfolio-week__total"><span class="portfolio__legend-dot tone-neutral" /><strong>Totaal actief</strong><strong>{{ week.totalActive }}</strong></div>
+            <div class="portfolio-week__total"><span class="portfolio__legend-dot tone-neutral" /><strong>Total active</strong><strong>{{ week.totalActive }}</strong></div>
             <div class="portfolio-week__capacity" :class="capacityClass(week)">
               <strong>{{ week.totalActive }} / {{ week.capacity }}</strong>
               <span>{{ capacityStatus(week) }}</span>
@@ -197,29 +197,29 @@ export default {
       return [
         {
           value: completionAvailable ? Number(this.portfolio.totalProjects || 0) : "—",
-          label: "Totaal projecten",
-          note: "Binnen geselecteerde periode",
+          label: "Total projects",
+          note: "Within selected period",
           icon: "folder",
           tone: "tone-accent",
         },
         {
           value: completionAvailable ? this.completionBucketCount("75-99") : "—",
-          label: "Aankomend (75 - 99%)",
-          note: "Wensweek zichtbaar t/m 99%",
+          label: "Upcoming (75 - 99%)",
+          note: "Desired week visible up to 99%",
           icon: "progress",
           tone: "tone-warning",
         },
         {
           value: completionAvailable ? this.completionBucketCount("100") : "—",
-          label: "100% gereed voor Handover 1",
-          note: "Werkelijke wensweek leidend",
+          label: "100% ready for Handover 1",
+          note: "Actual target week is leading",
           icon: "check",
           tone: "tone-success",
         },
         {
           value: capacityAvailable ? this.planningGaps.length : "—",
-          label: "Open planningsgaten",
-          note: "In geselecteerde periode",
+          label: "Open planning gaps",
+          note: "In selected period",
           icon: "alert",
           tone: "tone-danger",
         },
@@ -231,19 +231,19 @@ export default {
     weeks: function () {
       return ((this.capacity && this.capacity.weeks) || []).map(function (week) {
         return { ...week, items: [
-          { label: "Op te starten", value: week.starting, tone: "tone-cat-1" },
-          { label: "Doorlopend", value: week.continuing, tone: "tone-accent" },
-          { label: "Eindigend", value: week.ending, tone: "tone-cat-4" },
+          { label: "Starting", value: week.starting, tone: "tone-cat-1" },
+          { label: "Ongoing", value: week.continuing, tone: "tone-accent" },
+          { label: "Ending", value: week.ending, tone: "tone-cat-4" },
         ] };
       });
     },
     planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
     periodLabel: function () {
-      if (!this.capacity || !this.capacity.period) return "Capaciteit";
+      if (!this.capacity || !this.capacity.period) return "Capacity";
       var start = this.parseDate(this.capacity.period.weekStart);
       var end = new Date(start.getTime());
       end.setUTCDate(end.getUTCDate() + 41);
-      return "W" + this.isoWeek(start) + " - W" + this.isoWeek(end) + " (6 weken)";
+      return "W" + this.isoWeek(start) + " - W" + this.isoWeek(end) + " (6 weeks)";
     },
     displayStatuses: function () {
       var tones = ["tone-neutral", "tone-cat-1", "tone-accent", "tone-warning", "tone-success"];
@@ -251,16 +251,16 @@ export default {
         var badge = null;
         var badgeClass = null;
         if (index === 3) {
-          badge = "Aankomend";
+          badge = "Upcoming";
           badgeClass = "iz-badge--warning";
         } else if (index === 4) {
-          badge = "Gereed voor Handover 1";
+          badge = "Ready for Handover 1";
           badgeClass = "iz-badge--success";
         }
         return {
           ...bucket,
           tone: tones[index],
-          percent: bucket.percent.toLocaleString("nl-NL", { maximumFractionDigits: 1 }) + "%",
+          percent: bucket.percent.toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%",
           badge: badge,
           badgeClass: badgeClass,
         };
@@ -314,8 +314,8 @@ export default {
         this.portfolio = response.data;
       } catch (error) {
         this.portfolioError = error && error.response && error.response.status === 403
-          ? "Je hebt geen toegang tot deze projectgegevens."
-          : "De projectvoortgang kon niet worden geladen.";
+          ? "You do not have access to this project data."
+          : "Project progress could not be loaded.";
       } finally {
         this.portfolioLoading = false;
       }
@@ -326,9 +326,9 @@ export default {
     },
     dateOnly: function (date) { return date.toISOString().slice(0, 10); },
     formatDate: function (value) {
-      return this.parseDate(value).toLocaleDateString("nl-NL", { day: "numeric", month: "short", timeZone: "UTC" });
+      return this.parseDate(value).toLocaleDateString("en-US", { day: "numeric", month: "short", timeZone: "UTC" });
     },
-    formatNumber: function (value) { return Number(value || 0).toLocaleString("nl-NL", { maximumFractionDigits: 2 }); },
+    formatNumber: function (value) { return Number(value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 }); },
     isoWeek: function (date) {
       var d = new Date(date.getTime());
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -360,9 +360,9 @@ export default {
         : "portfolio-week__capacity--ok";
     },
     capacityStatus: function (week) {
-      if (week.overCapacity) return "Capaciteit overschreden";
-      if (week.totalActive === 0) return "Geen actieve projecten";
-      return "Ruimte: " + this.formatNumber(week.remaining);
+      if (week.overCapacity) return "Over capacity";
+      if (week.totalActive === 0) return "No active projects";
+      return "Remaining: " + this.formatNumber(week.remaining);
     },
     fetchTeams: async function () {
       if (!this.organizationId) return;
@@ -372,7 +372,7 @@ export default {
         this.teams = await listOrganizationTeams(this.organizationId);
         if (!this.selectedTeamId && this.teams.length) this.selectedTeamId = this.teams[0].id;
       } catch (e) {
-        this.teamError = "Teams konden niet worden geladen.";
+        this.teamError = "Teams could not be loaded.";
       } finally {
         this.teamsLoading = false;
         if (this.selectedTeamId && !this.capacity) {
@@ -396,7 +396,7 @@ export default {
         this.displayedWeekStart = response.data.period.weekStart;
       } catch (e) {
         if (requestId !== this.capacityRequestId) return;
-        this.capacityError = "De teamcapaciteit kon niet worden geladen.";
+        this.capacityError = "Team capacity could not be loaded.";
       } finally {
         if (requestId === this.capacityRequestId) this.capacityLoading = false;
       }
