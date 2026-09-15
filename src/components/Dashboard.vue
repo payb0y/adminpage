@@ -51,6 +51,9 @@
         <TimelineKpiCard v-if="timelineKpi" :kpi="timelineKpi" />
       </section>
 
+      <!-- ── Project Portfolio ── -->
+      <ProjectPortfolioPanel />
+
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
         :projects="(projectGeocodes && projectGeocodes.projects) || []"
@@ -113,6 +116,7 @@ import ProjectsKpiCard from "./ProjectsKpiCard.vue";
 import TasksKpiCard from "./TasksKpiCard.vue";
 import ProgressionKpiCard from "./ProgressionKpiCard.vue";
 import TimelineKpiCard from "./TimelineKpiCard.vue";
+import ProjectPortfolioPanel from "./ProjectPortfolioPanel.vue";
 import ProjectPerformancePanel from "./ProjectPerformancePanel.vue";
 import ProjectsMapPanel from "./ProjectsMapPanel.vue";
 import CreateProjectModal from "./CreateProjectModal.vue";
@@ -126,6 +130,7 @@ export default {
     TasksKpiCard,
     ProgressionKpiCard,
     TimelineKpiCard,
+    ProjectPortfolioPanel,
     ProjectPerformancePanel,
     ProjectsMapPanel,
     CreateProjectModal,
