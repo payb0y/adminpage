@@ -166,12 +166,13 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
-import { listOrganizationTeams } from "../services/projectCreatorApi";
+import { listOrganizationTeams } from "../services/organizationApi";
 
 export default {
   name: "ProjectPortfolioPanel",
   props: {
     organizationId: { type: Number, default: null },
+    refreshRevision: { type: Number, default: 0 },
   },
   data: function () {
     return {
@@ -288,6 +289,9 @@ export default {
     },
   },
   watch: {
+    refreshRevision: function () {
+      if (!this.collapsed) this.fetchTeams();
+    },
     selectedTeamId: function () {
       if (this.selectedTeamId && !this.teamsLoading) this.fetchCapacity();
     },
@@ -370,14 +374,18 @@ export default {
       this.teamError = null;
       try {
         this.teams = await listOrganizationTeams(this.organizationId);
-        if (!this.selectedTeamId && this.teams.length) this.selectedTeamId = this.teams[0].id;
+        var selectedExists = this.teams.some(function (team) {
+          return Number(team.id) === Number(this.selectedTeamId);
+        }, this);
+        if (!selectedExists) {
+          this.selectedTeamId = this.teams.length ? this.teams[0].id : null;
+          if (!this.selectedTeamId) this.capacity = null;
+        }
       } catch (e) {
         this.teamError = "Teams could not be loaded.";
       } finally {
         this.teamsLoading = false;
-        if (this.selectedTeamId && !this.capacity) {
-          this.fetchCapacity(this.dateOnly(this.currentMonday()));
-        }
+        if (this.selectedTeamId) this.fetchCapacity(this.displayedWeekStart || this.dateOnly(this.currentMonday()));
       }
     },
     fetchCapacity: async function (weekStart) {

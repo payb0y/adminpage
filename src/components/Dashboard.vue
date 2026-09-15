@@ -52,7 +52,7 @@
       </section>
 
       <!-- ── Project Portfolio ── -->
-       <ProjectPortfolioPanel :organization-id="organizationId" />
+       <ProjectPortfolioPanel :organization-id="organizationId" :refresh-revision="teamRevision" />
 
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
@@ -93,6 +93,7 @@
         :storage-loading="storageLoading"
         :storage-error="storageError"
         @reload="$emit('reload')"
+        @teams-changed="teamRevision++"
         @retry-storage="$emit('retry-storage')"
       />
 
@@ -180,6 +181,7 @@ export default {
   data: function () {
     return {
       showCreateModal: false,
+      teamRevision: 0,
     };
   },
   computed: {

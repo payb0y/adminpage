@@ -352,7 +352,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
-import { assignProjectTeam, listOrganizationTeams } from "../services/projectCreatorApi";
+import { assignProjectTeam, listOrganizationTeams } from "../services/organizationApi";
 
 // Hard-coded; mirrors projectcreatoraio/src/macros/project-types.js
 // Update here if that catalog changes — we don't import across apps.

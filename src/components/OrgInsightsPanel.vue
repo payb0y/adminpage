@@ -116,6 +116,46 @@
         </div>
 
 
+        <!-- ── Sub-section: Teams ── -->
+        <div
+          v-if="showTeams"
+          v-show="activeSection === 'teams'"
+          class="insights-panel__section"
+          :id="'insights-section-' + _uid + '-teams'"
+          role="region"
+          aria-label="Teams"
+        >
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Teams
+            <span v-if="teamsSeen" class="insights-panel__badge">{{ teamSummary.teamCount }}</span>
+          </div>
+          <TeamsPanel
+            v-if="teamsSeen"
+            :org-id="orgId"
+            :members="members"
+            :can-manage="canManage"
+            @summary="teamSummary = $event"
+            @changed="$emit('teams-changed')"
+          />
+        </div>
+
+
         <!-- ── Sub-section: Subscription & Plan ── -->
         <div class="insights-panel__section" v-show="activeSection === 'subscription'" :id="'insights-section-' + _uid + '-subscription'" role="region" aria-label="Subscription &amp; Plan">
           <div class="insights-panel__section-title">
@@ -306,6 +346,7 @@
 <script>
 import OrganizationPanel from "./OrganizationPanel.vue";
 import MembersPanel from "./MembersPanel.vue";
+import TeamsPanel from "./TeamsPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
 import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
@@ -317,6 +358,7 @@ export default {
   components: {
     OrganizationPanel,
     MembersPanel,
+    TeamsPanel,
     SubscriptionPanel,
     BackupsPanel,
     StorageMonitoringPanel,
@@ -394,13 +436,27 @@ export default {
     return {
       collapsed: true,
       activeSection: "organization",
+      teamsSeen: false,
+      teamSummary: { teamCount: 0, unassignedCount: 0 },
       // Mount defaults on first selection and preserve edits between sections.
       settingsSeen: false,
     };
   },
   watch: {
     activeSection: function (section) {
-      if (section === "settings" && this.showSettings) this.settingsSeen = true;
+      if (section === "teams" && this.showTeams) {
+        this.teamsSeen = true;
+      }
+      if (section === "settings" && this.showSettings) {
+        this.settingsSeen = true;
+      }
+    },
+    showTeams: function (visible) {
+      if (!visible) {
+        this.teamsSeen = false;
+        this.teamSummary = { teamCount: 0, unassignedCount: 0 };
+        if (this.activeSection === "teams") this.activeSection = "organization";
+      }
     },
     showSettings: function (visible) {
       if (!visible) {
@@ -417,13 +473,35 @@ export default {
       var items = [
         { id: "organization", label: "Organization", summary: this.profile.name },
         { id: "members", label: "Team Members", summary: this.members.length + " members" },
+      ];
+      if (this.showTeams) {
+        items.push({ id: "teams", label: "Teams", summary: this.teamNavigationSummary });
+      }
+      items.push(
         { id: "subscription", label: "Subscription & Plan", summary: [this.subscription.planName, this.subscription.status].filter(Boolean).join(" · ") },
         { id: "backups", label: "Backups", summary: this.backupJobs.length ? this.backupJobs.length + " jobs" : "No backup jobs" },
-        { id: "capacity", label: "Capacity", summary: this.storageLoading ? "Refreshing…" : this.storageError ? "Unable to refresh storage" : this.storageStatus },
-      ];
+        { id: "capacity", label: "Capacity", summary: this.storageNavigationSummary },
+      );
       if (this.resourceCells.length) items.push({ id: "resources", label: "Resources", summary: "Files, notes and collaboration" });
       if (this.showSettings) items.push({ id: "settings", label: "Project defaults", summary: "PDF template and OCR types" });
       return items;
+    },
+    showTeams: function () {
+      return this.canManage && Boolean(this.orgId);
+    },
+    teamNavigationSummary: function () {
+      if (!this.teamsSeen) return "Capacity and project ownership";
+      var teamLabel = this.teamSummary.teamCount === 1 ? " team" : " teams";
+      var summary = this.teamSummary.teamCount + teamLabel;
+      if (this.teamSummary.unassignedCount) {
+        summary += " · " + this.teamSummary.unassignedCount + " unassigned";
+      }
+      return summary;
+    },
+    storageNavigationSummary: function () {
+      if (this.storageLoading) return "Refreshing…";
+      if (this.storageError) return "Unable to refresh storage";
+      return this.storageStatus;
     },
     storageAttentionCount: function () {
       var thresholds = (this.storage && this.storage.thresholds) || {};
