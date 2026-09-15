@@ -188,15 +188,43 @@ export default {
       capacityLoading: false,
       capacityError: null,
       capacityRequestId: 0,
-      metrics: [
-        { value: 28, label: "Totaal projecten", note: "Binnen geselecteerde periode", icon: "folder", tone: "tone-accent" },
-        { value: 8, label: "Aankomend (75 - 99%)", note: "Wensweek zichtbaar t/m 99%", icon: "progress", tone: "tone-warning" },
-        { value: 6, label: "100% gereed voor Handover 1", note: "Werkelijke wensweek leidend", icon: "check", tone: "tone-success" },
-        { value: 3, label: "Open planningsgaten", note: "In geselecteerde periode", icon: "alert", tone: "tone-danger" },
-      ],
     };
   },
   computed: {
+    metrics: function () {
+      var completionAvailable = this.portfolio !== null && !this.portfolioError;
+      var capacityAvailable = this.capacity !== null && !this.capacityError;
+      return [
+        {
+          value: completionAvailable ? Number(this.portfolio.totalProjects || 0) : "—",
+          label: "Totaal projecten",
+          note: "Binnen geselecteerde periode",
+          icon: "folder",
+          tone: "tone-accent",
+        },
+        {
+          value: completionAvailable ? this.completionBucketCount("75-99") : "—",
+          label: "Aankomend (75 - 99%)",
+          note: "Wensweek zichtbaar t/m 99%",
+          icon: "progress",
+          tone: "tone-warning",
+        },
+        {
+          value: completionAvailable ? this.completionBucketCount("100") : "—",
+          label: "100% gereed voor Handover 1",
+          note: "Werkelijke wensweek leidend",
+          icon: "check",
+          tone: "tone-success",
+        },
+        {
+          value: capacityAvailable ? this.planningGaps.length : "—",
+          label: "Open planningsgaten",
+          note: "In geselecteerde periode",
+          icon: "alert",
+          tone: "tone-danger",
+        },
+      ];
+    },
     selectedTeam: function () {
       return this.teams.find(function (team) { return Number(team.id) === Number(this.selectedTeamId); }, this) || null;
     },
@@ -265,6 +293,12 @@ export default {
     },
   },
   methods: {
+    completionBucketCount: function (key) {
+      var bucket = ((this.portfolio && this.portfolio.buckets) || []).find(function (item) {
+        return item.key === key;
+      });
+      return bucket ? Number(bucket.count || 0) : 0;
+    },
     toggle: function () {
       this.collapsed = !this.collapsed;
       if (!this.collapsed) {
