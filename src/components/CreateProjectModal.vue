@@ -9,7 +9,7 @@
         <button
           type="button"
           class="iz-close iz-close--sm"
-          :disabled="submitting"
+          :disabled="submitting || assigning"
           aria-label="Close"
           @click="$emit('cancel')"
         >×</button>
@@ -26,7 +26,7 @@
             type="text"
             class="iz-input cp-modal__input"
             v-model="form.name"
-            :disabled="submitting"
+             :disabled="submitting || assigning"
             @blur="markBlurred('name')"
           />
           <div
@@ -45,7 +45,7 @@
             class="iz-input cp-modal__input"
             v-model="form.number"
             placeholder="e.g. P-2026-014"
-            :disabled="submitting"
+             :disabled="submitting || assigning"
             @blur="markBlurred('number')"
           />
           <div
@@ -62,7 +62,7 @@
             id="cp-type"
             class="iz-select cp-modal__input"
             v-model.number="form.type"
-            :disabled="submitting"
+            :disabled="submitting || assigning"
           >
             <option
               v-for="t in projectTypes"
@@ -273,23 +273,46 @@
             </div>
           </div>
         </div>
+
+        <div class="cp-modal__group">
+          <span class="cp-modal__group-title">Responsible team</span>
+          <select
+            id="cp-team"
+            class="iz-select cp-modal__input"
+            v-model="selectedTeamId"
+            :disabled="submitting || teamsLoading || !teams.length"
+          >
+            <option value="">No team selected</option>
+            <option
+              v-for="team in teams"
+              :key="'team-' + team.id"
+              :value="String(team.id)"
+            >{{ team.name }}</option>
+          </select>
+          <small v-if="teamsLoading" class="cp-modal__team-hint">Teams laden...</small>
+          <small v-else-if="teamsError" class="cp-modal__team-hint cp-modal__team-hint--error">{{ teamsError }}</small>
+        </div>
       </section>
 
       <footer class="cp-modal__footer iz-modal__footer">
         <div v-if="error" class="cp-modal__error">{{ error }}</div>
+        <div v-if="assignmentWarning" class="cp-modal__warning">
+          {{ assignmentWarning }}
+          <button type="button" class="cp-modal__retry" :disabled="assigning" @click="retryAssignment">Opnieuw proberen</button>
+        </div>
         <div v-if="slowHint" class="cp-modal__hint">This may take a few seconds…</div>
         <div class="cp-modal__actions">
           <button
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
-            :disabled="submitting"
+            :disabled="submitting || assigning"
             @click="$emit('cancel')"
           >Cancel</button>
           <button
             v-if="step === 2"
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
-            :disabled="submitting"
+            :disabled="submitting || assigning"
             @click="step = 1"
           >← Back</button>
           <button
@@ -303,14 +326,14 @@
             v-if="step === 2"
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
-            :disabled="submitting"
+            :disabled="submitting || assigning || createdProjectId"
             @click="submit"
           >Skip &amp; Create</button>
           <button
             v-if="step === 2"
             type="button"
             class="cp-modal__btn cp-modal__btn--primary"
-            :disabled="submitting || !formValid"
+            :disabled="submitting || assigning || createdProjectId || !formValid"
             @click="submit"
           >
             <span
@@ -329,6 +352,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { assignProjectTeam, listOrganizationTeams } from "../services/projectCreatorApi";
 
 // Hard-coded; mirrors projectcreatoraio/src/macros/project-types.js
 // Update here if that catalog changes — we don't import across apps.
@@ -388,6 +412,14 @@ export default {
       submitting: false,
       slowHint: false,
       error: null,
+      teams: [],
+      teamsLoading: false,
+      teamsError: null,
+      selectedTeamId: "",
+      createdProjectId: null,
+      createdEmitted: false,
+      assigning: false,
+      assignmentWarning: null,
     };
   },
   created: function () {
@@ -398,6 +430,7 @@ export default {
       }
     };
     document.addEventListener("keydown", this._escHandler);
+    this.loadTeams();
   },
   beforeDestroy: function () {
     if (this._slowHintTimer) clearTimeout(this._slowHintTimer);
@@ -477,8 +510,19 @@ export default {
     },
   },
   methods: {
+    loadTeams: async function () {
+      this.teamsLoading = true;
+      this.teamsError = null;
+      try {
+        this.teams = await listOrganizationTeams(this.orgId);
+      } catch (e) {
+        this.teamsError = "Teams konden niet worden geladen.";
+      } finally {
+        this.teamsLoading = false;
+      }
+    },
     onOverlayClick: function () {
-      if (!this.submitting) this.$emit("cancel");
+      if (!this.submitting && !this.assigning) this.$emit("cancel");
     },
     markBlurred: function (field) {
       this.$set(this.blurred, field, true);
@@ -559,7 +603,12 @@ export default {
           this.error = "Server didn't return a project id.";
           return;
         }
-        this.$emit("created", Number(data.projectId));
+        this.createdProjectId = Number(data.projectId);
+        if (this.selectedTeamId) {
+          await this.assignTeam();
+          if (this.assignmentWarning) return;
+        }
+        this.emitCreated();
       } catch (e) {
         this.error = this.extractError(
           e,
@@ -570,6 +619,28 @@ export default {
         this.submitting = false;
         this.slowHint = false;
       }
+    },
+    emitCreated: function () {
+      if (this.createdEmitted || !this.createdProjectId) return;
+      this.createdEmitted = true;
+      this.$emit("created", this.createdProjectId);
+    },
+    assignTeam: async function () {
+      if (!this.createdProjectId || !this.selectedTeamId) return;
+      this.assigning = true;
+      this.assignmentWarning = null;
+      try {
+        await assignProjectTeam(this.orgId, this.createdProjectId, this.selectedTeamId);
+      } catch (e) {
+        this.assignmentWarning = "Het project is aangemaakt, maar kon niet aan het team worden toegewezen.";
+      } finally {
+        this.assigning = false;
+      }
+    },
+    retryAssignment: async function () {
+      if (this.assigning || this.createdEmitted) return;
+      await this.assignTeam();
+      if (!this.assignmentWarning) this.emitCreated();
     },
     extractError: function (err, fallback) {
       if (!err) return fallback;
@@ -659,6 +730,10 @@ export default {
   font-size: 11px;
   color: var(--color-badge-danger-text);
 }
+.cp-modal__team-hint { color: var(--color-text-secondary); }
+.cp-modal__team-hint--error, .cp-modal__warning { color: var(--color-badge-danger-text); }
+.cp-modal__warning { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.cp-modal__retry { color: var(--color-primary-element); background: none; border: 0; cursor: pointer; font-weight: 600; }
 
 .cp-modal__chips {
   display: flex;

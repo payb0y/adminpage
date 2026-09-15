@@ -20,6 +20,26 @@ const requestConfig = {
   },
 };
 
+export async function listOrganizationTeams(organizationId) {
+  const response = await axios.get(
+    generateUrl(`/ocs/v2.php/apps/organization/organizations/${organizationId}/teams`),
+    { ...requestConfig, params: { format: "json" } },
+  );
+  const ocsData = response.data && response.data.ocs && response.data.ocs.data;
+  return (ocsData && ocsData.teams) || [];
+}
+
+export async function assignProjectTeam(organizationId, projectId, teamId) {
+  const response = await axios.put(
+    generateUrl(
+      `/ocs/v2.php/apps/organization/organizations/${organizationId}/projects/${projectId}/team`,
+    ),
+    { teamId: teamId == null ? null : Number(teamId) },
+    { ...requestConfig, params: { format: "json" } },
+  );
+  return response.data;
+}
+
 export async function getOrganizationPdfInfo(organizationId) {
   const response = await axios.get(pdfUrl(organizationId), requestConfig);
   return response.data;

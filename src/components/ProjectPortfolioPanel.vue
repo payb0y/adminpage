@@ -15,7 +15,7 @@
           </svg>
           Projectportfolio - Initiatiefase
         </span>
-        <span class="portfolio__toggle-meta">28 projecten</span>
+        <span class="portfolio__toggle-meta">{{ trackedProjects }} projecten</span>
         <svg class="portfolio__chevron" :class="{ 'portfolio__chevron--open': !collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="6 9 12 15 18 9" />
         </svg>
@@ -36,18 +36,29 @@
           <span class="iz-label">Periode</span>
           <span class="portfolio__control">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
-            W31 - W36 (6 weken)
+            {{ periodLabel }}
           </span>
           <div class="portfolio__segmented portfolio__segmented--compact">
-            <span class="portfolio__segment">Vorige</span>
-            <span class="portfolio__segment portfolio__segment--active">Deze 6 weken</span>
-            <span class="portfolio__segment">Volgende</span>
+            <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Vorige</button>
+            <button type="button" class="portfolio__segment" @click="resetPeriod">Deze 6 weken</button>
+            <button type="button" class="portfolio__segment" @click="movePeriod(42)">Volgende</button>
           </div>
         </div>
         <div class="portfolio__capacity">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z" /></svg>
-          <span><strong>Capaciteit (Team)</strong><small>4,0 FTE x 2 projecten/FTE = 8 projecten</small></span>
-          <span class="iz-badge iz-badge--muted">Wijzigen</span>
+          <label class="portfolio__team-select">
+            <strong>Capaciteit (Team)</strong>
+            <select class="iz-select" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length">
+              <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
+            </select>
+          </label>
+          <small v-if="selectedTeam">{{ formatNumber(selectedTeam.fte) }} FTE x {{ formatNumber(selectedTeam.projectsPerFte) }} projecten/FTE</small>
+          <small v-if="teamsLoading">Teams laden...</small>
+          <small v-else-if="teamError" class="portfolio__team-error">
+            {{ teamError }}
+            <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchTeams">Opnieuw proberen</button>
+          </small>
+          <small v-else-if="!teams.length">Geen teams beschikbaar.</small>
         </div>
       </div>
 
@@ -102,12 +113,18 @@
           <header class="iz-panel__header">
             <h4 class="iz-panel__title portfolio__danger-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.3 3.5 2.4 18a2 2 0 0 0 1.8 3h15.6a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0z" /><path d="M12 9v4M12 17h.01" /></svg>
-              Open planningsgaten (3)
+              Open planningsgaten ({{ planningGaps.length }})
             </h4>
             <span class="portfolio__link">Bekijk alle projecten</span>
           </header>
           <div class="portfolio__gap-list">
-            <div v-for="gap in planningGaps" :key="gap.name" class="iz-row iz-row--card portfolio__gap-row">
+            <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Capaciteit laden...</div>
+            <div v-else-if="capacityError" class="portfolio__status-state iz-error">
+              <span>{{ capacityError }}</span>
+              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchCapacity">Opnieuw proberen</button>
+            </div>
+            <div v-else-if="!planningGaps.length" class="portfolio__status-state iz-empty">Geen open planningsgaten.</div>
+            <div v-else v-for="gap in planningGaps" :key="gap.id || gap.name" class="iz-row iz-row--card portfolio__gap-row">
               <svg class="portfolio__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
               <span class="portfolio__gap-copy"><strong>{{ gap.name }}</strong><small>{{ gap.note }}</small></span>
               <strong>{{ gap.duration }}</strong>
@@ -121,19 +138,23 @@
       <section class="iz-card portfolio__workload">
         <header class="iz-panel__header portfolio__workload-header">
           <h4 class="iz-panel__title">Werkvoorbereidingsbelasting per week</h4>
-          <span class="portfolio__capacity-note"><strong>Capaciteit (Team)</strong> 4,0 FTE x 2 projecten/FTE = <strong>8 gelijktijdige projecten</strong></span>
+          <span v-if="capacity" class="portfolio__capacity-note"><strong>{{ capacity.team.name }}</strong>: {{ formatNumber(capacity.team.capacity) }} gelijktijdige projecten</span>
         </header>
-        <div class="portfolio__weeks">
-          <article v-for="week in weeks" :key="week.week" class="iz-card iz-card--flat portfolio-week">
-            <header><strong>{{ week.week }}</strong><small>{{ week.range }}</small></header>
+        <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Capaciteit laden...</div>
+        <div v-else-if="capacityError" class="portfolio__status-state iz-error">{{ capacityError }}</div>
+        <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">Geen capaciteitsgegevens beschikbaar.</div>
+        <div v-else class="portfolio__weeks">
+          <article v-for="week in weeks" :key="week.label" class="iz-card iz-card--flat portfolio-week">
+            <header><strong>{{ week.label }}</strong><small>{{ formatDate(week.start) }} - {{ formatDate(week.end) }}</small></header>
             <div v-for="item in week.items" :key="item.label" class="portfolio-week__row">
               <span class="portfolio__legend-dot" :class="item.tone" />
               <span>{{ item.label }}</span>
               <strong>{{ item.value }}</strong>
             </div>
-            <div class="portfolio-week__total"><span class="portfolio__legend-dot tone-neutral" /><strong>Totaal actief</strong><strong>{{ week.total }}</strong></div>
-            <div class="portfolio-week__capacity" :class="week.over ? 'portfolio-week__capacity--over' : 'portfolio-week__capacity--ok'">
-              <strong>{{ week.total }} / 8</strong><span>{{ week.message }}</span>
+            <div class="portfolio-week__total"><span class="portfolio__legend-dot tone-neutral" /><strong>Totaal actief</strong><strong>{{ week.totalActive }}</strong></div>
+            <div class="portfolio-week__capacity" :class="capacityClass(week)">
+              <strong>{{ week.totalActive }} / {{ week.capacity }}</strong>
+              <span>{{ capacityStatus(week) }}</span>
             </div>
           </article>
         </div>
@@ -145,37 +166,57 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { listOrganizationTeams } from "../services/projectCreatorApi";
 
 export default {
   name: "ProjectPortfolioPanel",
+  props: {
+    organizationId: { type: Number, default: null },
+  },
   data: function () {
     return {
       collapsed: true,
       portfolio: null,
       portfolioLoading: false,
       portfolioError: null,
+      teams: [],
+      teamsLoading: false,
+      teamError: null,
+      selectedTeamId: null,
+      displayedWeekStart: null,
+      capacity: null,
+      capacityLoading: false,
+      capacityError: null,
+      capacityRequestId: 0,
       metrics: [
         { value: 28, label: "Totaal projecten", note: "Binnen geselecteerde periode", icon: "folder", tone: "tone-accent" },
         { value: 8, label: "Aankomend (75 - 99%)", note: "Wensweek zichtbaar t/m 99%", icon: "progress", tone: "tone-warning" },
         { value: 6, label: "100% gereed voor Handover 1", note: "Werkelijke wensweek leidend", icon: "check", tone: "tone-success" },
         { value: 3, label: "Open planningsgaten", note: "In geselecteerde periode", icon: "alert", tone: "tone-danger" },
       ],
-      planningGaps: [
-        { name: "Kerkstraat", note: "Geen vervolgactiviteiten gepland", duration: "2 weken", weeks: "W32 - W33" },
-        { name: "Stationsgebied", note: "Wacht op externe afstemming", duration: "1 week", weeks: "W34" },
-        { name: "Rivierzicht", note: "Nog geen vergunning ontvangen", duration: "3 weken", weeks: "W31 - W33" },
-      ],
-      weeks: [
-        { week: "W31", range: "28 jul - 3 aug", total: 8, message: "Op norm", over: false, items: [{ label: "Op te starten", value: 3, tone: "tone-cat-1" }, { label: "Doorlopend", value: 5, tone: "tone-accent" }, { label: "Eindigend", value: 2, tone: "tone-cat-4" }] },
-        { week: "W32", range: "4 aug - 10 aug", total: 10, message: "+2 boven norm", over: true, items: [{ label: "Op te starten", value: 4, tone: "tone-cat-1" }, { label: "Doorlopend", value: 6, tone: "tone-accent" }, { label: "Eindigend", value: 1, tone: "tone-cat-4" }] },
-        { week: "W33", range: "11 aug - 17 aug", total: 9, message: "+1 boven norm", over: true, items: [{ label: "Op te starten", value: 2, tone: "tone-cat-1" }, { label: "Doorlopend", value: 7, tone: "tone-accent" }, { label: "Eindigend", value: 2, tone: "tone-cat-4" }] },
-        { week: "W34", range: "18 aug - 24 aug", total: 9, message: "+1 boven norm", over: true, items: [{ label: "Op te starten", value: 4, tone: "tone-cat-1" }, { label: "Doorlopend", value: 5, tone: "tone-accent" }, { label: "Eindigend", value: 1, tone: "tone-cat-4" }] },
-        { week: "W35", range: "25 aug - 31 aug", total: 7, message: "Ruimte: 1", over: false, items: [{ label: "Op te starten", value: 3, tone: "tone-cat-1" }, { label: "Doorlopend", value: 4, tone: "tone-accent" }, { label: "Eindigend", value: 3, tone: "tone-cat-4" }] },
-        { week: "W36", range: "1 sep - 7 sep", total: 6, message: "Ruimte: 2", over: false, items: [{ label: "Op te starten", value: 2, tone: "tone-cat-1" }, { label: "Doorlopend", value: 4, tone: "tone-accent" }, { label: "Eindigend", value: 2, tone: "tone-cat-4" }] },
-      ],
     };
   },
   computed: {
+    selectedTeam: function () {
+      return this.teams.find(function (team) { return Number(team.id) === Number(this.selectedTeamId); }, this) || null;
+    },
+    weeks: function () {
+      return ((this.capacity && this.capacity.weeks) || []).map(function (week) {
+        return { ...week, items: [
+          { label: "Op te starten", value: week.starting, tone: "tone-cat-1" },
+          { label: "Doorlopend", value: week.continuing, tone: "tone-accent" },
+          { label: "Eindigend", value: week.ending, tone: "tone-cat-4" },
+        ] };
+      });
+    },
+    planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
+    periodLabel: function () {
+      if (!this.capacity || !this.capacity.period) return "Capaciteit";
+      var start = this.parseDate(this.capacity.period.weekStart);
+      var end = new Date(start.getTime());
+      end.setUTCDate(end.getUTCDate() + 41);
+      return "W" + this.isoWeek(start) + " - W" + this.isoWeek(end) + " (6 weken)";
+    },
     displayStatuses: function () {
       var tones = ["tone-neutral", "tone-cat-1", "tone-accent", "tone-warning", "tone-success"];
       return ((this.portfolio && this.portfolio.buckets) || []).map(function (bucket, index) {
@@ -218,10 +259,18 @@ export default {
       return { background: "conic-gradient(" + stops.join(", ") + ")" };
     },
   },
+  watch: {
+    selectedTeamId: function () {
+      if (this.selectedTeamId && !this.teamsLoading) this.fetchCapacity();
+    },
+  },
   methods: {
     toggle: function () {
       this.collapsed = !this.collapsed;
-      if (!this.collapsed && !this.portfolio && !this.portfolioLoading) this.fetchPortfolio();
+      if (!this.collapsed) {
+        if (!this.portfolio && !this.portfolioLoading) this.fetchPortfolio();
+        if (!this.teams.length && !this.teamsLoading) this.fetchTeams();
+      }
     },
     fetchPortfolio: async function () {
       this.portfolioLoading = true;
@@ -235,6 +284,87 @@ export default {
           : "De projectvoortgang kon niet worden geladen.";
       } finally {
         this.portfolioLoading = false;
+      }
+    },
+    parseDate: function (value) {
+      var parts = String(value).split("-").map(Number);
+      return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    },
+    dateOnly: function (date) { return date.toISOString().slice(0, 10); },
+    formatDate: function (value) {
+      return this.parseDate(value).toLocaleDateString("nl-NL", { day: "numeric", month: "short", timeZone: "UTC" });
+    },
+    formatNumber: function (value) { return Number(value || 0).toLocaleString("nl-NL", { maximumFractionDigits: 2 }); },
+    isoWeek: function (date) {
+      var d = new Date(date.getTime());
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+    currentMonday: function () {
+      var monday = this.parseDate(new Date().toISOString().slice(0, 10));
+      monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+      return monday;
+    },
+    movePeriod: function (days) {
+      var start = this.displayedWeekStart
+        ? this.parseDate(this.displayedWeekStart)
+        : this.currentMonday();
+      start.setUTCDate(start.getUTCDate() + days);
+      var weekStart = this.dateOnly(start);
+      this.displayedWeekStart = weekStart;
+      this.fetchCapacity(weekStart);
+    },
+    resetPeriod: function () {
+      var weekStart = this.dateOnly(this.currentMonday());
+      this.displayedWeekStart = weekStart;
+      this.fetchCapacity(weekStart);
+    },
+    capacityClass: function (week) {
+      return week.overCapacity
+        ? "portfolio-week__capacity--over"
+        : "portfolio-week__capacity--ok";
+    },
+    capacityStatus: function (week) {
+      if (week.overCapacity) return "Capaciteit overschreden";
+      if (week.totalActive === 0) return "Geen actieve projecten";
+      return "Ruimte: " + this.formatNumber(week.remaining);
+    },
+    fetchTeams: async function () {
+      if (!this.organizationId) return;
+      this.teamsLoading = true;
+      this.teamError = null;
+      try {
+        this.teams = await listOrganizationTeams(this.organizationId);
+        if (!this.selectedTeamId && this.teams.length) this.selectedTeamId = this.teams[0].id;
+      } catch (e) {
+        this.teamError = "Teams konden niet worden geladen.";
+      } finally {
+        this.teamsLoading = false;
+        if (this.selectedTeamId && !this.capacity) {
+          this.fetchCapacity(this.dateOnly(this.currentMonday()));
+        }
+      }
+    },
+    fetchCapacity: async function (weekStart) {
+      if (!this.selectedTeamId) return;
+      var requestId = ++this.capacityRequestId;
+      this.capacityLoading = true;
+      this.capacityError = null;
+      try {
+        var start = weekStart || this.displayedWeekStart || this.dateOnly(this.currentMonday());
+        var response = await axios.get(
+          generateUrl("/apps/projectcreatoraio/api/v1/portfolio/capacity"),
+          { params: { teamId: this.selectedTeamId, weekStart: start } },
+        );
+        if (requestId !== this.capacityRequestId) return;
+        this.capacity = response.data;
+        this.displayedWeekStart = response.data.period.weekStart;
+      } catch (e) {
+        if (requestId !== this.capacityRequestId) return;
+        this.capacityError = "De teamcapaciteit kon niet worden geladen.";
+      } finally {
+        if (requestId === this.capacityRequestId) this.capacityLoading = false;
       }
     },
   },
@@ -257,7 +387,7 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--iz-gap); }
 .portfolio__filter-group { display: flex; align-items: center; gap: var(--iz-gap-tight); min-width: 0; }
 .portfolio__segmented { display: flex; overflow: hidden; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); }
-.portfolio__segment { padding: 7px 12px; color: var(--iz-text-secondary); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; border-right: 1px solid var(--iz-border); }
+.portfolio__segment { min-height: 0; padding: 7px 12px; border: 0; border-right: 1px solid var(--iz-border); border-radius: 0; background: transparent; color: var(--iz-text-secondary); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; cursor: pointer; }
 .portfolio__segment:last-child { border-right: 0; }
 .portfolio__segment--active { background: var(--iz-accent); color: var(--iz-accent-text); }
 .portfolio__control { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); color: var(--iz-text); font-size: var(--iz-fs-sm); white-space: nowrap; }
@@ -301,6 +431,9 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__gap-copy { display: grid; min-width: 0; }
 .portfolio__workload-header { align-items: center; }
 .portfolio__capacity-note { padding: 8px 12px; border-radius: var(--iz-radius); background: var(--iz-accent-bg); color: var(--iz-accent-bg-text); font-size: var(--iz-fs-sm); }
+.portfolio__team-select { display: grid; gap: 2px; min-width: 150px; }
+.portfolio__team-select .iz-select { width: auto; min-width: 150px; }
+.portfolio__team-error { color: var(--iz-danger-text); }
 .portfolio__weeks { display: grid; grid-template-columns: repeat(6, minmax(150px, 1fr)); gap: var(--iz-gap-tight); overflow-x: auto; }
 .portfolio-week { display: grid; gap: var(--iz-gap-tight); min-width: 150px; }
 .portfolio-week header { display: flex; justify-content: space-between; gap: var(--iz-gap-tight); align-items: baseline; }

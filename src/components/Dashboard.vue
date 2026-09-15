@@ -52,7 +52,7 @@
       </section>
 
       <!-- ── Project Portfolio ── -->
-      <ProjectPortfolioPanel />
+       <ProjectPortfolioPanel :organization-id="organizationId" />
 
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
