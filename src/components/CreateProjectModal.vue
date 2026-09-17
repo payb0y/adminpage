@@ -353,6 +353,7 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import { assignProjectTeam, listOrganizationTeams } from "../services/organizationApi";
+import { addProjectTeamMembers } from "../services/projectCreatorApi";
 
 // Hard-coded; mirrors projectcreatoraio/src/macros/project-types.js
 // Update here if that catalog changes — we don't import across apps.
@@ -631,6 +632,11 @@ export default {
       this.assignmentWarning = null;
       try {
         await assignProjectTeam(this.orgId, this.createdProjectId, this.selectedTeamId);
+        try {
+          await addProjectTeamMembers(this.createdProjectId, this.selectedTeamId);
+        } catch (e) {
+          this.assignmentWarning = "Het team is toegewezen, maar niet alle teamleden konden aan het project worden toegevoegd.";
+        }
       } catch (e) {
         this.assignmentWarning = "Het project is aangemaakt, maar kon niet aan het team worden toegewezen.";
       } finally {

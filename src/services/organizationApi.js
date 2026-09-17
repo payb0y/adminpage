@@ -50,6 +50,26 @@ function readableError(error) {
   return "Request failed (HTTP " + error.response.status + ")";
 }
 
+function normalizeProjectAssignments(projectTeams) {
+  if (!Array.isArray(projectTeams)) {
+    throw new Error("The server returned an invalid project assignment list.");
+  }
+  return projectTeams.map(function (assignment) {
+    var team = assignment && assignment.team;
+    var assignmentId = null;
+    if (assignment && assignment.assignmentId != null) {
+      assignmentId = Number(assignment.assignmentId);
+    }
+    return Object.assign({}, assignment, {
+      projectId: Number(assignment && assignment.projectId),
+      assignmentId: assignmentId,
+      team: team
+        ? Object.assign({}, team, { id: Number(team.id) })
+        : null,
+    });
+  });
+}
+
 async function request(method, url, payload) {
   try {
     const config = requestConfig();
@@ -106,10 +126,7 @@ export async function removeTeamMember(organizationId, teamId, userId) {
 
 export async function listProjectTeamAssignments(organizationId) {
   const data = await request("get", projectTeamsUrl(organizationId));
-  if (!Array.isArray(data.projectTeams)) {
-    throw new Error("The server returned an invalid project assignment list.");
-  }
-  return data.projectTeams;
+  return normalizeProjectAssignments(data.projectTeams);
 }
 
 export async function assignProjectTeam(organizationId, projectId, teamId) {
@@ -118,8 +135,14 @@ export async function assignProjectTeam(organizationId, projectId, teamId) {
     projectTeamsUrl(organizationId, projectId),
     { teamId: teamId == null ? null : Number(teamId) },
   );
-  if (!Array.isArray(data.projectTeams)) {
-    throw new Error("The server returned an invalid project assignment list.");
+  const assignments = normalizeProjectAssignments(data.projectTeams);
+  const persisted = assignments.find(function (assignment) {
+    return assignment.projectId === Number(projectId);
+  });
+  const persistedTeamId = persisted && persisted.team ? persisted.team.id : null;
+  const requestedTeamId = teamId == null ? null : Number(teamId);
+  if (!persisted || persistedTeamId !== requestedTeamId) {
+    throw new Error("The server did not persist the requested project assignment.");
   }
-  return data.projectTeams;
+  return assignments;
 }
