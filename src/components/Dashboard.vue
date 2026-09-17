@@ -52,7 +52,12 @@
       </section>
 
       <!-- ── Project Portfolio ── -->
-       <ProjectPortfolioPanel :organization-id="organizationId" :refresh-revision="teamRevision" />
+      <ProjectPortfolioPanel
+        :organization-id="organizationId"
+        :refresh-revision="teamRevision"
+        @select-project="onSelectProject"
+        @edit-teams="onEditTeams"
+      />
 
       <!-- ── Projects Map (filterable, clickable to drill into details) ── -->
       <ProjectsMapPanel
@@ -251,6 +256,12 @@ export default {
     onSelectProject: function (projectId) {
       if (this.$refs.perfPanel) {
         this.$refs.perfPanel.selectProject(projectId);
+      }
+    },
+    onEditTeams: function () {
+      var el = document.querySelector(".org-insights") || document.querySelector(".teams-panel");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
       }
     },
     onCreateProject: function () {
