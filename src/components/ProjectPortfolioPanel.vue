@@ -212,7 +212,7 @@ export default {
         },
         {
           value: completionAvailable ? this.completionBucketCount("100") : "—",
-          label: "100% ready for Handover 1",
+          label: "100% ready for handover",
           note: "Actual target week is leading",
           icon: "check",
           tone: "tone-success",
@@ -255,7 +255,7 @@ export default {
           badge = "Upcoming";
           badgeClass = "iz-badge--warning";
         } else if (index === 4) {
-          badge = "Ready for Handover 1";
+          badge = "Ready for handover";
           badgeClass = "iz-badge--success";
         }
         return {
@@ -277,7 +277,7 @@ export default {
       var buckets = (this.portfolio && this.portfolio.buckets) || [];
       if (!buckets.length || !this.trackedProjects) return { background: "var(--iz-surface-inset)" };
 
-      var colors = ["var(--iz-surface-inset)", "var(--iz-cat-1)", "var(--iz-accent)", "var(--iz-warning)", "var(--iz-success)"];
+      var colors = ["var(--iz-text-muted)", "var(--iz-cat-1)", "var(--iz-accent)", "var(--iz-warning)", "var(--iz-success)"];
       var start = 0;
       var stops = buckets.map(function (bucket, index) {
         var end = start + Number(bucket.percent || 0);
