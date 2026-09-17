@@ -49,6 +49,7 @@
           <label class="portfolio__team-select">
             <strong>Capacity (Team)</strong>
             <select class="iz-select" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length">
+              <option value="all">All teams</option>
               <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
             </select>
           </label>
@@ -138,8 +139,11 @@
       <section class="iz-card portfolio__workload">
         <header class="iz-panel__header portfolio__workload-header">
           <h4 class="iz-panel__title">Weekly work preparation load</h4>
-          <span v-if="capacity" class="portfolio__capacity-note"><strong>{{ capacity.team.name }}</strong>: {{ formatNumber(capacity.team.capacity) }} concurrent projects</span>
+          <span v-if="capacity" class="portfolio__capacity-note">{{ capacityNote }}</span>
         </header>
+        <div v-if="teamWarnings.length" class="portfolio__warnings" role="status">
+          <span v-for="warning in teamWarnings" :key="warning.id" class="iz-badge iz-badge--warning">{{ warning.name }} over capacity in {{ warning.overWeeks.join(", ") }}</span>
+        </div>
         <div v-if="capacityLoading" class="portfolio__status-state iz-empty">Loading capacity...</div>
         <div v-else-if="capacityError" class="portfolio__status-state iz-error">{{ capacityError }}</div>
         <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">No capacity data available.</div>
@@ -239,6 +243,16 @@ export default {
       });
     },
     planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
+    teamWarnings: function () { return (this.capacity && this.capacity.teamWarnings) || []; },
+    capacityNote: function () {
+      if (!this.capacity || !this.capacity.team) return "";
+      var team = this.capacity.team;
+      var note = this.formatNumber(team.capacity) + " concurrent projects";
+      if (team.id === 0 && Array.isArray(this.capacity.teams)) {
+        return "All " + this.capacity.teams.length + " teams: " + note;
+      }
+      return team.name + ": " + note;
+    },
     periodLabel: function () {
       if (!this.capacity || !this.capacity.period) return "Capacity";
       var start = this.parseDate(this.capacity.period.weekStart);
@@ -374,11 +388,11 @@ export default {
       this.teamError = null;
       try {
         this.teams = await listOrganizationTeams(this.organizationId);
-        var selectedExists = this.teams.some(function (team) {
+        var selectedExists = this.selectedTeamId !== "all" && this.teams.some(function (team) {
           return Number(team.id) === Number(this.selectedTeamId);
         }, this);
         if (!selectedExists) {
-          this.selectedTeamId = this.teams.length ? this.teams[0].id : null;
+          this.selectedTeamId = this.teams.length ? "all" : null;
           if (!this.selectedTeamId) this.capacity = null;
         }
       } catch (e) {
@@ -395,9 +409,13 @@ export default {
       this.capacityError = null;
       try {
         var start = weekStart || this.displayedWeekStart || this.dateOnly(this.currentMonday());
+        var params = { weekStart: start };
+        if (this.selectedTeamId !== "all") {
+          params.teamId = this.selectedTeamId;
+        }
         var response = await axios.get(
           generateUrl("/apps/projectcreatoraio/api/v1/portfolio/capacity"),
-          { params: { teamId: this.selectedTeamId, weekStart: start } },
+          { params: params },
         );
         if (requestId !== this.capacityRequestId) return;
         this.capacity = response.data;
@@ -472,6 +490,7 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__pin { width: 18px; height: 18px; color: var(--iz-accent); }
 .portfolio__gap-copy { display: grid; min-width: 0; }
 .portfolio__workload-header { align-items: center; }
+.portfolio__warnings { display: flex; flex-wrap: wrap; gap: var(--iz-gap-tight); }
 .portfolio__capacity-note { padding: 8px 12px; border-radius: var(--iz-radius); background: var(--iz-accent-bg); color: var(--iz-accent-bg-text); font-size: var(--iz-fs-sm); }
 .portfolio__team-select { display: grid; gap: 2px; min-width: 150px; }
 .portfolio__team-select .iz-select { width: auto; min-width: 150px; }
