@@ -6,11 +6,4 @@ webpackConfig.entry = {
   public: path.join(__dirname, "src", "public.js"),
 };
 
-webpackConfig.resolve = webpackConfig.resolve || {};
-webpackConfig.resolve.modules = [
-  path.resolve(__dirname, "node_modules"),
-  path.resolve(__dirname, "../projectcreatoraio/node_modules"),
-  "node_modules",
-];
-
 module.exports = webpackConfig;

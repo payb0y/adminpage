@@ -123,7 +123,7 @@
 
 <script>
 import { generateUrl } from "@nextcloud/router";
-import GanttChart from "../../../projectcreatoraio/src/components/ProjectTimeline/GanttChart.vue";
+import GanttChart from "./ProjectTimeline/GanttChart.vue";
 
 export default {
   name: "ProjectDetailPlanning",
