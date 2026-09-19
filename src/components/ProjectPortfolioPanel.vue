@@ -43,11 +43,26 @@
           >
             Table view
           </button>
+          <button
+            v-if="viewMode === 'detail'"
+            type="button"
+            class="portfolio__segment portfolio__segment--active"
+            aria-pressed="true"
+          >
+            Detailplanning: {{ selectedDetailProject ? selectedDetailProject.name : 'Project' }}
+          </button>
         </div>
       </div>
 
+      <ProjectDetailPlanning
+        v-if="viewMode === 'detail'"
+        :project="selectedDetailProject"
+        :organization-id="organizationId"
+        @back="viewMode = 'table'"
+      />
+
       <ProjectPortfolioTableView
-        v-if="viewMode === 'table'"
+        v-else-if="viewMode === 'table'"
         :organization-id="organizationId"
         :scope="viewScope"
         :team-id="selectedTeamId"
@@ -59,7 +74,7 @@
         @update:teamId="selectedTeamId = $event"
         @move-period="movePeriod"
         @reset-period="resetPeriod"
-        @select-project="$emit('select-project', $event)"
+        @select-project="onOpenDetailPlanning"
         @edit-teams="$emit('edit-teams')"
       />
 
@@ -251,11 +266,13 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import { listOrganizationTeams } from "../services/organizationApi";
 import ProjectPortfolioTableView from "./ProjectPortfolioTableView.vue";
+import ProjectDetailPlanning from "./ProjectDetailPlanning.vue";
 
 export default {
   name: "ProjectPortfolioPanel",
   components: {
     ProjectPortfolioTableView,
+    ProjectDetailPlanning,
   },
   props: {
     organizationId: { type: Number, default: null },
@@ -266,6 +283,7 @@ export default {
       collapsed: true,
       viewMode: "summary",
       tableInitialFilter: "all",
+      selectedDetailProject: null,
       portfolio: null,
       portfolioLoading: false,
       portfolioError: null,
@@ -418,6 +436,10 @@ export default {
     },
   },
   methods: {
+    onOpenDetailPlanning: function (project) {
+      this.selectedDetailProject = project;
+      this.viewMode = "detail";
+    },
     openTableView: function (filter) {
       this.tableInitialFilter = filter || "all";
       this.viewMode = "table";

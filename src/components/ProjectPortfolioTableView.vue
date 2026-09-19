@@ -776,7 +776,7 @@ export default {
       }
     },
     onRowClick: function (project) {
-      this.$emit("select-project", project.id);
+      this.$emit("select-project", project);
     },
     openDeckBoard: function (project) {
       if (!project.boardId) return;
