@@ -49,7 +49,7 @@
             class="portfolio__segment portfolio__segment--active"
             aria-pressed="true"
           >
-            Detailplanning: {{ selectedDetailProject ? selectedDetailProject.name : 'Project' }}
+            Timeline: {{ selectedDetailProject ? selectedDetailProject.name : 'Project' }}
           </button>
         </div>
       </div>
