@@ -1,5 +1,6 @@
 /node_modules
 /.playwright-mcp
+.env
 db.sql
 nextcloud_db_20260714_191826.sql
 .github/

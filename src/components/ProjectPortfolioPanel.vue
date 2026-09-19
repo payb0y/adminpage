@@ -406,7 +406,10 @@ export default {
       if (this.viewScope !== "mine") {
         this.viewScope = this.selectedTeamId === "all" ? "all" : "team";
       }
-      if (this.selectedTeamId && !this.teamsLoading) this.fetchCapacity();
+      if (this.selectedTeamId && !this.teamsLoading) {
+        this.fetchPortfolio();
+        this.fetchCapacity();
+      }
     },
   },
   methods: {
