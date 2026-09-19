@@ -132,21 +132,11 @@
                 </small>
               </div>
               <div v-if="canManage" class="teams-panel__project-item-actions">
-                <select
-                  class="iz-select iz-select--sm teams-panel__reassign-select"
-                  :value="p.team ? p.team.id : ''"
-                  :disabled="assignmentBusy[p.projectId]"
-                  title="Move to another team"
-                  aria-label="Reassign project"
-                  @change="handleReassign(p, $event)"
-                >
-                  <option v-for="t in teams" :key="t.id" :value="t.id">{{ t.name }}</option>
-                </select>
                 <button
                   type="button"
                   class="iz-btn iz-btn--danger-quiet iz-btn--sm"
                   :disabled="assignmentBusy[p.projectId]"
-                  title="Unassign project from team"
+                  title="Unassign project from this team"
                   @click="unassignProject(p.projectId)"
                 >
                   {{ assignmentBusy[p.projectId] ? "..." : "Remove" }}
@@ -591,10 +581,6 @@ export default {
     unassignProject: async function (projectId) {
       await this.executeAssignment(projectId, null);
     },
-    handleReassign: async function (project, event) {
-      var targetTeamId = event.target.value === "" ? null : Number(event.target.value);
-      await this.executeAssignment(project.projectId, targetTeamId);
-    },
     handleUnassignedSelect: async function (project, event) {
       var targetTeamId = event.target.value === "" ? null : Number(event.target.value);
       if (targetTeamId === null) return;
@@ -737,7 +723,6 @@ export default {
 .teams-panel__project-date { color: var(--iz-text-muted); font-size: var(--iz-fs-xs); }
 .teams-panel__project-item-actions,
 .teams-panel__unassigned-assign-action { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.teams-panel__reassign-select { width: auto; min-width: 120px; }
 .teams-panel__search-box { margin-bottom: var(--iz-gap-tight); }
 .teams-panel__search-box input { width: 100%; }
 .teams-panel__assignment-status { color: var(--iz-text-muted); font-size: var(--iz-fs-xs); }
