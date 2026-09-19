@@ -65,43 +65,48 @@
 
       <div v-else class="portfolio__summary-view">
         <div class="portfolio__toolbar iz-card iz-card--flat" aria-label="Portfolio filters">
-          <div class="portfolio__filter-group">
-            <span class="iz-label">View</span>
-            <div class="portfolio__segmented" role="group" aria-label="Portfolio scope">
-              <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'mine' }" :aria-pressed="String(viewScope === 'mine')" @click="setViewScope('mine')">My projects</button>
-              <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'team' }" :aria-pressed="String(viewScope === 'team')" @click="setViewScope('team')">Team</button>
-              <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'all' }" :aria-pressed="String(viewScope === 'all')" @click="setViewScope('all')">All projects</button>
-            </div>
+          <div class="portfolio__segmented" role="group" aria-label="Portfolio scope">
+            <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'mine' }" :aria-pressed="String(viewScope === 'mine')" @click="setViewScope('mine')">My projects</button>
+            <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'team' }" :aria-pressed="String(viewScope === 'team')" @click="setViewScope('team')">Team</button>
+            <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'all' }" :aria-pressed="String(viewScope === 'all')" @click="setViewScope('all')">All projects</button>
           </div>
-          <div class="portfolio__filter-group" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
-            <span class="iz-label">Period</span>
-            <span class="portfolio__control">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
+
+          <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
+            <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Previous 6 weeks" title="Previous 6 weeks" @click="movePeriod(-42)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span class="portfolio__period-display">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="17" rx="2" />
+                <path d="M8 2v4M16 2v4M3 9h18" />
+              </svg>
               {{ periodLabel }}
             </span>
-            <small class="portfolio__period-note">Controls workload only</small>
-            <div class="portfolio__segmented portfolio__segmented--compact">
-              <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Previous</button>
-              <button type="button" class="portfolio__segment" @click="resetPeriod">Current 6 weeks</button>
-              <button type="button" class="portfolio__segment" @click="movePeriod(42)">Next</button>
-            </div>
+            <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Next 6 weeks" title="Next 6 weeks" @click="movePeriod(42)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+            <button type="button" class="portfolio__segment" title="Reset to current 6 weeks" @click="resetPeriod">Current</button>
           </div>
+
           <div class="portfolio__capacity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z" /></svg>
-            <label class="portfolio__team-select">
-              <strong>Capacity (Team)</strong>
-              <select class="iz-select" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length || viewScope === 'mine'">
+            <div class="portfolio__capacity-controls">
+              <select class="iz-select iz-select--sm" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length || viewScope === 'mine'" aria-label="Filter by team capacity">
                 <option value="all">All teams</option>
                 <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
               </select>
-            </label>
-            <small v-if="selectedTeam && viewScope !== 'mine'">{{ formatNumber(selectedTeam.fte) }} FTE x {{ formatNumber(selectedTeam.projectsPerFte) }} projects/FTE</small>
-            <small v-if="teamsLoading">Loading teams...</small>
-            <small v-else-if="teamError" class="portfolio__team-error">
-              {{ teamError }}
-              <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchTeams">Retry</button>
-            </small>
-            <small v-else-if="!teams.length">No teams available.</small>
+              <small v-if="selectedTeam && viewScope !== 'mine'" class="portfolio__capacity-meta">{{ formatNumber(selectedTeam.fte) }} FTE · {{ formatNumber(selectedTeam.projectsPerFte) }}/FTE</small>
+              <small v-if="teamsLoading">Loading teams...</small>
+              <small v-else-if="teamError" class="portfolio__team-error">
+                {{ teamError }}
+                <button type="button" class="iz-btn iz-btn--danger-quiet iz-btn--sm" @click="fetchTeams">Retry</button>
+              </small>
+              <small v-else-if="!teams.length">No teams available.</small>
+            </div>
           </div>
         </div>
 
@@ -608,16 +613,22 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__link-btn { background: transparent; border: 0; padding: 0; cursor: pointer; font: inherit; text-align: left; }
 .portfolio__link-btn:hover { text-decoration: underline; }
 .portfolio__summary-view { display: grid; gap: var(--iz-gap); }
-.portfolio__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--iz-gap); }
+.portfolio__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--iz-gap-tight); }
 .portfolio__filter-group { display: flex; align-items: center; gap: var(--iz-gap-tight); min-width: 0; }
 .portfolio__segmented { display: flex; overflow: hidden; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); }
 .portfolio__segment { min-height: 0; padding: 7px 12px; border: 0; border-right: 1px solid var(--iz-border); border-radius: 0; background: transparent; color: var(--iz-text-secondary); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; cursor: pointer; }
 .portfolio__segment:last-child { border-right: 0; }
 .portfolio__segment--active { background: var(--iz-accent); color: var(--iz-accent-text); }
-.portfolio__control { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); color: var(--iz-text); font-size: var(--iz-fs-sm); white-space: nowrap; }
-.portfolio__control svg { width: 16px; height: 16px; color: var(--iz-accent); }
+.portfolio__segment--icon { display: flex; align-items: center; justify-content: center; padding: 7px 9px; }
+.portfolio__segment--icon svg { width: 14px; height: 14px; }
+.portfolio__period-stepper { display: flex; align-items: center; overflow: hidden; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); background: var(--iz-surface); }
+.portfolio__period-display { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-right: 1px solid var(--iz-border); color: var(--iz-text); font-size: var(--iz-fs-sm); font-weight: 600; white-space: nowrap; }
+.portfolio__period-display svg { width: 15px; height: 15px; color: var(--iz-accent); }
 .portfolio__capacity { display: flex; align-items: center; gap: var(--iz-gap-tight); margin-left: auto; padding-left: var(--iz-gap); border-left: 1px solid var(--iz-border); color: var(--iz-text); }
-.portfolio__capacity > svg { width: 26px; height: 26px; color: var(--iz-accent); }
+.portfolio__capacity > svg { width: 22px; height: 22px; flex: 0 0 22px; color: var(--iz-accent); }
+.portfolio__capacity-controls { display: flex; align-items: center; gap: var(--iz-gap-tight); }
+.portfolio__capacity-controls .iz-select { width: auto; min-width: 130px; }
+.portfolio__capacity-meta { color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); white-space: nowrap; }
 .portfolio__capacity span { display: grid; gap: 2px; }
 .portfolio__capacity small, .portfolio-kpi small, .portfolio__gap-copy small, .portfolio-week small { color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); }
 .portfolio__kpis { gap: var(--iz-gap); }
@@ -668,7 +679,8 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio-week__capacity { display: flex; justify-content: space-between; gap: 5px; margin-top: auto; padding: 8px 10px; border-radius: var(--iz-radius); font-size: var(--iz-fs-xs); }
 .portfolio-week__capacity--ok { background: var(--iz-success-bg); color: var(--iz-success-text); }
 .portfolio-week__capacity--over { background: var(--iz-danger-bg); color: var(--iz-danger-text); }
-@media (max-width: 1200px) { .portfolio__overview-grid { grid-template-columns: 1fr; }.portfolio__capacity { width: 100%; margin-left: 0; padding: var(--iz-gap-tight) 0 0; border-left: 0; border-top: 1px solid var(--iz-border); } }
-@media (max-width: 720px) { .portfolio__body { padding: var(--iz-pad-card); }.portfolio__filter-group { width: 100%; align-items: flex-start; flex-direction: column; }.portfolio__segmented { width: 100%; overflow-x: auto; }.portfolio__segment { flex: 1 0 auto; text-align: center; }.portfolio__status-content { grid-template-columns: 1fr; }.portfolio__overview-grid { grid-template-columns: minmax(0, 1fr); }.portfolio__gap-row { grid-template-columns: auto minmax(0, 1fr) auto; }.portfolio__gap-row > strong { grid-column: 2; }.portfolio__gap-row .iz-badge { grid-column: 2; justify-self: start; }.portfolio__gap-row .portfolio__row-arrow { grid-column: 3; grid-row: 1 / 4; }.portfolio__toggle-meta { display: none; }.portfolio__workload-header { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 1200px) { .portfolio__overview-grid { grid-template-columns: 1fr; } }
+@media (max-width: 920px) { .portfolio__capacity { width: 100%; margin-left: 0; padding: var(--iz-gap-tight) 0 0; border-left: 0; border-top: 1px solid var(--iz-border); } }
+@media (max-width: 720px) { .portfolio__body { padding: var(--iz-pad-card); }.portfolio__filter-group { width: 100%; align-items: flex-start; flex-direction: column; }.portfolio__period-stepper { width: 100%; justify-content: space-between; }.portfolio__period-display { flex: 1 1 auto; justify-content: center; font-size: var(--iz-fs-xs); }.portfolio__segmented { width: 100%; overflow-x: auto; }.portfolio__segment { flex: 1 0 auto; text-align: center; }.portfolio__status-content { grid-template-columns: 1fr; }.portfolio__overview-grid { grid-template-columns: minmax(0, 1fr); }.portfolio__gap-row { grid-template-columns: auto minmax(0, 1fr) auto; }.portfolio__gap-row > strong { grid-column: 2; }.portfolio__gap-row .iz-badge { grid-column: 2; justify-self: start; }.portfolio__gap-row .portfolio__row-arrow { grid-column: 3; grid-row: 1 / 4; }.portfolio__toggle-meta { display: none; }.portfolio__workload-header { align-items: flex-start; flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .portfolio__chevron { transition: none; } }
 </style>

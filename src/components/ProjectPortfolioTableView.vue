@@ -25,58 +25,71 @@
 
     <!-- ── Top Controls Toolbar ── -->
     <div class="portfolio__toolbar iz-card iz-card--flat" aria-label="Planning overview filters">
-      <div class="portfolio__filter-group">
-        <span class="iz-label">View</span>
-        <div class="portfolio__segmented" role="group" aria-label="Portfolio scope">
-          <button
-            type="button"
-            class="portfolio__segment"
-            :class="{ 'portfolio__segment--active': scope === 'mine' }"
-            :aria-pressed="String(scope === 'mine')"
-            @click="setScope('mine')"
-          >
-            My projects
-          </button>
-          <button
-            type="button"
-            class="portfolio__segment"
-            :class="{ 'portfolio__segment--active': scope === 'team' }"
-            :aria-pressed="String(scope === 'team')"
-            @click="setScope('team')"
-          >
-            Team
-          </button>
-          <button
-            type="button"
-            class="portfolio__segment"
-            :class="{ 'portfolio__segment--active': scope === 'all' }"
-            :aria-pressed="String(scope === 'all')"
-            @click="setScope('all')"
-          >
-            All projects
-          </button>
-        </div>
+      <div class="portfolio__segmented" role="group" aria-label="Portfolio scope">
+        <button
+          type="button"
+          class="portfolio__segment"
+          :class="{ 'portfolio__segment--active': scope === 'mine' }"
+          :aria-pressed="String(scope === 'mine')"
+          @click="setScope('mine')"
+        >
+          My projects
+        </button>
+        <button
+          type="button"
+          class="portfolio__segment"
+          :class="{ 'portfolio__segment--active': scope === 'team' }"
+          :aria-pressed="String(scope === 'team')"
+          @click="setScope('team')"
+        >
+          Team
+        </button>
+        <button
+          type="button"
+          class="portfolio__segment"
+          :class="{ 'portfolio__segment--active': scope === 'all' }"
+          :aria-pressed="String(scope === 'all')"
+          @click="setScope('all')"
+        >
+          All projects
+        </button>
       </div>
 
-      <div class="portfolio__filter-group" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
-        <span class="iz-label">Period</span>
-        <span class="portfolio__control">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
+      <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
+        <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Previous 6 weeks" title="Previous 6 weeks" @click="movePeriod(-42)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <span class="portfolio__period-display">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="17" rx="2" />
+            <path d="M8 2v4M16 2v4M3 9h18" />
+          </svg>
           {{ periodLabel }}
         </span>
-        <small class="portfolio-table-view__period-note">Controls workload only</small>
-        <div class="portfolio__segmented portfolio__segmented--compact">
-          <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Previous</button>
-          <button type="button" class="portfolio__segment" @click="resetPeriod">Current 6 weeks</button>
-          <button type="button" class="portfolio__segment" @click="movePeriod(42)">Next</button>
-        </div>
+        <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Next 6 weeks" title="Next 6 weeks" @click="movePeriod(42)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+        <button type="button" class="portfolio__segment" title="Reset to current 6 weeks" @click="resetPeriod">Current</button>
       </div>
 
       <div class="portfolio__capacity">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z" /></svg>
         <div class="portfolio-table-view__capacity-box">
           <div class="portfolio-table-view__capacity-row">
-            <strong>Capacity (Team)</strong>
+            <select
+              v-if="scope === 'team'"
+              class="iz-select iz-select--sm"
+              v-model="internalTeamId"
+              :disabled="teamsLoading || !teams.length"
+              aria-label="Select a team"
+            >
+              <option value="" disabled>Select a team</option>
+              <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
+            </select>
             <button
               v-if="scope !== 'mine'"
               type="button"
@@ -86,16 +99,6 @@
               Edit
             </button>
           </div>
-          <select
-            v-if="scope === 'team'"
-            class="iz-select iz-select--sm"
-            v-model="internalTeamId"
-            :disabled="teamsLoading || !teams.length"
-            aria-label="Select a team"
-          >
-            <option value="" disabled>Select a team</option>
-            <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
-          </select>
           <small v-if="needsTeamSelection" class="portfolio-table-view__team-notice">Select a team to load the planning overview.</small>
           <small v-else-if="teamSummaryText">{{ teamSummaryText }}</small>
         </div>
@@ -1372,7 +1375,7 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--iz-gap);
+  gap: var(--iz-gap-tight);
   padding: var(--iz-pad-card);
 }
 .portfolio-table-view .portfolio__filter-group {
@@ -1410,25 +1413,42 @@ export default {
   background: var(--iz-accent);
   color: var(--iz-accent-text);
 }
+.portfolio-table-view .portfolio__segment--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 9px;
+}
+.portfolio-table-view .portfolio__segment--icon svg {
+  width: 14px;
+  height: 14px;
+}
 .portfolio-table-view .portfolio__segment:focus-visible {
   outline: 2px solid var(--iz-accent);
   outline-offset: -2px;
 }
-.portfolio-table-view .portfolio__control {
+.portfolio-table-view .portfolio__period-stepper {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 10px;
+  overflow: hidden;
   border: 1px solid var(--iz-border);
   border-radius: var(--iz-radius);
   background: var(--iz-surface);
+}
+.portfolio-table-view .portfolio__period-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-right: 1px solid var(--iz-border);
   color: var(--iz-text);
   font-size: var(--iz-fs-sm);
+  font-weight: 600;
   white-space: nowrap;
 }
-.portfolio-table-view .portfolio__control svg {
-  width: 16px;
-  height: 16px;
+.portfolio-table-view .portfolio__period-display svg {
+  width: 15px;
+  height: 15px;
   color: var(--iz-accent);
 }
 .portfolio-table-view .portfolio__capacity {
@@ -1441,8 +1461,9 @@ export default {
   color: var(--iz-text);
 }
 .portfolio-table-view .portfolio__capacity > svg {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   color: var(--iz-accent);
 }
 .portfolio-table-view .portfolio__warnings {
@@ -1498,6 +1519,16 @@ export default {
   border: 0;
 }
 
+@media (max-width: 920px) {
+  .portfolio-table-view .portfolio__capacity {
+    width: 100%;
+    margin-left: 0;
+    padding: var(--iz-gap-tight) 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--iz-border);
+  }
+}
+
 @media (max-width: 900px) {
   .portfolio-table-view__filters-row {
     flex-direction: column;
@@ -1510,6 +1541,26 @@ export default {
   }
   .portfolio-table-view__search {
     width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .portfolio-table-view .portfolio__period-stepper {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .portfolio-table-view .portfolio__period-display {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: var(--iz-fs-xs);
+  }
+  .portfolio-table-view .portfolio__segmented {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .portfolio-table-view .portfolio__segment {
+    flex: 1 0 auto;
+    text-align: center;
   }
 }
 </style>
