@@ -1784,53 +1784,59 @@ export default {
 .timeline-v2 {
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	padding: 8px 0;
+	gap: 12px;
+	padding: 0;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 }
 
 .timeline-v2__header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 20px;
+	gap: 12px;
 	flex-wrap: wrap;
+	padding: 2px 0;
 }
 
 .title-with-badge {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 8px;
 }
 
 .timeline-v2__title {
 	margin: 0;
-	font-size: 22px;
+	font-size: 16px;
 	font-weight: 700;
+	color: var(--color-main-text);
 }
 
 .delay-warning-badge {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: 4px;
 	background: rgba(239, 68, 68, 0.12);
 	color: #dc2626;
 	border: 1px solid rgba(239, 68, 68, 0.3);
-	padding: 3px 10px;
+	padding: 2px 8px;
 	border-radius: 99px;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: 800;
 }
 
 .timeline-v2__subtitle {
-	margin: 4px 0 0;
-	font-size: 14px;
+	margin: 2px 0 0;
+	font-size: 12px;
 	color: var(--color-text-maxcontrast);
 }
 
 .timeline-v2__controls {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 6px;
 	flex-wrap: wrap;
 }
 
@@ -1852,43 +1858,47 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	padding: 4px;
+	padding: 2px 4px;
 	background: var(--color-background-dark);
 	border: 1px solid var(--color-border);
-	border-radius: 14px;
+	border-radius: var(--iz-radius, 8px);
 }
 
 .zoom-indicator {
 	font-size: 11px;
 	font-weight: 700;
 	color: var(--color-text-maxcontrast);
-	padding: 0 8px;
-	min-width: 50px;
+	padding: 0 6px;
+	min-width: 44px;
 	text-align: center;
 }
 
 .timeline-v2__container {
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
-	border-radius: 20px;
+	border-radius: var(--iz-radius, 10px);
 	overflow: hidden;
-	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 }
 
 .timeline-v2__loading,
 .timeline-v2__empty {
-	padding: 80px 40px;
+	padding: 60px 24px;
 	text-align: center;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 16px;
+	gap: 12px;
 	color: var(--color-text-maxcontrast);
 }
 
 .timeline-v2__empty h4 {
 	margin: 0;
-	font-size: 18px;
+	font-size: 16px;
 	color: var(--color-main-text);
 }
 
@@ -1896,6 +1906,7 @@ export default {
 	margin: 0 0 8px;
 	max-width: 300px;
 	line-height: 1.5;
+	font-size: 13px;
 }
 
 .empty-icon {
@@ -1905,13 +1916,17 @@ export default {
 /* Gantt V2 Grid Layout */
 .gantt-v2 {
 	display: grid;
-	grid-template-columns: 280px 1fr 110px;
+	grid-template-columns: 230px minmax(0, 1fr) 96px;
 	border-bottom: 1px solid var(--color-border);
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 	transition: background 0.2s ease;
 }
 
 .gantt-v2--admin {
-	grid-template-columns: 280px 1fr 110px 80px;
+	grid-template-columns: 230px minmax(0, 1fr) 96px 72px;
 }
 
 .gantt-v2--simulating {
@@ -1921,14 +1936,15 @@ export default {
 .gantt-v2__header-cell {
 	display: flex;
 	align-items: center;
-	padding: 0 16px;
+	padding: 0 10px;
 	background: var(--color-background-dark);
 	border-bottom: 1px solid var(--color-border);
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: var(--color-text-maxcontrast);
+	box-sizing: border-box;
 }
 
 .gantt-v2__header-cell--center {
@@ -1937,14 +1953,19 @@ export default {
 
 /* Sidebar / Phase List */
 .gantt-v2__sidebar {
+	width: 230px;
+	min-width: 0;
+	max-width: 230px;
+	overflow: hidden;
 	border-right: 1px solid var(--color-border);
 	background: var(--color-main-background);
+	box-sizing: border-box;
 }
 
 .phase-row {
 	display: flex;
 	align-items: center;
-	padding: 0 16px;
+	padding: 0 10px;
 	border-bottom: 1px solid var(--color-border);
 	background: var(--color-main-background);
 	box-sizing: border-box;
@@ -2020,22 +2041,22 @@ export default {
 }
 
 .phase-order-badge {
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 	border-radius: 50%;
 	color: #ffffff;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: 800;
-	margin-right: 8px;
+	margin-right: 6px;
 	flex-shrink: 0;
 }
 
 /* Task Child Row in Sidebar */
 .phase-row--task-child {
-	padding-left: 32px;
+	padding-left: 20px;
 	background: var(--color-main-background);
 }
 
@@ -2045,7 +2066,7 @@ export default {
 
 .task-tree-indicator {
 	position: relative;
-	width: 20px;
+	width: 18px;
 	height: 100%;
 	margin-right: 4px;
 	flex-shrink: 0;
@@ -2053,7 +2074,7 @@ export default {
 
 .tree-line-v {
 	position: absolute;
-	left: 8px;
+	left: 7px;
 	top: 0;
 	bottom: 0;
 	width: 1px;
@@ -2062,9 +2083,9 @@ export default {
 
 .tree-line-h {
 	position: absolute;
-	left: 8px;
+	left: 7px;
 	top: 50%;
-	width: 10px;
+	width: 9px;
 	height: 1px;
 	background: var(--color-border);
 }
@@ -2073,13 +2094,13 @@ export default {
 	display: flex;
 	align-items: center;
 	color: var(--color-primary-element);
-	margin-right: 6px;
+	margin-right: 4px;
 	flex-shrink: 0;
 	opacity: 0.85;
 }
 
 .task-name {
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 600;
 	color: var(--color-main-text);
 	white-space: nowrap;
@@ -2098,19 +2119,19 @@ export default {
 }
 
 .task-delay-tag {
-	font-size: 10px;
+	font-size: 9.5px;
 	font-weight: 800;
 	background: #ef4444;
 	color: #ffffff;
-	padding: 1px 6px;
+	padding: 1px 5px;
 	border-radius: 99px;
 	white-space: nowrap;
 }
 
 .drag-handle {
 	cursor: grab;
-	padding: 8px 4px;
-	margin-right: 8px;
+	padding: 6px 2px;
+	margin-right: 4px;
 	color: var(--color-text-lighter);
 	display: flex;
 	align-items: center;
@@ -2125,12 +2146,12 @@ export default {
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
-	gap: 8px;
+	gap: 6px;
 }
 
 .phase-row__name {
 	font-weight: 700;
-	font-size: 13px;
+	font-size: 12px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -2138,10 +2159,10 @@ export default {
 }
 
 .phase-row__duration {
-	font-size: 10px;
+	font-size: 9.5px;
 	font-weight: 800;
 	background: var(--color-background-darker);
-	padding: 2px 6px;
+	padding: 1px 5px;
 	border-radius: 99px;
 	color: var(--color-text-maxcontrast);
 }
@@ -2531,18 +2552,18 @@ export default {
 .status-pill {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	padding: 3px 8px;
+	gap: 4px;
+	padding: 2px 6px;
 	border-radius: 99px;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: 700;
 	border: 1px solid transparent;
 	white-space: nowrap;
 }
 
 .status-dot {
-	width: 7px;
-	height: 7px;
+	width: 6px;
+	height: 6px;
 	border-radius: 50%;
 	flex-shrink: 0;
 }
@@ -2779,10 +2800,22 @@ export default {
 
 @media (max-width: 900px) {
 	.gantt-v2, .gantt-v2--admin {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 	}
-	.gantt-v2__sidebar { border-right: none; }
-	.gantt-v2__status { border-left: none; }
-	.gantt-v2__actions { border-left: none; }
+	.gantt-v2__sidebar {
+		width: 100%;
+		max-width: 100%;
+		border-right: none;
+	}
+	.gantt-v2__status {
+		width: 100%;
+		max-width: 100%;
+		border-left: none;
+	}
+	.gantt-v2__actions {
+		width: 100%;
+		max-width: 100%;
+		border-left: none;
+	}
 }
 </style>

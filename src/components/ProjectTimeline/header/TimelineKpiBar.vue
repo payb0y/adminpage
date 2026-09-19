@@ -524,24 +524,30 @@ export default {
 .timeline-kpi-bar {
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
-	border-radius: 12px;
-	padding: 14px 18px;
-	margin-bottom: 16px;
+	border-radius: var(--iz-radius, 10px);
+	padding: 10px 14px;
+	margin-bottom: 12px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 }
 
 .timeline-kpi-bar__status-row {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 14px;
-	padding-bottom: 10px;
+	margin-bottom: 10px;
+	padding-bottom: 8px;
 	border-bottom: 1px solid var(--color-border-dark);
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 .timeline-kpi-bar__title-tag {
 	font-weight: 700;
-	font-size: 13px;
+	font-size: 12px;
 	letter-spacing: 0.5px;
 	color: var(--color-text-maxcontrast);
 }
@@ -607,35 +613,37 @@ export default {
 
 /* Cards Row */
 .timeline-kpi-bar__cards {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 	gap: 8px;
+	align-items: stretch;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .kpi-card {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	flex: 1;
+	gap: 8px;
 	min-width: 0;
 	background: var(--color-background-hover);
-	padding: 8px 12px;
-	border-radius: 8px;
+	padding: 6px 10px;
+	border-radius: var(--iz-radius, 8px);
 	border: 1px solid var(--color-border);
+	box-sizing: border-box;
 }
 
 .kpi-card__step {
-	width: 20px;
-	height: 20px;
-	min-width: 20px;
+	width: 18px;
+	height: 18px;
+	min-width: 18px;
 	border-radius: 50%;
 	background: #4f46e5;
 	color: #ffffff;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: 700;
 }
 
@@ -684,7 +692,7 @@ export default {
 }
 
 .kpi-card__label {
-	font-size: 10px;
+	font-size: 9.5px;
 	font-weight: 700;
 	color: var(--color-text-maxcontrast);
 	letter-spacing: 0.5px;
@@ -693,7 +701,7 @@ export default {
 }
 
 .kpi-card__value {
-	font-size: 13px;
+	font-size: 12.5px;
 	font-weight: 700;
 	color: var(--color-main-text);
 	white-space: nowrap;
@@ -702,27 +710,14 @@ export default {
 }
 
 .kpi-card__subtext {
-	font-size: 10px;
+	font-size: 9.5px;
 	color: var(--color-text-maxcontrast);
 	margin-top: 1px;
 	white-space: nowrap;
 }
 
 .kpi-connector {
-	width: 18px;
-	height: 2px;
-	background: var(--color-border-dark);
-	flex-shrink: 0;
-}
-
-.kpi-connector--dashed {
-	border-top: 2px dashed var(--color-border-dark);
-	background: none;
-	height: 0;
-}
-
-.kpi-connector--active {
-	background: #10b981;
+	display: none;
 }
 
 /* Process Card specifics */
@@ -1005,11 +1000,7 @@ export default {
 
 @media (max-width: 900px) {
 	.timeline-kpi-bar__cards {
-		flex-direction: column;
-		align-items: stretch;
-	}
-	.kpi-connector {
-		display: none;
+		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 	}
 }
 </style>

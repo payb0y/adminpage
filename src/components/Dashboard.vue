@@ -354,7 +354,7 @@ export default {
   /* `background`, not `background-color`: --bg-page resolves to the theme's
      --image-background, which can be a gradient. */
   background: var(--bg-page);
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: var(--spacing-lg);
   font-family: "Inter", system-ui, -apple-system, sans-serif;

@@ -112,7 +112,7 @@
     </section>
 
     <!-- ── Live Project Timeline (Gantt Chart from projectcreatoraio) ── -->
-    <section class="iz-card detail-planning__timeline-wrapper">
+    <section class="detail-planning__timeline-wrapper">
       <GanttChart
         :project-id="Number(project.id)"
         :is-admin="false"
@@ -224,6 +224,8 @@ export default {
   gap: var(--iz-gap);
   padding: 0;
   margin-bottom: var(--iz-gap);
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ── Top Header ── */
@@ -357,12 +359,14 @@ export default {
 .detail-planning__actions-menu button:hover { background: var(--iz-surface-subtle); }
 .detail-planning__btn-chevron { width: 14px; height: 14px; }
 
-/* ── Live Gantt Chart Card ── */
+/* ── Live Gantt Chart Wrapper ── */
 .detail-planning__timeline-wrapper {
-  padding: var(--iz-pad-card);
+  padding: 0;
   overflow: hidden;
-  background: var(--iz-surface);
-  border: 1px solid var(--iz-border);
-  border-radius: var(--iz-radius);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 </style>
