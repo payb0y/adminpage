@@ -73,12 +73,13 @@
               <button type="button" class="portfolio__segment" :class="{ 'portfolio__segment--active': viewScope === 'all' }" :aria-pressed="String(viewScope === 'all')" @click="setViewScope('all')">All projects</button>
             </div>
           </div>
-          <div class="portfolio__filter-group">
+          <div class="portfolio__filter-group" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
             <span class="iz-label">Period</span>
             <span class="portfolio__control">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
               {{ periodLabel }}
             </span>
+            <small class="portfolio__period-note">Controls workload only</small>
             <div class="portfolio__segmented portfolio__segmented--compact">
               <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Previous</button>
               <button type="button" class="portfolio__segment" @click="resetPeriod">Current 6 weeks</button>
@@ -110,7 +111,11 @@
             :key="metric.label"
             class="iz-kpi portfolio-kpi portfolio-kpi--clickable"
             title="View in table"
+            tabindex="0"
+            role="button"
+            :aria-label="metric.label + ': ' + metric.value + '. View in table.'"
             @click="openTableView(metric.filter)"
+            @keydown="onDrilldownKeydown($event, metric.filter)"
           >
             <div class="portfolio-kpi__icon" :class="metric.tone">
               <svg v-if="metric.icon === 'folder'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
@@ -147,7 +152,11 @@
                   :key="status.key"
                   class="portfolio__legend-row portfolio__legend-row--clickable"
                   title="Filter table by this status"
+                  tabindex="0"
+                  role="button"
+                  :aria-label="'Filter table by ' + status.label + ', ' + status.count + ' projects'"
                   @click="openTableView(status.key)"
+                  @keydown="onDrilldownKeydown($event, status.key)"
                 >
                   <span class="portfolio__legend-dot" :class="status.tone" />
                   <strong>{{ status.label }}</strong>
@@ -184,7 +193,11 @@
                 :key="gap.id || gap.name"
                 class="iz-row iz-row--card portfolio__gap-row portfolio__gap-row--clickable"
                 title="View planning gaps in table"
+                tabindex="0"
+                role="button"
+                :aria-label="'View planning gaps in table: ' + gap.name"
                 @click="openTableView('gaps')"
+                @keydown="onDrilldownKeydown($event, 'gaps')"
               >
                 <svg class="portfolio__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
                 <span class="portfolio__gap-copy"><strong>{{ gap.name }}</strong><small>{{ gap.note }}</small></span>
@@ -261,9 +274,17 @@ export default {
       capacityLoading: false,
       capacityError: null,
       capacityRequestId: 0,
+      portfolioRequestId: 0,
     };
   },
   computed: {
+    hasPositiveTeamId: function () {
+      var id = Number(this.selectedTeamId);
+      return Number.isInteger(id) && id > 0;
+    },
+    needsTeamSelection: function () {
+      return this.viewScope === "team" && !this.hasPositiveTeamId;
+    },
     metrics: function () {
       var completionAvailable = this.portfolio !== null && !this.portfolioError;
       var capacityAvailable = this.capacity !== null && !this.capacityError;
@@ -333,7 +354,7 @@ export default {
       var start = this.parseDate(this.capacity.period.weekStart);
       var end = new Date(start.getTime());
       end.setUTCDate(end.getUTCDate() + 41);
-      return "W" + this.isoWeek(start) + " - W" + this.isoWeek(end) + " (6 weeks)";
+      return this.isoYearWeek(start) + " - " + this.isoYearWeek(end) + " (6 weeks)";
     },
     displayStatuses: function () {
       var tones = ["tone-neutral", "tone-cat-1", "tone-accent", "tone-warning", "tone-success"];
@@ -420,21 +441,34 @@ export default {
       }
     },
     fetchPortfolio: async function () {
+      if (this.needsTeamSelection) {
+        this.portfolioRequestId++;
+        this.portfolioLoading = false;
+        this.portfolioError = "Select a team to view project progress.";
+        this.portfolio = null;
+        return;
+      }
+      var requestId = ++this.portfolioRequestId;
       this.portfolioLoading = true;
       this.portfolioError = null;
       try {
         var params = {};
         if (this.viewScope === "mine") {
           params.scope = "mine";
+        } else if (this.viewScope === "team" && this.hasPositiveTeamId) {
+          params.scope = "team";
+          params.teamId = Number(this.selectedTeamId);
         }
         var response = await axios.get(generateUrl("/apps/projectcreatoraio/api/v1/portfolio/completion"), { params: params });
+        if (requestId !== this.portfolioRequestId) return;
         this.portfolio = response.data;
       } catch (error) {
+        if (requestId !== this.portfolioRequestId) return;
         this.portfolioError = error && error.response && error.response.status === 403
           ? "You do not have access to this project data."
           : "Project progress could not be loaded.";
       } finally {
-        this.portfolioLoading = false;
+        if (requestId === this.portfolioRequestId) this.portfolioLoading = false;
       }
     },
     parseDate: function (value) {
@@ -451,6 +485,19 @@ export default {
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
       var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+    isoYearWeek: function (date) {
+      var d = new Date(date.getTime());
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      var week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return d.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
+    },
+    onDrilldownKeydown: function (event, filter) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.openTableView(filter);
+      }
     },
     currentMonday: function () {
       var monday = this.parseDate(new Date().toISOString().slice(0, 10));
@@ -503,14 +550,21 @@ export default {
     },
     fetchCapacity: async function (weekStart) {
       if (!this.selectedTeamId) return;
+      if (this.needsTeamSelection) {
+        this.capacityRequestId++;
+        this.capacityLoading = false;
+        this.capacityError = "Select a team to view capacity.";
+        this.capacity = null;
+        return;
+      }
       var requestId = ++this.capacityRequestId;
       this.capacityLoading = true;
       this.capacityError = null;
       try {
         var start = weekStart || this.displayedWeekStart || this.dateOnly(this.currentMonday());
         var params = { scope: this.viewScope, weekStart: start };
-        if (this.viewScope === "team" && this.selectedTeamId !== "all") {
-          params.teamId = this.selectedTeamId;
+        if (this.viewScope === "team" && this.hasPositiveTeamId) {
+          params.teamId = Number(this.selectedTeamId);
         }
         var response = await axios.get(
           generateUrl("/apps/projectcreatoraio/api/v1/portfolio/capacity"),
@@ -546,6 +600,8 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__mode-nav { display: flex; justify-content: flex-end; margin-bottom: var(--iz-gap-tight); }
 .portfolio-kpi--clickable, .portfolio__legend-row--clickable, .portfolio__gap-row--clickable { cursor: pointer; transition: transform var(--iz-transition), box-shadow var(--iz-transition); }
 .portfolio-kpi--clickable:hover, .portfolio__gap-row--clickable:hover { transform: translateY(-1px); box-shadow: var(--iz-shadow, 0 2px 8px rgba(0, 0, 0, 0.08)); }
+.portfolio-kpi--clickable:focus-visible, .portfolio__legend-row--clickable:focus-visible, .portfolio__gap-row--clickable:focus-visible { outline: 2px solid var(--iz-accent); outline-offset: 2px; }
+.portfolio__period-note { font-size: var(--iz-fs-xs); color: var(--iz-text-muted); white-space: nowrap; }
 .portfolio__link-btn { background: transparent; border: 0; padding: 0; cursor: pointer; font: inherit; text-align: left; }
 .portfolio__link-btn:hover { text-decoration: underline; }
 .portfolio__summary-view { display: grid; gap: var(--iz-gap); }

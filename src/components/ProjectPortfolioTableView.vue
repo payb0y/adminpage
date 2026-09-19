@@ -58,12 +58,13 @@
         </div>
       </div>
 
-      <div class="portfolio__filter-group">
+      <div class="portfolio__filter-group" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
         <span class="iz-label">Period</span>
         <span class="portfolio__control">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M8 2v4M16 2v4M3 9h18" /></svg>
           {{ periodLabel }}
         </span>
+        <small class="portfolio-table-view__period-note">Controls workload only</small>
         <div class="portfolio__segmented portfolio__segmented--compact">
           <button type="button" class="portfolio__segment" @click="movePeriod(-42)">Previous</button>
           <button type="button" class="portfolio__segment" @click="resetPeriod">Current 6 weeks</button>
@@ -90,11 +91,13 @@
             class="iz-select iz-select--sm"
             v-model="internalTeamId"
             :disabled="teamsLoading || !teams.length"
+            aria-label="Select a team"
           >
-            <option value="all">All teams</option>
+            <option value="" disabled>Select a team</option>
             <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
           </select>
-          <small v-if="teamSummaryText">{{ teamSummaryText }}</small>
+          <small v-if="needsTeamSelection" class="portfolio-table-view__team-notice">Select a team to load the planning overview.</small>
+          <small v-else-if="teamSummaryText">{{ teamSummaryText }}</small>
         </div>
       </div>
     </div>
@@ -112,13 +115,14 @@
         </span>
       </div>
 
-      <div v-if="loading" class="portfolio__status-state iz-empty">Loading workload...</div>
+      <div v-if="needsTeamSelection" class="portfolio__status-state iz-empty">Select a team to view the workload.</div>
+      <div v-else-if="loading" class="portfolio__status-state iz-empty">Loading workload...</div>
       <div v-else-if="error" class="portfolio__status-state iz-error">{{ error }}</div>
       <div v-else-if="!weeks.length" class="portfolio__status-state iz-empty">No capacity data available.</div>
       <div v-else class="portfolio__weeks">
         <article v-for="week in weeks" :key="week.label" class="iz-card iz-card--flat portfolio-week portfolio-table-view__week-card">
           <header class="portfolio-table-view__week-header">
-            <strong>W{{ weekNumber(week.start) }}</strong>
+            <strong>{{ weekDisplayLabel(week) }}</strong>
             <small>{{ formatWeekRange(week.start, week.end) }}</small>
           </header>
           <div class="portfolio-table-view__week-sub">
@@ -148,7 +152,7 @@
 
     <!-- ── Filter Chips Bar & Search/Export/Columns ── -->
     <div class="portfolio-table-view__filters-row">
-      <div class="portfolio-table-view__chips" role="tablist" aria-label="Status filters">
+      <div class="portfolio-table-view__chips" role="group" aria-label="Status filters">
         <button
           v-for="chip in filterChips"
           :key="chip.key"
@@ -160,7 +164,7 @@
             'portfolio-table-view__chip--success': chip.key === '100',
             'portfolio-table-view__chip--warning': chip.key === '75-99'
           }"
-          :aria-selected="String(activeFilter === chip.key)"
+          :aria-pressed="String(activeFilter === chip.key)"
           @click="activeFilter = chip.key"
         >
           <span>{{ chip.label }}</span>
@@ -225,22 +229,22 @@
         <table class="portfolio-table">
           <thead>
             <tr>
-              <th v-if="visibleColumns.project" scope="col" class="portfolio-table__th--sortable" @click="toggleSort('name')">
+              <th v-if="visibleColumns.project" scope="col" class="portfolio-table__th--sortable" tabindex="0" role="columnheader" :aria-sort="ariaSort('name')" @click="toggleSort('name')" @keydown="onSortKeydown($event, 'name')">
                 <span>Project</span>
-                <span class="portfolio-table__sort-arrow">{{ sortArrow('name') }}</span>
+                <span class="portfolio-table__sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span>
               </th>
               <th v-if="visibleColumns.status" scope="col">Process status</th>
-              <th v-if="visibleColumns.completion" scope="col" class="portfolio-table__th--sortable" @click="toggleSort('completionPct')">
+              <th v-if="visibleColumns.completion" scope="col" class="portfolio-table__th--sortable" tabindex="0" role="columnheader" :aria-sort="ariaSort('completionPct')" @click="toggleSort('completionPct')" @keydown="onSortKeydown($event, 'completionPct')">
                 <span>% done</span>
-                <span class="portfolio-table__sort-arrow">{{ sortArrow('completionPct') }}</span>
+                <span class="portfolio-table__sort-arrow" aria-hidden="true">{{ sortArrow('completionPct') }}</span>
               </th>
               <th v-if="visibleColumns.expected" scope="col">Expected / reached 100%</th>
               <th v-if="visibleColumns.startPrep" scope="col">Start Work Preparation</th>
               <th v-if="visibleColumns.countdownPrep" scope="col">Countdown to start Work Preparation</th>
               <th v-if="visibleColumns.minExec" scope="col">Min. execution start</th>
-              <th v-if="visibleColumns.wensweek" scope="col" class="portfolio-table__th--sortable" @click="toggleSort('desiredStartDate')">
+              <th v-if="visibleColumns.wensweek" scope="col" class="portfolio-table__th--sortable" tabindex="0" role="columnheader" :aria-sort="ariaSort('desiredStartDate')" @click="toggleSort('desiredStartDate')" @keydown="onSortKeydown($event, 'desiredStartDate')">
                 <span>Desired week</span>
-                <span class="portfolio-table__sort-arrow">{{ sortArrow('desiredStartDate') }}</span>
+                <span class="portfolio-table__sort-arrow" aria-hidden="true">{{ sortArrow('desiredStartDate') }}</span>
               </th>
               <th v-if="visibleColumns.countdownWensweek" scope="col">Countdown to Desired Week</th>
               <th v-if="visibleColumns.cards" scope="col">Open cards</th>
@@ -249,7 +253,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="loading">
+            <tr v-if="needsTeamSelection">
+              <td colspan="12" class="portfolio-table__empty">Select a team to view projects.</td>
+            </tr>
+            <tr v-else-if="loading">
               <td colspan="12" class="portfolio-table__empty">Loading data...</td>
             </tr>
             <tr v-else-if="paginatedProjects.length === 0">
@@ -260,7 +267,10 @@
               v-for="project in paginatedProjects"
               :key="project.id"
               class="portfolio-table__row"
+              tabindex="0"
+              :aria-label="'Open details for ' + project.name"
               @click="onRowClick(project)"
+              @keydown="onRowKeydown($event, project)"
             >
               <!-- 1. Project Name -->
               <td v-if="visibleColumns.project" class="portfolio-table__cell-project">
@@ -356,10 +366,10 @@
       <!-- ── Table Footer & Pagination ── -->
       <footer class="portfolio-table-view__table-footer">
         <span class="portfolio-table-view__hint">
-          Click on a project → open Timeline planning (multi-project) with this project selected.
+          Click a project (or press Enter on a focused row) to open its details in Project Performance Analytics below.
         </span>
 
-        <div class="portfolio-table-view__pagination">
+        <div class="portfolio-table-view__pagination" role="navigation" aria-label="Table pages">
           <button
             type="button"
             class="portfolio-table-view__page-btn"
@@ -375,6 +385,8 @@
             type="button"
             class="portfolio-table-view__page-btn"
             :class="{ 'portfolio-table-view__page-btn--active': currentPage === p }"
+            :aria-label="'Page ' + p"
+            :aria-current="currentPage === p ? 'page' : null"
             @click="currentPage = p"
           >
             {{ p }}
@@ -427,6 +439,7 @@ export default {
       tableData: null,
       loading: false,
       error: null,
+      tableRequestId: 0,
       activeFilter: this.initialFilter || "all",
       searchQuery: "",
       currentPage: 1,
@@ -466,11 +479,18 @@ export default {
   computed: {
     internalTeamId: {
       get: function () {
-        return this.teamId || "all";
+        return this.teamId || "";
       },
       set: function (val) {
         this.$emit("update:teamId", val);
       },
+    },
+    hasPositiveTeamId: function () {
+      var id = Number(this.teamId);
+      return Number.isInteger(id) && id > 0;
+    },
+    needsTeamSelection: function () {
+      return this.scope === "team" && !this.hasPositiveTeamId;
     },
     lastUpdatedText: function () {
       if (!this.lastUpdated) return "today";
@@ -485,24 +505,24 @@ export default {
       if (this.scope === "mine") {
         return "My projects (" + (this.tableData.teams ? this.tableData.teams.length : 0) + " teams): " + note;
       }
-      if (this.scope === "all" || String(this.teamId) === "all") {
+      if (this.scope === "all" || !this.hasPositiveTeamId) {
         return "All teams: " + note;
       }
       return this.formatNumber(t.fte) + " FTE × " + this.formatNumber(t.projectsPerFte) + " projects/FTE = " + note;
     },
     periodLabel: function () {
-      if (!this.tableData || !this.tableData.period) return "W31 – W36 (6 weeks)";
+      if (!this.tableData || !this.tableData.period) return "2026-W31 – 2026-W36 (6 weeks)";
       var start = this.parseDate(this.tableData.period.weekStart);
       var end = new Date(start.getTime());
       end.setUTCDate(end.getUTCDate() + 41);
-      return "W" + this.isoWeek(start) + " – W" + this.isoWeek(end) + " (6 weeks)";
+      return this.isoYearWeek(start) + " – " + this.isoYearWeek(end) + " (6 weeks)";
     },
     periodWeekRange: function () {
-      if (!this.tableData || !this.tableData.period) return "W31-W36";
+      if (!this.tableData || !this.tableData.period) return "2026-W31-2026-W36";
       var start = this.parseDate(this.tableData.period.weekStart);
       var end = new Date(start.getTime());
       end.setUTCDate(end.getUTCDate() + 41);
-      return "W" + this.isoWeek(start) + "-W" + this.isoWeek(end);
+      return this.isoYearWeek(start) + "-" + this.isoYearWeek(end);
     },
     weeks: function () {
       return (this.tableData && this.tableData.weeks) || [];
@@ -573,12 +593,15 @@ export default {
   },
   watch: {
     scope: function () {
+      this.currentPage = 1;
       this.fetchTableData();
     },
     teamId: function () {
+      this.currentPage = 1;
       this.fetchTableData();
     },
     weekStart: function () {
+      this.currentPage = 1;
       this.fetchTableData();
     },
     initialFilter: function (val) {
@@ -589,6 +612,15 @@ export default {
     },
     searchQuery: function () {
       this.currentPage = 1;
+    },
+    sortKey: function () {
+      this.currentPage = 1;
+    },
+    tableData: function () {
+      this.clampPage();
+    },
+    sortedProjects: function () {
+      this.clampPage();
     },
   },
   mounted: function () {
@@ -606,6 +638,15 @@ export default {
     },
     fetchTableData: async function () {
       if (!this.organizationId) return;
+      if (this.needsTeamSelection) {
+        this.tableRequestId++;
+        this.loading = false;
+        this.error = null;
+        this.tableData = null;
+        this.currentPage = 1;
+        return;
+      }
+      var requestId = ++this.tableRequestId;
       this.loading = true;
       this.error = null;
       try {
@@ -613,19 +654,27 @@ export default {
         if (this.weekStart) {
           params.weekStart = this.weekStart;
         }
-        if (this.scope === "team" && this.teamId && this.teamId !== "all") {
-          params.teamId = this.teamId;
+        if (this.scope === "team" && this.hasPositiveTeamId) {
+          params.teamId = Number(this.teamId);
         }
         var response = await axios.get(generateUrl("/apps/projectcreatoraio/api/v1/portfolio/table"), {
           params: params,
         });
+        if (requestId !== this.tableRequestId) return;
         this.tableData = response.data;
         this.lastUpdated = new Date();
+        this.clampPage();
       } catch (e) {
+        if (requestId !== this.tableRequestId) return;
         this.error = "Planning overview could not be loaded.";
       } finally {
-        this.loading = false;
+        if (requestId === this.tableRequestId) this.loading = false;
       }
+    },
+    clampPage: function () {
+      var total = this.totalPages || 1;
+      if (this.currentPage > total) this.currentPage = total;
+      if (this.currentPage < 1) this.currentPage = 1;
     },
     parseDate: function (value) {
       if (!value) return new Date();
@@ -637,6 +686,23 @@ export default {
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
       var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+    isoYear: function (date) {
+      var d = new Date(date.getTime());
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      return d.getUTCFullYear();
+    },
+    isoYearWeek: function (date) {
+      var d = new Date(date.getTime());
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      var week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return d.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
+    },
+    weekDisplayLabel: function (week) {
+      if (week && week.label) return week.label;
+      if (!week || !week.start) return "";
+      return this.isoYearWeek(this.parseDate(week.start));
     },
     weekNumber: function (dateStr) {
       if (!dateStr) return "";
@@ -689,6 +755,22 @@ export default {
     sortArrow: function (key) {
       if (this.sortKey !== key) return "↕";
       return this.sortAsc ? "↑" : "↓";
+    },
+    ariaSort: function (key) {
+      if (this.sortKey !== key) return "none";
+      return this.sortAsc ? "ascending" : "descending";
+    },
+    onSortKeydown: function (event, key) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.toggleSort(key);
+      }
+    },
+    onRowKeydown: function (event, project) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        this.onRowClick(project);
+      }
     },
     onRowClick: function (project) {
       this.$emit("select-project", project.id);
@@ -1267,6 +1349,153 @@ export default {
 
 .portfolio-table-view__brand strong {
   color: var(--iz-text);
+}
+
+.portfolio-table-view__period-note {
+  font-size: var(--iz-fs-xs);
+  color: var(--iz-text-muted);
+  white-space: nowrap;
+}
+
+.portfolio-table-view__team-notice {
+  color: var(--iz-warning-text, #92400e);
+  font-size: var(--iz-fs-xs);
+  font-weight: 600;
+}
+
+/* ── Independent toolbar / workload / grid styles ──
+   The table view reuses the portfolio toolbar, segmented control, capacity
+   block, warnings and week-grid class names, but scoped CSS from
+   ProjectPortfolioPanel.vue cannot reach this component. These local rules
+   keep the child self-sufficient (theme tokens only, no hardcoded palette). */
+.portfolio-table-view .portfolio__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--iz-gap);
+  padding: var(--iz-pad-card);
+}
+.portfolio-table-view .portfolio__filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--iz-gap-tight);
+  min-width: 0;
+}
+.portfolio-table-view .portfolio__segmented {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--iz-border);
+  border-radius: var(--iz-radius);
+  background: var(--iz-surface);
+}
+.portfolio-table-view .portfolio__segmented--compact .portfolio__segment {
+  padding: 5px 10px;
+  font-size: var(--iz-fs-xs);
+}
+.portfolio-table-view .portfolio__segment {
+  min-height: 0;
+  padding: 7px 12px;
+  border: 0;
+  border-right: 1px solid var(--iz-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--iz-text-secondary);
+  font-size: var(--iz-fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.portfolio-table-view .portfolio__segment:last-child { border-right: 0; }
+.portfolio-table-view .portfolio__segment--active {
+  background: var(--iz-accent);
+  color: var(--iz-accent-text);
+}
+.portfolio-table-view .portfolio__segment:focus-visible {
+  outline: 2px solid var(--iz-accent);
+  outline-offset: -2px;
+}
+.portfolio-table-view .portfolio__control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--iz-border);
+  border-radius: var(--iz-radius);
+  background: var(--iz-surface);
+  color: var(--iz-text);
+  font-size: var(--iz-fs-sm);
+  white-space: nowrap;
+}
+.portfolio-table-view .portfolio__control svg {
+  width: 16px;
+  height: 16px;
+  color: var(--iz-accent);
+}
+.portfolio-table-view .portfolio__capacity {
+  display: flex;
+  align-items: center;
+  gap: var(--iz-gap-tight);
+  margin-left: auto;
+  padding-left: var(--iz-gap);
+  border-left: 1px solid var(--iz-border);
+  color: var(--iz-text);
+}
+.portfolio-table-view .portfolio__capacity > svg {
+  width: 26px;
+  height: 26px;
+  color: var(--iz-accent);
+}
+.portfolio-table-view .portfolio__warnings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--iz-gap-tight);
+}
+.portfolio-table-view .portfolio__weeks {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: var(--iz-gap-tight);
+  overflow-x: auto;
+}
+.portfolio-table-view .portfolio-week {
+  display: grid;
+  gap: var(--iz-gap-tight);
+  min-width: 150px;
+}
+.portfolio-table-view .portfolio__status-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--iz-gap-tight);
+  min-height: 120px;
+}
+
+/* Keyboard focus for sortable headers and clickable rows */
+.portfolio-table__th--sortable:focus-visible {
+  outline: 2px solid var(--iz-accent);
+  outline-offset: -2px;
+}
+.portfolio-table__row:focus-visible {
+  outline: 2px solid var(--iz-accent);
+  outline-offset: -2px;
+  background: var(--iz-surface-subtle);
+}
+.portfolio-table-view__chip:focus-visible,
+.portfolio-table-view__page-btn:focus-visible,
+.portfolio-table-view__btn:focus-visible {
+  outline: 2px solid var(--iz-accent);
+  outline-offset: 1px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (max-width: 900px) {
