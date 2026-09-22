@@ -250,6 +250,10 @@
                 <span class="portfolio-table__sort-arrow" aria-hidden="true">{{ sortArrow('desiredStartDate') }}</span>
               </th>
               <th v-if="visibleColumns.countdownWensweek" scope="col">Countdown to Desired Week</th>
+              <th v-if="visibleColumns.actualStart" scope="col" class="portfolio-table__th--sortable" tabindex="0" role="columnheader" :aria-sort="ariaSort('actualStartDate')" @click="toggleSort('actualStartDate')" @keydown="onSortKeydown($event, 'actualStartDate')">
+                <span>Actual start week</span>
+                <span class="portfolio-table__sort-arrow" aria-hidden="true">{{ sortArrow('actualStartDate') }}</span>
+              </th>
               <th v-if="visibleColumns.cards" scope="col">Open cards</th>
               <th v-if="visibleColumns.gap" scope="col">Planning gap</th>
               <th scope="col" class="portfolio-table__th--action"><span class="sr-only">Action</span></th>
@@ -257,13 +261,13 @@
           </thead>
           <tbody>
             <tr v-if="needsTeamSelection">
-              <td colspan="12" class="portfolio-table__empty">Select a team to view projects.</td>
+              <td colspan="13" class="portfolio-table__empty">Select a team to view projects.</td>
             </tr>
             <tr v-else-if="loading">
-              <td colspan="12" class="portfolio-table__empty">Loading data...</td>
+              <td colspan="13" class="portfolio-table__empty">Loading data...</td>
             </tr>
             <tr v-else-if="paginatedProjects.length === 0">
-              <td colspan="12" class="portfolio-table__empty">No projects found for selected filters.</td>
+              <td colspan="13" class="portfolio-table__empty">No projects found for selected filters.</td>
             </tr>
             <tr
               v-else
@@ -325,6 +329,11 @@
               <!-- 9. Countdown to Desired Week -->
               <td v-if="visibleColumns.countdownWensweek">
                 <span>{{ project.desiredCountdown }}</span>
+              </td>
+
+              <!-- 10. Actual Start Week -->
+              <td v-if="visibleColumns.actualStart">
+                <span>{{ project.actualStartWeek || "—" }}</span>
               </td>
 
               <!-- 10. Open Cards -->
@@ -461,6 +470,7 @@ export default {
         minExec: true,
         wensweek: true,
         countdownWensweek: true,
+        actualStart: true,
         cards: true,
         gap: true,
       },
@@ -474,6 +484,7 @@ export default {
         { key: "minExec", label: "Min. execution start" },
         { key: "wensweek", label: "Desired week" },
         { key: "countdownWensweek", label: "Countdown to Desired Week" },
+        { key: "actualStart", label: "Actual start week" },
         { key: "cards", label: "Open cards" },
         { key: "gap", label: "Planning gap" },
       ],
@@ -797,6 +808,7 @@ export default {
         "Min. execution start",
         "Desired week",
         "Countdown to Desired Week",
+        "Actual start week",
         "Open cards",
         "Planning gap",
       ];
@@ -814,6 +826,7 @@ export default {
           '"' + (r.minExecutionStartWeek || "") + '"',
           '"' + (r.desiredStartWeek || "") + '"',
           '"' + (r.desiredCountdown || "") + '"',
+          '"' + (r.actualStartWeek || "") + '"',
           r.openCards,
           '"' + gap + '"',
         ];

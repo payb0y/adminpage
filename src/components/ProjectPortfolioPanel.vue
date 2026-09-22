@@ -147,6 +147,18 @@
               <strong class="portfolio-kpi__value">{{ metric.value }}</strong>
               <span class="portfolio-kpi__label">{{ metric.label }}</span>
               <small>{{ metric.note }}</small>
+              <div v-if="metric.filter === 'all' && projectStatusBreakdown.length" class="portfolio-kpi__status-breakdown">
+                <span
+                  v-for="item in projectStatusBreakdown"
+                  :key="item.key"
+                  class="portfolio-kpi__status-item"
+                  :title="item.label + ': ' + item.count"
+                >
+                  <span class="portfolio-kpi__status-dot" :class="'portfolio-kpi__status-dot--' + item.tone" aria-hidden="true" />
+                  <strong class="portfolio-kpi__status-count">{{ item.count }}</strong>
+                  <span class="portfolio-kpi__status-label">{{ item.label }}</span>
+                </span>
+              </div>
             </div>
             <svg class="portfolio__row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
           </article>
@@ -344,6 +356,19 @@ export default {
           tone: "tone-danger",
           filter: "gaps",
         },
+      ];
+    },
+    projectStatusBreakdown: function () {
+      var counts = (this.portfolio && this.portfolio.statusCounts) || null;
+      if (!counts) {
+        return [];
+      }
+      return [
+        { key: "active", label: "Active", count: Number(counts.active || 0), tone: "active" },
+        { key: "waiting", label: "Waiting on customer", count: Number(counts.waiting || 0), tone: "waiting" },
+        { key: "on_hold", label: "On hold", count: Number(counts.on_hold || 0), tone: "on-hold" },
+        { key: "done", label: "Done", count: Number(counts.done || 0), tone: "done" },
+        { key: "archived", label: "Archived", count: Number(counts.archived || 0), tone: "archived" },
       ];
     },
     selectedTeam: function () {
@@ -661,6 +686,16 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio-kpi__copy { display: grid; min-width: 0; }
 .portfolio-kpi__value { color: var(--iz-text); font-size: var(--iz-fs-2xl); line-height: 1; }
 .portfolio-kpi__label { color: var(--iz-text); font-size: var(--iz-fs-md); font-weight: 700; }
+.portfolio-kpi__status-breakdown { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--iz-border); }
+.portfolio-kpi__status-item { display: inline-flex; align-items: center; gap: 4px; font-size: var(--iz-fs-xs); color: var(--iz-text-secondary); white-space: nowrap; }
+.portfolio-kpi__status-count { color: var(--iz-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.portfolio-kpi__status-label { font-size: var(--iz-fs-xs); }
+.portfolio-kpi__status-dot { width: 7px; height: 7px; border-radius: var(--iz-radius-pill); flex: 0 0 7px; }
+.portfolio-kpi__status-dot--active { background-color: var(--iz-success, #1f7a3e); }
+.portfolio-kpi__status-dot--waiting { background-color: var(--iz-cat-4, #d98a2b); }
+.portfolio-kpi__status-dot--on-hold { background-color: var(--iz-text-muted, #9a94a2); }
+.portfolio-kpi__status-dot--done { background-color: var(--iz-cat-5, #7c5cbf); }
+.portfolio-kpi__status-dot--archived { background-color: var(--iz-text-secondary, #64748b); }
 .portfolio__row-arrow { width: 16px; height: 16px; flex: 0 0 auto; color: var(--iz-accent); }
 .portfolio-kpi > .portfolio__row-arrow { margin-left: auto; }
 .portfolio__overview-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr); gap: var(--iz-gap); }
