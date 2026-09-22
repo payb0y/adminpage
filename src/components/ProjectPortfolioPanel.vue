@@ -179,6 +179,12 @@
                 <span><strong>{{ trackedProjects }}</strong><small>projects</small></span>
               </div>
               <div v-if="!portfolioLoading && !portfolioError" class="portfolio__legend">
+                <div class="portfolio__legend-header" aria-hidden="true">
+                  <span class="portfolio__legend-th-progression">Progression</span>
+                  <span class="portfolio__legend-th-count" title="Total projects in this stage">Projects</span>
+                  <span class="portfolio__legend-th-share" title="Share of portfolio">Share</span>
+                  <span class="portfolio__legend-th-arrow"></span>
+                </div>
                 <div
                   v-for="status in displayStatuses"
                   :key="status.key"
@@ -194,7 +200,7 @@
                   <strong>{{ status.label }}</strong>
                   <span v-if="status.badge" class="iz-badge" :class="status.badgeClass">{{ status.badge }}</span>
                   <strong class="portfolio__legend-count">{{ status.count }}</strong>
-                  <span>{{ status.percent }}</span>
+                  <span class="portfolio__legend-percent">{{ status.percent }}</span>
                   <svg class="portfolio__row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
                 </div>
               </div>
@@ -705,11 +711,15 @@ button.portfolio__toggle:focus-visible { outline: none; box-shadow: inset 0 0 0 
 .portfolio__donut span { grid-area: 1 / 1; z-index: 1; display: grid; text-align: center; }
 .portfolio__donut strong { font-size: var(--iz-fs-2xl); color: var(--iz-text); }
 .portfolio__donut small { color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); }
-.portfolio__legend { border: 1px solid var(--iz-border); border-radius: var(--iz-radius); overflow: hidden; }
-.portfolio__legend-row { display: grid; grid-template-columns: auto minmax(75px, auto) minmax(0, 1fr) 28px 40px auto; align-items: center; gap: var(--iz-gap-tight); min-height: 42px; padding: 0 12px; border-bottom: 1px solid var(--iz-border); color: var(--iz-text-secondary); font-size: var(--iz-fs-sm); }
+.portfolio__legend { border: 1px solid var(--iz-border); border-radius: var(--iz-radius); overflow: hidden; background: var(--iz-surface); }
+.portfolio__legend-header { display: grid; grid-template-columns: auto minmax(75px, auto) minmax(0, 1fr) minmax(54px, auto) minmax(46px, auto) 16px; align-items: center; gap: var(--iz-gap-tight); padding: 8px 12px; background: var(--iz-surface-subtle); border-bottom: 1px solid var(--iz-border); color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; user-select: none; }
+.portfolio__legend-th-progression { grid-column: 1 / 4; }
+.portfolio__legend-th-count, .portfolio__legend-th-share { text-align: right; }
+.portfolio__legend-row { display: grid; grid-template-columns: auto minmax(75px, auto) minmax(0, 1fr) minmax(54px, auto) minmax(46px, auto) 16px; align-items: center; gap: var(--iz-gap-tight); min-height: 42px; padding: 0 12px; border-bottom: 1px solid var(--iz-border); color: var(--iz-text-secondary); font-size: var(--iz-fs-sm); }
 .portfolio__legend-row:last-child { border-bottom: 0; }
 .portfolio__legend-row > strong:first-of-type { color: var(--iz-text); }
-.portfolio__legend-count { text-align: right; color: var(--iz-text); }
+.portfolio__legend-count { text-align: right; color: var(--iz-text); font-variant-numeric: tabular-nums; }
+.portfolio__legend-percent { text-align: right; font-variant-numeric: tabular-nums; }
 .portfolio__status-state { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: var(--iz-gap-tight); min-height: 180px; }
 .portfolio__untracked { margin: var(--iz-gap-tight) 0 0; color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); }
 .portfolio__legend-dot { width: 10px; height: 10px; flex: 0 0 10px; border-radius: var(--iz-radius-pill); background: currentColor; }
