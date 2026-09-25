@@ -82,8 +82,8 @@
         </div>
 
 
-        <!-- ── Sub-section: Team Members ── -->
-        <div class="insights-panel__section" v-show="activeSection === 'members'" :id="'insights-section-' + _uid + '-members'" role="region" aria-label="Team Members">
+        <!-- ── Sub-section: Organization Members ── -->
+        <div class="insights-panel__section" v-show="activeSection === 'members'" :id="'insights-section-' + _uid + '-members'" role="region" aria-label="Organization Members">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            Team Members
+            Organization Members
             <span class="insights-panel__badge">{{ members.length }}</span>
           </div>
           <MembersPanel
@@ -472,7 +472,7 @@ export default {
     navigationItems: function () {
       var items = [
         { id: "organization", label: "Organization", summary: this.profile.name },
-        { id: "members", label: "Team Members", summary: this.members.length + " members" },
+        { id: "members", label: "Organization Members", summary: this.members.length + " members" },
       ];
       if (this.showTeams) {
         items.push({ id: "teams", label: "Teams", summary: this.teamNavigationSummary });
