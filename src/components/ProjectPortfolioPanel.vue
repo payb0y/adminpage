@@ -185,7 +185,7 @@
         <div class="portfolio__overview-grid">
           <section class="iz-card portfolio__status-card">
             <header class="iz-panel__header">
-              <h4 class="iz-panel__title">Process status - Initiation phase</h4>
+              <h4 class="iz-panel__title">Process status - Initiation phase of active projects</h4>
             </header>
             <div class="portfolio__status-content">
               <div v-if="portfolioLoading" class="portfolio__status-state iz-empty">Loading project progress...</div>

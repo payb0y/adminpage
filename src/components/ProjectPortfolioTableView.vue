@@ -159,15 +159,6 @@
       </div>
     </section>
 
-    <!-- ── Information Banner ── -->
-    <div class="portfolio-table-view__banner">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="portfolio-table-view__banner-icon">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </svg>
-      <span>All displayed projects are in the Initiation phase. 100% means ready for Handover 1; Handover 1 is a separate event.</span>
-    </div>
 
     <!-- ── Filter Chips Bar & Search/Export/Columns ── -->
     <div class="portfolio-table-view__filters-row">
@@ -1080,23 +1071,6 @@ export default {
 .portfolio-table-view__badge--neutral {
   background: var(--iz-surface-subtle);
   color: var(--iz-text-secondary);
-}
-
-.portfolio-table-view__banner {
-  display: flex;
-  align-items: center;
-  gap: var(--iz-gap-tight);
-  padding: 10px 14px;
-  border-radius: var(--iz-radius);
-  background: var(--iz-accent-bg, #e0f2fe);
-  color: var(--iz-accent-bg-text, #0369a1);
-  font-size: var(--iz-fs-sm);
-}
-
-.portfolio-table-view__banner-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
 }
 
 .portfolio-table-view__filters-row {
