@@ -55,19 +55,35 @@
         </button>
       </div>
 
-      <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; the project list itself is not filtered by period">
+      <div class="portfolio__period-stepper" title="Period controls the weekly workload strip below; click the date to jump to a specific week">
         <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Previous 6 weeks" title="Previous 6 weeks" @click="movePeriod(-42)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <span class="portfolio__period-display">
+        <button
+          type="button"
+          class="portfolio__period-display portfolio__period-display--clickable"
+          title="Click to jump to a specific date"
+          :aria-label="'Current period: ' + periodLabel + '. Click to pick a specific date.'"
+          @click="openDatePicker"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="3" y="4" width="18" height="17" rx="2" />
             <path d="M8 2v4M16 2v4M3 9h18" />
           </svg>
-          {{ periodLabel }}
-        </span>
+          <span>{{ periodLabel }}</span>
+          <input
+            ref="tableDatePicker"
+            type="date"
+            class="portfolio__date-input-hidden"
+            :value="currentWeekStart"
+            aria-hidden="true"
+            tabindex="-1"
+            @change="onDatePicked"
+            @click.stop
+          />
+        </button>
         <button type="button" class="portfolio__segment portfolio__segment--icon" aria-label="Next 6 weeks" title="Next 6 weeks" @click="movePeriod(42)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="9 18 15 12 9 6" />
@@ -165,7 +181,8 @@
             'portfolio-table-view__chip--active': activeFilter === chip.key,
             'portfolio-table-view__chip--danger': chip.key === 'gaps' && chip.count > 0,
             'portfolio-table-view__chip--success': chip.key === '100',
-            'portfolio-table-view__chip--warning': chip.key === '75-99'
+            'portfolio-table-view__chip--warning': chip.key === '75-99',
+            'portfolio-table-view__chip--period': chip.key === 'in-period'
           }"
           :aria-pressed="String(activeFilter === chip.key)"
           @click="activeFilter = chip.key"
@@ -524,6 +541,36 @@ export default {
       }
       return this.formatNumber(t.fte) + " FTE × " + this.formatNumber(t.projectsPerFte) + " projects/FTE = " + note;
     },
+    periodStart: function () {
+      if (this.tableData && this.tableData.period && this.tableData.period.weekStart) {
+        return this.tableData.period.weekStart;
+      }
+      return this.weekStart || "";
+    },
+    periodEnd: function () {
+      if (this.tableData && this.tableData.period && this.tableData.period.weekEnd) {
+        return this.tableData.period.weekEnd;
+      }
+      if (this.periodStart) {
+        var start = this.parseDate(this.periodStart);
+        start.setUTCDate(start.getUTCDate() + 41);
+        return start.toISOString().slice(0, 10);
+      }
+      return "";
+    },
+    currentWeekStart: function () {
+      return this.periodStart || "";
+    },
+    inPeriodCount: function () {
+      var list = (this.tableData && this.tableData.projects) || [];
+      var pStart = this.periodStart;
+      var pEnd = this.periodEnd;
+      if (!pStart || !pEnd) return 0;
+      var self = this;
+      return list.filter(function (p) {
+        return self.isProjectInPeriod(p, pStart, pEnd);
+      }).length;
+    },
     periodLabel: function () {
       if (!this.tableData || !this.tableData.period) return "2026-W31 – 2026-W36 (6 weeks)";
       var start = this.parseDate(this.tableData.period.weekStart);
@@ -545,7 +592,7 @@ export default {
       return (this.tableData && this.tableData.teamWarnings) || [];
     },
     filterChips: function () {
-      return (this.tableData && this.tableData.buckets) || [
+      var buckets = (this.tableData && this.tableData.buckets) ? this.tableData.buckets.slice() : [
         { key: "all", label: "All statuses", count: 0 },
         { key: "0-24", label: "0–24%", count: 0 },
         { key: "25-49", label: "25–49%", count: 0 },
@@ -554,15 +601,26 @@ export default {
         { key: "100", label: "100% ready for Handover 1", count: 0 },
         { key: "gaps", label: "Open planning gaps", count: 0 },
       ];
+      buckets.push({
+        key: "in-period",
+        label: "In selected period",
+        count: this.inPeriodCount,
+      });
+      return buckets;
     },
     filteredProjects: function () {
       var list = (this.tableData && this.tableData.projects) || [];
       var filter = this.activeFilter;
       var q = (this.searchQuery || "").trim().toLowerCase();
+      var pStart = this.periodStart;
+      var pEnd = this.periodEnd;
+      var self = this;
 
       return list.filter(function (p) {
-        // Status chip filter
-        if (filter === "gaps") {
+        // Status or in-period chip filter
+        if (filter === "in-period") {
+          if (!self.isProjectInPeriod(p, pStart, pEnd)) return false;
+        } else if (filter === "gaps") {
           if (!p.planningGap || !p.planningGap.hasGap) return false;
         } else if (filter !== "all") {
           if (p.bucket !== filter) return false;
@@ -649,6 +707,37 @@ export default {
     },
     resetPeriod: function () {
       this.$emit("reset-period");
+    },
+    openDatePicker: function () {
+      var input = this.$refs.tableDatePicker;
+      if (!input) return;
+      if (typeof input.showPicker === "function") {
+        try {
+          input.showPicker();
+          return;
+        } catch (e) {
+          // fallback to focus and click
+        }
+      }
+      input.focus();
+      input.click();
+    },
+    onDatePicked: function (event) {
+      var val = event && event.target && event.target.value ? event.target.value.trim() : null;
+      if (val) {
+        this.$emit("select-date", val);
+      }
+    },
+    isProjectInPeriod: function (p, periodStart, periodEnd) {
+      if (!p || !periodStart || !periodEnd) return false;
+      var start = p.startDate || p.actualStartDate || p.startPrepDate || p.desiredStartDate;
+      var end = p.actualEnd || p.endDate || p.plannedEnd || p.desiredStartDate;
+
+      if (!start && !end) return false;
+      if (start && start > periodEnd) return false;
+      if (end && end < periodStart) return false;
+
+      return true;
     },
     fetchTableData: async function () {
       if (!this.organizationId) return;
@@ -1068,6 +1157,12 @@ export default {
   border-color: #ef4444;
 }
 
+.portfolio-table-view__chip--period.portfolio-table-view__chip--active {
+  background: var(--iz-accent-bg, #e0f2fe);
+  color: var(--iz-accent-bg-text, #0369a1);
+  border-color: var(--iz-accent, #0284c7);
+}
+
 .portfolio-table-view__chip-count {
   opacity: 0.9;
 }
@@ -1453,16 +1548,42 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 7px 10px;
+  border: 0;
   border-right: 1px solid var(--iz-border);
+  background: transparent;
   color: var(--iz-text);
   font-size: var(--iz-fs-sm);
   font-weight: 600;
   white-space: nowrap;
+  font-family: inherit;
 }
 .portfolio-table-view .portfolio__period-display svg {
   width: 15px;
   height: 15px;
   color: var(--iz-accent);
+}
+.portfolio-table-view .portfolio__period-display--clickable {
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+}
+.portfolio-table-view .portfolio__period-display--clickable:hover {
+  background: var(--iz-surface-hover, rgba(0, 0, 0, 0.04));
+  color: var(--iz-accent);
+}
+.portfolio-table-view .portfolio__period-display--clickable:focus-visible {
+  outline: 2px solid var(--iz-accent);
+  outline-offset: -2px;
+}
+.portfolio-table-view .portfolio__date-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
 }
 .portfolio-table-view .portfolio__capacity {
   display: flex;
