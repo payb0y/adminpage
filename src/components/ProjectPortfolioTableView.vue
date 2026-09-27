@@ -230,6 +230,10 @@
       <summary>Schedule issues ({{ scheduleIssues.length }})</summary>
       <p v-for="issue in scheduleIssues" :key="issue.id">{{ issue.projectName }}: {{ issue.note }}</p>
     </details>
+    <details v-if="planningConflicts.length" class="iz-card portfolio-table-view__issues">
+      <summary>Planning conflicts ({{ planningConflicts.length }})</summary>
+      <p v-for="conflict in planningConflicts" :key="conflict.id">{{ conflict.projectName }}: {{ conflict.note }}</p>
+    </details>
 
     <!-- ── Table Section ── -->
     <section class="iz-card portfolio-table-view__table-card">
@@ -591,6 +595,7 @@ export default {
     },
     planningGaps: function () { return (this.tableData && this.tableData.planningGaps) || []; },
     scheduleIssues: function () { return (this.tableData && this.tableData.scheduleIssues) || []; },
+    planningConflicts: function () { return (this.tableData && this.tableData.planningConflicts) || []; },
     listedGaps: function () {
       if (this.gapFocusProject) {
         var ids = this.gapFocusProject.planningGap.gapIds || [];
