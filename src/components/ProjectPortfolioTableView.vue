@@ -219,6 +219,18 @@
       </div>
     </div>
 
+    <section v-if="activeFilter === 'gaps' && planningGaps.length" class="iz-card portfolio-table-view__gap-list" aria-label="Planning gap intervals">
+      <h4>Open planning gaps ({{ planningGaps.length }})</h4>
+      <button v-for="gap in planningGaps" :key="gap.id" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="selectedGap = gap">
+        {{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }} · {{ gap.name }} · {{ gap.startDate }} – {{ gap.endDate }} ({{ gap.duration }})
+      </button>
+    </section>
+    <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="selectedGap = null" @open-project="$emit('select-project', $event)" />
+    <details v-if="scheduleIssues.length" class="iz-card portfolio-table-view__issues">
+      <summary>Schedule issues ({{ scheduleIssues.length }})</summary>
+      <p v-for="issue in scheduleIssues" :key="issue.id">{{ issue.projectName }}: {{ issue.note }}</p>
+    </details>
+
     <!-- ── Table Section ── -->
     <section class="iz-card portfolio-table-view__table-card">
       <header class="portfolio-table-view__table-header">
@@ -357,9 +369,10 @@
 
               <!-- 11. Planning Gap -->
               <td v-if="visibleColumns.gap">
-                <span class="iz-badge" :class="project.planningGap.hasGap ? 'iz-badge--danger' : 'iz-badge--success'">
+                <button v-if="project.planningGap.hasGap" type="button" class="iz-badge iz-badge--danger portfolio-table-view__gap-button" @click.stop="openProjectGap(project)">
                   {{ project.planningGap.display }}
-                </span>
+                </button>
+                <span v-else class="iz-badge iz-badge--success">None</span>
               </td>
 
               <!-- 12. Row Action Chevron -->
@@ -432,9 +445,11 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import PlanningGapDetails from "./PlanningGapDetails.vue";
 
 export default {
   name: "ProjectPortfolioTableView",
+  components: { PlanningGapDetails },
   props: {
     organizationId: { type: Number, default: null },
     scope: { type: String, default: "all" },
@@ -447,6 +462,7 @@ export default {
   data: function () {
     return {
       tableData: null,
+      selectedGap: null,
       loading: false,
       error: null,
       tableRequestId: 0,
@@ -572,6 +588,8 @@ export default {
     teamWarnings: function () {
       return (this.tableData && this.tableData.teamWarnings) || [];
     },
+    planningGaps: function () { return (this.tableData && this.tableData.planningGaps) || []; },
+    scheduleIssues: function () { return (this.tableData && this.tableData.scheduleIssues) || []; },
     filterChips: function () {
       var buckets = (this.tableData && this.tableData.buckets) ? this.tableData.buckets.slice() : [
         { key: "all", label: "All statuses", count: 0 },
@@ -670,6 +688,7 @@ export default {
       this.currentPage = 1;
     },
     tableData: function () {
+      this.selectedGap = null;
       this.clampPage();
     },
     sortedProjects: function () {
@@ -680,6 +699,10 @@ export default {
     this.fetchTableData();
   },
   methods: {
+    openProjectGap: function (project) {
+      var ids = (project.planningGap && project.planningGap.gapIds) || [];
+      this.selectedGap = this.planningGaps.find(function (gap) { return ids.indexOf(gap.id) !== -1; }) || null;
+    },
     setScope: function (scope) {
       this.$emit("update:scope", scope);
     },
@@ -733,6 +756,7 @@ export default {
       var requestId = ++this.tableRequestId;
       this.loading = true;
       this.error = null;
+      this.selectedGap = null;
       try {
         var params = { scope: this.scope };
         if (this.weekStart) {
@@ -869,6 +893,11 @@ export default {
 </script>
 
 <style scoped>
+.portfolio-table-view__gap-list { display: grid; gap: 6px; padding: 14px; }
+.portfolio-table-view__gap-list h4 { margin: 0 0 4px; }
+.portfolio-table-view__gap-list button { justify-self: start; text-align: left; }
+.portfolio-table-view__issues { padding: 14px; }
+.portfolio-table-view__gap-button { border: 0; cursor: pointer; }
 .portfolio-table-view {
   display: grid;
   gap: var(--iz-gap);
