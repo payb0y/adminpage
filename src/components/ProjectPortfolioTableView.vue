@@ -219,13 +219,13 @@
       </div>
     </div>
 
-    <section v-if="activeFilter === 'gaps' && planningGaps.length" class="iz-card portfolio-table-view__gap-list" aria-label="Planning gap intervals">
-      <h4>Open planning gaps ({{ planningGaps.length }})</h4>
-      <button v-for="gap in planningGaps" :key="gap.id" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="selectedGap = gap">
+    <section v-if="listedGaps.length" class="iz-card portfolio-table-view__gap-list" aria-label="Planning gap intervals">
+      <h4>{{ gapListTitle }} ({{ listedGaps.length }})</h4>
+      <button v-for="gap in listedGaps" :key="gap.id" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="selectedGap = gap">
         {{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }} · {{ gap.name }} · {{ gap.startDate }} – {{ gap.endDate }} ({{ gap.duration }})
       </button>
     </section>
-    <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="selectedGap = null" @open-project="$emit('select-project', $event)" />
+    <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="closeGapDetails" @open-project="openGapProject" />
     <details v-if="scheduleIssues.length" class="iz-card portfolio-table-view__issues">
       <summary>Schedule issues ({{ scheduleIssues.length }})</summary>
       <p v-for="issue in scheduleIssues" :key="issue.id">{{ issue.projectName }}: {{ issue.note }}</p>
@@ -463,6 +463,7 @@ export default {
     return {
       tableData: null,
       selectedGap: null,
+      gapFocusProject: null,
       loading: false,
       error: null,
       tableRequestId: 0,
@@ -590,6 +591,16 @@ export default {
     },
     planningGaps: function () { return (this.tableData && this.tableData.planningGaps) || []; },
     scheduleIssues: function () { return (this.tableData && this.tableData.scheduleIssues) || []; },
+    listedGaps: function () {
+      if (this.gapFocusProject) {
+        var ids = this.gapFocusProject.planningGap.gapIds || [];
+        return this.planningGaps.filter(function (gap) { return ids.indexOf(gap.id) !== -1; });
+      }
+      return this.activeFilter === "gaps" ? this.planningGaps : [];
+    },
+    gapListTitle: function () {
+      return this.gapFocusProject ? "Planning gaps · " + this.gapFocusProject.name : "Open planning gaps";
+    },
     filterChips: function () {
       var buckets = (this.tableData && this.tableData.buckets) ? this.tableData.buckets.slice() : [
         { key: "all", label: "All statuses", count: 0 },
@@ -598,7 +609,7 @@ export default {
         { key: "50-74", label: "50–74%", count: 0 },
         { key: "75-99", label: "75–99% / Upcoming", count: 0 },
         { key: "100", label: "100% ready for Handover 1", count: 0 },
-        { key: "gaps", label: "Open planning gaps", count: 0 },
+        { key: "gaps", label: "Projects with gaps", count: 0 },
       ];
       buckets.push({
         key: "in-period",
@@ -680,6 +691,7 @@ export default {
     },
     activeFilter: function () {
       this.currentPage = 1;
+      this.gapFocusProject = null;
     },
     searchQuery: function () {
       this.currentPage = 1;
@@ -689,6 +701,7 @@ export default {
     },
     tableData: function () {
       this.selectedGap = null;
+      this.gapFocusProject = null;
       this.clampPage();
     },
     sortedProjects: function () {
@@ -700,8 +713,20 @@ export default {
   },
   methods: {
     openProjectGap: function (project) {
-      var ids = (project.planningGap && project.planningGap.gapIds) || [];
+      // Several gaps: list them all so each can be opened, not only the first.
+      this.gapFocusProject = (project.planningGap.gapIds || []).length > 1 ? project : null;
+      var ids = project.planningGap.gapIds || [];
       this.selectedGap = this.planningGaps.find(function (gap) { return ids.indexOf(gap.id) !== -1; }) || null;
+    },
+    closeGapDetails: function () {
+      this.selectedGap = null;
+      this.gapFocusProject = null;
+    },
+    openGapProject: function (project) {
+      // The detail view needs the full table row; gap anchors carry only id and name.
+      var rows = (this.tableData && this.tableData.projects) || [];
+      var row = rows.find(function (p) { return Number(p.id) === Number(project.id); });
+      this.$emit("select-project", row || project);
     },
     setScope: function (scope) {
       this.$emit("update:scope", scope);

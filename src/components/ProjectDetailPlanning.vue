@@ -47,7 +47,7 @@
         <!-- 1. Readiness -->
         <div class="detail-planning__kpi-tile">
           <span class="detail-planning__kpi-label">Readiness</span>
-          <strong class="detail-planning__kpi-val">{{ project.completionPct || 0 }}%</strong>
+          <strong class="detail-planning__kpi-val">{{ project.completionPct == null ? '—' : project.completionPct + '%' }}</strong>
           <span class="iz-badge iz-badge--sm" :class="bucketBadgeClass">{{ bucketBadgeLabel }}</span>
         </div>
 

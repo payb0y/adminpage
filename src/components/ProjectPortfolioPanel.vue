@@ -262,7 +262,7 @@
                 <svg class="portfolio__row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
               </div>
             </div>
-            <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="selectedGap = null" @open-project="onOpenDetailPlanning" />
+            <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="selectedGap = null" @open-project="openGapProject" />
             <details v-if="scheduleIssues.length" class="portfolio__schedule-issues">
               <summary>Schedule issues ({{ scheduleIssues.length }})</summary>
               <p v-for="issue in scheduleIssues" :key="issue.id">{{ issue.projectName }}: {{ issue.note }}</p>
@@ -497,6 +497,22 @@ export default {
     onOpenDetailPlanning: function (project) {
       this.selectedDetailProject = project;
       this.viewMode = "detail";
+    },
+    openGapProject: async function (project) {
+      // Gap anchors carry only id and name; the timeline needs the full table
+      // row. Completed projects are not in the table and open with what we have.
+      var row = null;
+      try {
+        var params = { scope: this.viewScope, weekStart: this.displayedWeekStart };
+        if (this.viewScope === "team" && this.hasPositiveTeamId) {
+          params.teamId = Number(this.selectedTeamId);
+        }
+        var response = await axios.get(generateUrl("/apps/projectcreatoraio/api/v1/portfolio/table"), { params: params });
+        row = (response.data.projects || []).find(function (p) { return Number(p.id) === Number(project.id); }) || null;
+      } catch (e) {
+        row = null;
+      }
+      this.onOpenDetailPlanning(row || project);
     },
     onGapKeydown: function (event, gap) {
       if (event.key === "Enter" || event.key === " ") {
