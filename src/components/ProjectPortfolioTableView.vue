@@ -222,7 +222,7 @@
     <section v-if="listedGaps.length" class="iz-card portfolio-table-view__gap-list" aria-label="Planning gap intervals">
       <h4>{{ gapListTitle }} ({{ listedGaps.length }})</h4>
       <button v-for="gap in listedGaps" :key="gap.id" type="button" class="iz-btn iz-btn--quiet iz-btn--sm" @click="selectedGap = gap">
-        {{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }} · {{ gap.name }} · {{ gap.startDate }} – {{ gap.endDate }} ({{ gap.duration }})
+        {{ gap.type === 'internal' ? 'Initiation cards' : 'Between projects' }} · {{ gap.name }} · {{ gap.startDate }} – {{ gap.endDate }} ({{ gap.duration }})
       </button>
     </section>
     <PlanningGapDetails v-if="selectedGap" :gap="selectedGap" @close="closeGapDetails" @open-project="openGapProject" />

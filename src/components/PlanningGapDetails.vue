@@ -2,7 +2,7 @@
   <section class="gap-details iz-card" aria-label="Planning gap details">
     <header class="gap-details__header">
       <div>
-        <strong>{{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }}</strong>
+        <strong>{{ gap.type === 'internal' ? 'Initiation cards' : 'Between projects' }}</strong>
         <p>{{ gap.startDate }} – {{ gap.endDate }} · {{ gap.duration }}</p>
       </div>
       <button type="button" class="iz-btn iz-btn--quiet iz-btn--sm" aria-label="Close gap details" @click="$emit('close')">Close</button>
