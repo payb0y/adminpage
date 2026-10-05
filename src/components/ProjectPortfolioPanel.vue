@@ -258,7 +258,7 @@
                 <svg class="portfolio__pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
                 <span class="portfolio__gap-copy"><strong>{{ gap.name }}</strong><small>{{ gap.note }}</small></span>
                 <strong>{{ gap.duration }}</strong>
-                <span class="iz-badge iz-badge--danger">{{ gap.type === 'internal' ? 'Inside project' : 'Between projects' }}</span>
+                <span class="iz-badge iz-badge--danger">{{ gap.type === 'internal' ? 'Initiation cards' : 'Between projects' }}</span>
                 <svg class="portfolio__row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
               </div>
             </div>
@@ -272,7 +272,7 @@
 
         <section class="iz-card portfolio__workload">
           <header class="iz-panel__header portfolio__workload-header">
-            <h4 class="iz-panel__title">Weekly work preparation load</h4>
+            <h4 class="iz-panel__title" title="Projects count from their actual start until handover">Weekly execution load</h4>
             <span v-if="capacity" class="portfolio__capacity-note">{{ capacityNote }}</span>
           </header>
           <div v-if="teamWarnings.length" class="portfolio__warnings" role="status">
@@ -296,6 +296,10 @@
               </div>
             </article>
           </div>
+          <details v-if="toSchedule.length" class="portfolio__schedule-issues">
+            <summary>To schedule: no actual start yet ({{ toSchedule.length }})</summary>
+            <p v-for="project in toSchedule" :key="project.id">{{ project.name }}<template v-if="project.desiredStartDate"> · desired {{ formatDate(project.desiredStartDate) }}</template></p>
+          </details>
         </section>
       </div>
     </div>
@@ -417,6 +421,7 @@ export default {
     },
     planningGaps: function () { return (this.capacity && this.capacity.planningGaps) || []; },
     scheduleIssues: function () { return (this.capacity && this.capacity.scheduleIssues) || []; },
+    toSchedule: function () { return (this.capacity && this.capacity.toSchedule) || []; },
     teamWarnings: function () { return (this.capacity && this.capacity.teamWarnings) || []; },
     capacityNote: function () {
       if (!this.capacity || !this.capacity.team) return "";
