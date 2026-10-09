@@ -155,6 +155,43 @@
           />
         </div>
 
+        <!-- ── Sub-section: External collaborators ── -->
+        <div
+          v-if="showExternals"
+          v-show="activeSection === 'externals'"
+          class="insights-panel__section"
+          :id="'insights-section-' + _uid + '-externals'"
+          role="region"
+          aria-label="External collaborators"
+        >
+          <div class="insights-panel__section-title">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="20" y1="8" x2="20" y2="14" />
+              <line x1="23" y1="11" x2="17" y2="11" />
+            </svg>
+            External collaborators
+            <span v-if="externalCount !== null" class="insights-panel__badge">{{ externalCount }}</span>
+          </div>
+          <!-- Load on first selection, like Teams. -->
+          <ExternalCollaboratorsPanel
+            v-if="externalsSeen"
+            :org-id="orgId"
+            @counted="externalCount = $event"
+          />
+        </div>
+
 
         <!-- ── Sub-section: Subscription & Plan ── -->
         <div class="insights-panel__section" v-show="activeSection === 'subscription'" :id="'insights-section-' + _uid + '-subscription'" role="region" aria-label="Subscription &amp; Plan">
@@ -347,6 +384,7 @@
 import OrganizationPanel from "./OrganizationPanel.vue";
 import MembersPanel from "./MembersPanel.vue";
 import TeamsPanel from "./TeamsPanel.vue";
+import ExternalCollaboratorsPanel from "./ExternalCollaboratorsPanel.vue";
 import SubscriptionPanel from "./SubscriptionPanel.vue";
 import BackupsPanel from "./BackupsPanel.vue";
 import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
@@ -359,6 +397,7 @@ export default {
     OrganizationPanel,
     MembersPanel,
     TeamsPanel,
+    ExternalCollaboratorsPanel,
     SubscriptionPanel,
     BackupsPanel,
     StorageMonitoringPanel,
@@ -438,6 +477,8 @@ export default {
       activeSection: "organization",
       teamsSeen: false,
       teamSummary: { teamCount: 0, unassignedCount: 0 },
+      externalsSeen: false,
+      externalCount: null,
       // Mount defaults on first selection and preserve edits between sections.
       settingsSeen: false,
     };
@@ -450,12 +491,22 @@ export default {
       if (section === "settings" && this.showSettings) {
         this.settingsSeen = true;
       }
+      if (section === "externals" && this.showExternals) {
+        this.externalsSeen = true;
+      }
     },
     showTeams: function (visible) {
       if (!visible) {
         this.teamsSeen = false;
         this.teamSummary = { teamCount: 0, unassignedCount: 0 };
         if (this.activeSection === "teams") this.activeSection = "organization";
+      }
+    },
+    showExternals: function (visible) {
+      if (!visible) {
+        this.externalsSeen = false;
+        this.externalCount = null;
+        if (this.activeSection === "externals") this.activeSection = "organization";
       }
     },
     showSettings: function (visible) {
@@ -476,6 +527,9 @@ export default {
       ];
       if (this.showTeams) {
         items.push({ id: "teams", label: "Teams", summary: this.teamNavigationSummary });
+      }
+      if (this.showExternals) {
+        items.push({ id: "externals", label: "External collaborators", summary: this.externalNavigationSummary });
       }
       items.push(
         { id: "subscription", label: "Subscription & Plan", summary: [this.subscription.planName, this.subscription.status].filter(Boolean).join(" · ") },
@@ -509,6 +563,13 @@ export default {
     },
     showSettings: function () {
       return this.canManage && Boolean(this.orgId);
+    },
+    showExternals: function () {
+      return this.canManage && Boolean(this.orgId);
+    },
+    externalNavigationSummary: function () {
+      if (this.externalCount === null) return "Clients and subcontractors on projects";
+      return this.externalCount + (this.externalCount === 1 ? " external" : " externals");
     },
     /* KpiService ships these as {value, label} strings, with the file and note
        counts pre-formatted as "23 pub / 161 priv". Split that into a figure
