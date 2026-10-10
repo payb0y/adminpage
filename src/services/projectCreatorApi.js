@@ -14,10 +14,6 @@ function documentTypesUrl(organizationId, documentTypeId) {
   );
 }
 
-function projectMembersBulkUrl(projectId) {
-  return generateUrl(`/apps/projectcreatoraio/api/v1/projects/${projectId}/members/bulk`);
-}
-
 const requestConfig = {
   headers: {
     "OCS-APIRequest": "true",
@@ -68,15 +64,6 @@ export async function updateOrganizationDocumentType(organizationId, documentTyp
 export async function deleteOrganizationDocumentType(organizationId, documentTypeId) {
   const response = await axios.delete(
     documentTypesUrl(organizationId, documentTypeId),
-    requestConfig,
-  );
-  return response.data;
-}
-
-export async function addProjectTeamMembers(projectId, teamId) {
-  const response = await axios.post(
-    projectMembersBulkUrl(projectId),
-    { teamId: Number(teamId), drasciRoles: ["informed"] },
     requestConfig,
   );
   return response.data;
