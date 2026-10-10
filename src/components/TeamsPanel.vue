@@ -62,10 +62,10 @@
             <strong>{{ team.memberCount }}</strong>
             {{ team.memberCount === 1 ? "member" : "members" }}
           </span>
-          <span class="teams-panel__load-badge" :class="'teams-panel__load--' + teamLoadStatus(team).tone">
-            <strong>{{ teamProjects(team.id).length }} / {{ formatNumber(team.projectCapacity) }}</strong> projects
+          <span>
+            <strong>{{ teamProjects(team.id).length }}</strong>
+            {{ teamProjects(team.id).length === 1 ? "project" : "projects" }}
           </span>
-          <span>{{ formatNumber(team.fte) }} FTE x {{ formatNumber(team.projectsPerFte) }}</span>
         </div>
         <div class="teams-panel__actions">
           <button
@@ -89,8 +89,9 @@
           <div>
             <h3 :id="'team-projects-title-' + _uid">{{ projectsModalTeam.name }} — Projects</h3>
             <p class="teams-panel__modal-subtitle">
-              Capacity: <strong>{{ teamProjects(projectsModalTeam.id).length }} / {{ formatNumber(projectsModalTeam.projectCapacity) }}</strong> projects
-              <span class="iz-badge" :class="loadBadgeClass(projectsModalTeam)">{{ loadBadgeText(projectsModalTeam) }}</span>
+              <strong>{{ teamProjects(projectsModalTeam.id).length }}</strong> {{ teamProjects(projectsModalTeam.id).length === 1 ? "project" : "projects" }}
+              · <strong>{{ projectsModalTeam.memberCount }}</strong> {{ projectsModalTeam.memberCount === 1 ? "member" : "members" }}
+              — every member works on every project of the team
             </p>
           </div>
           <button type="button" class="iz-close iz-close--sm" aria-label="Close" @click="closeProjectsModal">&times;</button>
@@ -192,7 +193,7 @@
                 >
                   <option value="" selected disabled>Select team...</option>
                   <option v-for="t in teams" :key="t.id" :value="t.id">
-                    {{ t.name }} ({{ teamProjects(t.id).length }}/{{ formatNumber(t.projectCapacity) }})
+                    {{ t.name }} ({{ teamProjects(t.id).length }} {{ teamProjects(t.id).length === 1 ? "project" : "projects" }})
                   </option>
                 </select>
                 <span class="teams-panel__assignment-status" aria-live="polite">
@@ -222,20 +223,6 @@
 
             <label class="iz-label" :for="'team-description-' + _uid">Description</label>
             <textarea :id="'team-description-' + _uid" v-model="draft.description" class="iz-input" rows="2" :disabled="saving" />
-
-            <div class="teams-panel__capacity-fields">
-              <label class="iz-label" :for="'team-fte-' + _uid">
-                FTE
-                <input :id="'team-fte-' + _uid" v-model.number="draft.fte" class="iz-input" type="number" min="0" step="any" required :disabled="saving">
-              </label>
-              <label class="iz-label" :for="'team-projects-per-fte-' + _uid">
-                Projects per FTE
-                <input :id="'team-projects-per-fte-' + _uid" v-model.number="draft.projectsPerFte" class="iz-input" type="number" min="0.01" step="any" required :disabled="saving">
-              </label>
-            </div>
-            <p class="teams-panel__capacity-preview">
-              Capacity: <strong>{{ draftCapacity }}</strong> concurrent projects
-            </p>
 
             <fieldset class="teams-panel__members">
               <legend class="iz-label">Members</legend>
@@ -337,15 +324,7 @@ export default {
       return this.draft.id !== null;
     },
     canSave: function () {
-      return this.draft.name.trim() !== ""
-        && Number.isFinite(Number(this.draft.fte))
-        && Number(this.draft.fte) >= 0
-        && Number.isFinite(Number(this.draft.projectsPerFte))
-        && Number(this.draft.projectsPerFte) > 0;
-    },
-    draftCapacity: function () {
-      if (!this.canSave) return "—";
-      return this.formatNumber(Number(this.draft.fte) * Number(this.draft.projectsPerFte));
+      return this.draft.name.trim() !== "";
     },
     unassignedProjects: function () {
       return this.assignments.filter(function (project) {
@@ -372,13 +351,10 @@ export default {
   },
   methods: {
     emptyDraft: function () {
-      return { id: null, name: "", description: "", fte: 1, projectsPerFte: 1 };
+      return { id: null, name: "", description: "" };
     },
     memberUid: function (member) {
       return member.userId || member.uid || "";
-    },
-    formatNumber: function (value) {
-      return Number(value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
     },
     initials: function (name) {
       return String(name || "T")
@@ -450,8 +426,6 @@ export default {
         id: team.id,
         name: team.name,
         description: team.description || "",
-        fte: Number(team.fte),
-        projectsPerFte: Number(team.projectsPerFte),
       };
       this.selectedMembers = (team.members || []).map(function (member) {
         return member.uid;
@@ -473,8 +447,6 @@ export default {
         var payload = {
           name: this.draft.name.trim(),
           description: this.draft.description.trim() || null,
-          fte: Number(this.draft.fte),
-          projectsPerFte: Number(this.draft.projectsPerFte),
         };
         var team;
         if (this.editing) {
@@ -539,25 +511,6 @@ export default {
       return this.assignments.filter(function (p) {
         return p.team && p.team.id === teamId;
       });
-    },
-    teamLoadStatus: function (team) {
-      if (!team) return { tone: "neutral", text: "0 assigned" };
-      var count = this.teamProjects(team.id).length;
-      var cap = Number(team.projectCapacity || 0);
-      if (cap <= 0) return { tone: "neutral", text: count + " assigned" };
-      if (count > cap) return { tone: "danger", text: count + " / " + this.formatNumber(cap) + " (Over capacity)" };
-      if (count === cap) return { tone: "warning", text: count + " / " + this.formatNumber(cap) + " (At capacity)" };
-      return { tone: "success", text: count + " / " + this.formatNumber(cap) + " (" + (cap - count) + " available)" };
-    },
-    loadBadgeClass: function (team) {
-      var status = this.teamLoadStatus(team);
-      if (status.tone === "danger") return "iz-badge--danger";
-      if (status.tone === "warning") return "iz-badge--warning";
-      if (status.tone === "success") return "iz-badge--success";
-      return "";
-    },
-    loadBadgeText: function (team) {
-      return this.teamLoadStatus(team).text;
     },
     openTeamProjects: function (team) {
       this.projectsModalTeam = team;
@@ -671,10 +624,6 @@ export default {
 .teams-panel__avatar { flex: 0 0 auto; }
 .teams-panel__facts { flex-wrap: wrap; color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); }
 .teams-panel__facts span + span { padding-left: var(--iz-gap-tight); border-left: 1px solid var(--iz-border); }
-.teams-panel__load-badge strong { color: var(--iz-text); }
-.teams-panel__load--success { color: var(--iz-success); }
-.teams-panel__load--warning { color: var(--iz-warning); font-weight: 600; }
-.teams-panel__load--danger { color: var(--iz-danger); font-weight: 700; }
 .teams-panel__actions { justify-self: end; }
 .teams-panel__projects-btn { font-weight: 600; }
 .teams-panel__modal { width: min(640px, 100%); }
@@ -728,9 +677,6 @@ export default {
 .teams-panel__assignment-status { color: var(--iz-text-muted); font-size: var(--iz-fs-xs); }
 .teams-panel__assignment-error { color: var(--iz-danger-text); font-size: var(--iz-fs-xs); width: 100%; }
 .teams-panel__form { display: grid; gap: var(--iz-gap-tight); }
-.teams-panel__capacity-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--iz-gap); }
-.teams-panel__capacity-fields label { display: grid; gap: 4px; }
-.teams-panel__capacity-preview { margin: 0; padding: var(--iz-pad-row); border-radius: var(--iz-radius); background: var(--iz-accent-bg); color: var(--iz-accent-bg-text); font-size: var(--iz-fs-sm); }
 .teams-panel__members { display: grid; gap: var(--iz-gap-tight); max-height: 240px; margin: 0; padding: var(--iz-pad-card); overflow-y: auto; border: 1px solid var(--iz-border); border-radius: var(--iz-radius); }
 .teams-panel__member { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, auto); align-items: center; gap: var(--iz-gap-tight); color: var(--iz-text); font-size: var(--iz-fs-sm); }
 .teams-panel__member small { color: var(--iz-text-secondary); font-size: var(--iz-fs-xs); overflow-wrap: anywhere; }
@@ -748,7 +694,6 @@ export default {
   .teams-panel__unassigned-item { flex-direction: column; align-items: flex-start; }
   .teams-panel__project-item-actions,
   .teams-panel__unassigned-assign-action { width: 100%; justify-content: space-between; }
-  .teams-panel__capacity-fields { grid-template-columns: minmax(0, 1fr); }
   .teams-panel__member { grid-template-columns: auto minmax(0, 1fr); }
   .teams-panel__member small { grid-column: 2; }
 }
