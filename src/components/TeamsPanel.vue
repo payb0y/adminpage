@@ -273,7 +273,6 @@ import {
   removeTeamMember,
   updateOrganizationTeam,
 } from "../services/organizationApi";
-import { addProjectTeamMembers } from "../services/projectCreatorApi";
 
 export default {
   name: "TeamsPanel",
@@ -546,17 +545,6 @@ export default {
         this.assignments = await assignProjectTeam(this.orgId, projectId, teamId);
         this.syncAssignmentSelections();
         this.emitSummary();
-        if (teamId !== null) {
-          try {
-            await addProjectTeamMembers(projectId, teamId);
-          } catch (error) {
-            this.$set(
-              this.assignmentErrors,
-              projectId,
-              this.message(error, "The team was assigned, but its members could not all be added to the project."),
-            );
-          }
-        }
         this.$emit("changed");
       } catch (error) {
         this.$set(this.assignmentErrors, projectId, this.message(error, "The assignment could not be saved."));
