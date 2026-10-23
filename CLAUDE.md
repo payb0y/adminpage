@@ -12,15 +12,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run build          # Production build (required after any src/ change)
 npm run dev            # Development build
 npm run watch          # Development build with file watching
+npm test               # node --test tests/*.test.mjs
 ```
+
+Node is not installed inside WSL; run these in the `node:22` image:
+`docker run --rm -v "$PWD":/app -w /app node:22 npm run build`.
 
 After building, hard-refresh browser with Ctrl+Shift+R.
 
 ```bash
-# Enable/disable in Nextcloud (container is master-nextcloud-1, not nextcloud-dev)
-docker exec -u www-data master-nextcloud-1 php occ app:enable adminpage
-docker exec -u www-data master-nextcloud-1 php occ app:disable adminpage
+# Enable/disable in Nextcloud (container is nextcloud-app, from
+# ../../../docker-compose.yml)
+docker exec -u www-data nextcloud-app php occ app:enable adminpage
+docker exec -u www-data nextcloud-app php occ app:disable adminpage
 ```
+
+**A new route needs a version bump.** Nextcloud caches routes per app
+version, so a route added to `appinfo/routes.php` 404s until `<version>` in
+`appinfo/info.xml` goes up and `php occ upgrade` runs.
 
 Reloading the page does **not** re-fetch the bundle. In a browser session,
 `fetch(src, {cache: 'reload'})` for each `script[src*=adminpage]` and then
@@ -63,7 +72,7 @@ Entry key in `webpack.config.js` **must remain `main`** (and `public` for public
 
 ## Styling — the In Zicht theme owns it
 
-**Read `/home/payboy/src/inzicht-nextcloud-theme/USING-THE-THEME.md` before
+**Read `/home/payboy/src/inzicht-stack/inzicht-nextcloud-theme/USING-THE-THEME.md` before
 touching any style.** It is the canonical guide, shared with `superadminpage`
 and `employee_dashboard`, and it is the file to edit when a rule changes.
 
@@ -86,12 +95,46 @@ stopped the app following dark mode; the backdrop is now
   after the app bundle and wins at equal specificity.
 - **Vendored from the theme:** `ConfirmDialog.vue` (no `alert()`/`confirm()`)
   and `src/lib/izChart.js`. Changes to either must be copied to the other apps.
+- **Vendored across the three apps:** `src/components/ProjectTimeline.vue`,
+  `src/lib/projectTimeline.mjs` and `tests/projectTimeline.test.mjs` are
+  identical in adminpage, superadminpage and employee_dashboard. See
+  "Project Timeline" below.
 - A handful of documented local overrides remain and are deliberate: the alert
   tints on the Projects and Tasks KPI footers, toolbar control widths, the org
   avatar's 44px scale.
 - Dead components were removed in Aug 2026 — `AlertsPanel`, `AlertCard`,
   `OrgHeaderBar`, `KpiCard`, `FinancialPanel`, `OrgOverviewPanel`, `SafetyPanel`
   no longer exist. `lib/Service/FinancialService.php` is now orphaned.
+
+## Project Timeline
+
+The Project Details card shows a project's plan as projectcreatoraio makes it:
+the Overview's "5. Timeline" figures (Initiation / Execution / Delivery, the
+server's status and float, % of the timeline passed) over the Planning tab's
+Gantt, read-only. Nothing is recalculated here; `projectTimeline.mjs` only words
+and places projectcreatoraio's data.
+
+**The Gantt is kept identical in logic to the Planning tab** (projectcreatoraio
+`src/components/ProjectTimeline/GanttChart.vue` and `rows/SystemPlanningRow.vue`):
+the same range and padding, px-per-day zoom (4px default, the same steps),
+year/month/ISO-week header, System Planning row with its markers and mini
+legend, phase and card rows, custom timeline items, guide lines, today, a
+Status column, delay badges, ghost bars, dependency arrows, the hover date
+guide and drag-to-scroll. What it leaves out is editing: Add Item, What-If,
+the Actions column. When the Planning tab changes, port the change; the tests
+name each rule after the Planning method it mirrors.
+
+- **Signed in:** the browser makes the Planning tab's two requests,
+  `/apps/projectcreatoraio/api/v1/projects/{id}/timeline/summary` and
+  `…/timeline` (the items), which check access themselves (global admin,
+  organisation admin, or project member). Like the Planning tab, they also
+  sync the calculated card dates to Deck and refresh the system items.
+- **Public share view:** no user, so `GET /api/public/{token}/projects/{id}/timeline`
+  builds the same summary server-side (`ProjectTimelineService`) with the
+  dependencies, delay analysis and items folded in, only for a project of the
+  link's organisation, and without either sync.
+- Changing the card: edit adminpage's copy, run `npm test`, copy the three
+  files to superadminpage and employee_dashboard, rebuild all three.
 
 ## Database Conventions
 
@@ -103,22 +146,23 @@ stopped the app following dark mode; the backdrop is now
 
 ## Database Access (Dev Environment)
 
-The live database is **PostgreSQL in `nc_pg`**. Earlier revisions of this file
+The live database is **PostgreSQL in `nextcloud-db`** (it was `nc_pg` before the
+stack moved to `../../../docker-compose.yml`). Earlier revisions of this file
 pointed at MariaDB in `nc_db`; that is not what the app reads, and
 `master-database-mysql-1` holds an empty skeleton of the same schema that is
 easy to mistake for the real thing.
 
 ```bash
 # psql shell
-docker exec -it nc_pg psql -U nextcloud -d nextcloud
+docker exec -it nextcloud-db psql -U nextcloud -d nextcloud
 
 # one-shot query
-docker exec nc_pg psql -U nextcloud -d nextcloud -c "SELECT ..."
+docker exec nextcloud-db psql -U nextcloud -d nextcloud -c "SELECT ..."
 ```
 
 Database name is `nextcloud`, table prefix `oc_`.
 
-**Start `nc_pg` before `master-nextcloud-1`.** If Nextcloud boots without its
+**Start `nextcloud-db` before `nextcloud-app`.** If Nextcloud boots without its
 database it runs `maintenance:install` and overwrites `config.php`, losing
 `theme=inzicht`, the pgsql connection and the instance secrets. No data is lost,
 but the instance has to be rebuilt by hand.
@@ -132,6 +176,7 @@ but the instance has to be rebuilt by hand.
 | `GET /api/upcoming-tasks` | `DashboardController#getUpcomingTasks` | Proxies Deck upcoming API |
 | `GET /public/{token}` | `PublicPageController#index` | Render public dashboard page |
 | `GET /api/public/{token}` | `PublicDashboardController#getData` | Public dashboard JSON |
+| `GET /api/public/{token}/projects/{projectId}/timeline` | `PublicDashboardController#getProjectTimeline` | One project's timeline summary for the public view |
 | `GET /api/public-links` | `DashboardController#listPublicLinks` | List org's public links |
 | `POST /api/public-links` | `DashboardController#createPublicLink` | Create public link |
 | `DELETE /api/public-links/{id}` | `DashboardController#revokePublicLink` | Revoke link |

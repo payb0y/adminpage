@@ -29,6 +29,7 @@
       :task-completion-projects="data.taskCompletionProjects"
       :performance-details="data.performanceDetails || null"
       :project-details="data.projectDetails || []"
+      :public-token="token"
     />
 
     <!-- ── Footer ── -->
@@ -56,6 +57,7 @@ export default {
   },
   props: {
     data: { type: Object, required: true },
+    token: { type: String, default: null },
   },
   computed: {
     projectsKpi() {

@@ -55,40 +55,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Delivery window — full-width footer, same band as TasksKpiCard's
-         oldest-task footer and ProjectsKpiCard's issue line.
-
-         Shows what a percentage can't: the actual dates, where today falls
-         between them, and where each project's deadline lands. It previously
-         drew a bar of the elapsed percentage, which the hero already states —
-         a second rendering of one number rather than a second fact. -->
-    <div
-      v-if="schedule"
-      class="iz-kpi__footer timeline-kpi__rail-wrap"
-      :title="scheduleTitle"
-    >
-      <span class="timeline-kpi__rail-date">{{ formatDate(schedule.start) }}</span>
-      <div class="timeline-kpi__rail">
-        <div
-          class="timeline-kpi__rail-fill"
-          :style="{ width: schedule.todayPct + '%' }"
-        ></div>
-        <span
-          v-for="(d, i) in schedule.deadlines"
-          :key="i"
-          class="timeline-kpi__rail-deadline"
-          :style="{ left: d.pct + '%' }"
-          :title="d.label + ' due ' + formatDate(d.date)"
-        ></span>
-        <span
-          class="timeline-kpi__rail-now"
-          :style="{ left: schedule.todayPct + '%' }"
-          title="Today"
-        ></span>
-      </div>
-      <span class="timeline-kpi__rail-date">{{ formatDate(schedule.end) }}</span>
-    </div>
   </div>
 </template>
 
@@ -129,36 +95,6 @@ export default {
     prepTime: function () {
       return this.metricsMap["Avg Required Prep Time"] || "0 wks";
     },
-    /* The row has no room to name each deadline, so they go in a title. */
-    scheduleTitle: function () {
-      var s = this.schedule;
-      if (!s) return "";
-      var self = this;
-      var due = s.deadlines
-        .map(function (d) {
-          return d.label + " due " + self.formatDate(d.date);
-        })
-        .join(", ");
-      return (
-        "Delivery window " +
-        this.formatDate(s.start) +
-        " to " +
-        this.formatDate(s.end) +
-        (due ? " \u2014 " + due : "")
-      );
-    },
-    /* null when no project has a start and end date, which omits the rail
-       rather than drawing an empty track. */
-    schedule: function () {
-      var s = this.kpi.schedule;
-      if (!s || !s.start || !s.end) return null;
-      return {
-        start: s.start,
-        end: s.end,
-        todayPct: typeof s.todayPct === "number" ? s.todayPct : 0,
-        deadlines: Array.isArray(s.deadlines) ? s.deadlines : [],
-      };
-    },
     scheduleElapsed: function () {
       var val = this.metricsMap["Avg Schedule Elapsed"];
       if (val === undefined || val === null) return null;
@@ -193,20 +129,6 @@ export default {
     },
   },
   methods: {
-    /* '2026-10-23' -> '23 Oct'. Built from parts rather than toLocaleDateString
-       so the label can't run long enough to break the rail's single row. */
-    formatDate: function (iso) {
-      var parts = String(iso).split("-");
-      if (parts.length !== 3) return iso;
-      var months = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-      ];
-      var m = parseInt(parts[1], 10);
-      var d = parseInt(parts[2], 10);
-      if (!m || !d || m < 1 || m > 12) return iso;
-      return d + " " + months[m - 1];
-    },
     /* Resolve theme tokens at render time rather than hardcoding hexes: the
        chart then follows the In Zicht palette, and light/dark automatically,
        instead of drifting from it. getComputedStyle resolves the var() chain,
@@ -224,10 +146,9 @@ export default {
       var track = "rgba(0,0,0,0.06)";
 
       /* One ring: completion. It used to carry a second, inner ring for
-         schedule elapsed, which drew the same number the rail below already
-         showed — and at 0% completion the outer ring is invisible, so the
-         elapsed arc read as the card's only progress. Elapsed now lives once,
-         as a figure in the hero. */
+         schedule elapsed — and at 0% completion the outer ring is invisible,
+         so the elapsed arc read as the card's only progress. Elapsed now
+         lives once, as a figure in the hero. */
       var datasets = [
         {
           data: [rate, 100 - rate],
@@ -283,73 +204,6 @@ export default {
 
 .timeline-kpi__chart-wrap {
   flex-shrink: 0;
-}
-
-
-
-
-
-
-/* ── Schedule rail ──
-   Geometry copied from .tasks-kpi__oldest so the two footers occupy the same
-   band: same 8px/10px padding, same 8px radius, same 11px type, same
-   margin-top:auto pinning it to the card's bottom. */
-/* Single row so this footer resolves to the same height as
-   .tasks-kpi__oldest and .projects-kpi__issues and the three sit on one band.
-   A stacked version with the dates underneath came out 39px against their 31
-   and broke the line. */
-/* Band geometry from .iz-kpi__footer; only the wider gap this row needs
-   between its two dates and the rail is local. */
-.timeline-kpi__rail-wrap {
-  gap: 8px;
-}
-
-.timeline-kpi__rail-date {
-  flex-shrink: 0;
-  color: var(--color-text-secondary, #6b7280);
-  font-variant-numeric: tabular-nums;
-}
-
-.timeline-kpi__rail {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-border, #e5e7eb);
-}
-
-/* Time already spent, up to today. */
-.timeline-kpi__rail-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 2px;
-  background: var(--iz-cat-5, #7c5cbf);
-  transition: width 0.4s ease;
-}
-
-/* One tick per project deadline, so clustered due dates are visible. */
-.timeline-kpi__rail-deadline {
-  position: absolute;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--bg-page, #f0f1f5);
-  border: 1.5px solid var(--iz-cat-5, #7c5cbf);
-}
-
-.timeline-kpi__rail-now {
-  position: absolute;
-  top: -4px;
-  bottom: -4px;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--color-text-primary, #1a1a2e);
-  transform: translateX(-1px);
 }
 
 /* ── Secondary Stats ── */

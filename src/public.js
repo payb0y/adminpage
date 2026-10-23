@@ -81,6 +81,7 @@ if (mountEl) {
       return h(PublicDashboard, {
         props: {
           data: this.dashboardData,
+          token: token,
         },
       });
     },

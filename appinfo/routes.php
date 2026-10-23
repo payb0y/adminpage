@@ -15,6 +15,7 @@ return [
         // Public dashboard routes
         ['name' => 'public_page#index', 'url' => '/public/{token}', 'verb' => 'GET'],
         ['name' => 'public_dashboard#getData', 'url' => '/api/public/{token}', 'verb' => 'GET'],
+        ['name' => 'public_dashboard#getProjectTimeline', 'url' => '/api/public/{token}/projects/{projectId}/timeline', 'verb' => 'GET', 'requirements' => ['projectId' => '\d+']],
 
         // Admin public-link management routes
         ['name' => 'dashboard#listPublicLinks', 'url' => '/api/public-links', 'verb' => 'GET'],

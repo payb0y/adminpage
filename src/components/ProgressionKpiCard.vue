@@ -72,8 +72,8 @@
       No project progress yet
     </div>
 
-    <!-- Footer band — same geometry as the Projects, Tasks and Timeline
-         footers so the four cards' footers share one line. Reports the top
+    <!-- Footer band — same geometry as the Projects and Tasks footers so
+         the footers share one line. (Timeline has none.) Reports the top
          band, which is the one figure the hero average cannot show. -->
     <div
       v-if="total > 0"

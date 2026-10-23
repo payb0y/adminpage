@@ -66,8 +66,8 @@
     <div v-else class="iz-kpi__empty projects-kpi__empty">No projects yet</div>
 
     <!-- Issue count — full-width footer, same geometry as TasksKpiCard's
-         oldest-task footer and TimelineKpiCard's schedule rail so the three
-         cards' footers share one band. Not a donut slice: a project can be
+         oldest-task footer and ProgressionKpiCard's near-done line so the
+         footers share one band. Not a donut slice: a project can be
          Active and have an issue at once, so it sits outside the breakdown. -->
     <div
       v-if="total > 0"
@@ -296,7 +296,7 @@ button.projects-kpi__row:active {
 
 
 /* Footer band — geometry deliberately identical to .tasks-kpi__oldest and
-   .timeline-kpi__rail-wrap: margin-top:auto, 8px/10px padding, 8px radius,
+   .progression-kpi__near-done: margin-top:auto, 8px/10px padding, 8px radius,
    11px/1.4 type. All three resolve to the same height and sit on one line. */
 /* Band geometry from .iz-kpi__footer; only the alert tint is local — this
    footer reports a problem, so it does not use the neutral surface. */

@@ -807,6 +807,7 @@
             :org-members="orgMembers"
             :upcoming-events="upcomingEvents"
             :project-signatures="projectSignatures"
+            :public-token="publicToken"
           />
         </div>
       </div>
@@ -1430,6 +1431,11 @@ export default {
       default: function () {
         return [];
       },
+    },
+    /* Set in the public share view only; passed to ProjectDetailsPanel. */
+    publicToken: {
+      type: String,
+      default: null,
     },
   },
   data: function () {

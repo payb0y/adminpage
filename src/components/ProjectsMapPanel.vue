@@ -1,87 +1,135 @@
 <template>
   <section class="projects-map">
-    <header class="projects-map__header">
-      <h3 class="projects-map__title">
-        Project Map
-        <span
-          class="projects-map__count"
-          :class="{ 'projects-map__count--filtered': isNarrowed }"
-        >{{ filteredProjects.length }}<template v-if="isNarrowed"> of {{ mappableCount }}</template></span>
-      </h3>
+    <!-- Folds like the dashboard's other sections (Organization Insights is the
+         model): the whole header is the button. It opens by default — the map
+         is the one section read at a glance — and says what it holds when
+         folded, so folding loses the count but not the news. -->
+    <h3 class="projects-map__heading">
+      <button
+        type="button"
+        class="projects-map__header"
+        :aria-expanded="String(!collapsed)"
+        :aria-controls="'projects-map-body-' + _uid"
+        @click="collapsed = !collapsed"
+      >
+        <span class="projects-map__title">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          Project Map
+          <span
+            class="projects-map__count"
+            :class="{ 'projects-map__count--filtered': isNarrowed }"
+          >{{ filteredProjects.length }}<template v-if="isNarrowed"> of {{ mappableCount }}</template></span>
+        </span>
+        <span v-if="collapsed && !loading && hasAnyOk" class="projects-map__summary">{{ collapsedSummary }}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="projects-map__chevron"
+          :class="{ 'projects-map__chevron--rotated': collapsed }"
+          aria-hidden="true"
+        >
+          <polyline points="18 15 12 9 6 15" />
+        </svg>
+      </button>
+    </h3>
+
+    <div :id="'projects-map-body-' + _uid" v-show="!collapsed" class="projects-map__body">
       <div v-if="geocodingInFlight > 0" class="projects-map__chip">
         Geocoding {{ geocodingInFlight }} more in the background — they'll
         appear next time you load the dashboard.
       </div>
-    </header>
 
-    <div class="projects-map__filters">
-      <div class="projects-map__pills">
+      <div class="projects-map__filters">
+        <div class="projects-map__pills">
+          <button
+            v-for="s in statusOptions"
+            :key="'st-' + s.key"
+            type="button"
+            class="projects-map__pill"
+            :class="[
+              'projects-map__pill--st-' + s.key,
+              { 'projects-map__pill--on': statusFilter[s.key] }
+            ]"
+            :aria-pressed="statusFilter[s.key] ? 'true' : 'false'"
+            @click="toggleStatus(s.key)"
+          >
+            <span
+              v-if="statusFilter[s.key]"
+              class="projects-map__pill-check"
+              aria-hidden="true"
+            >✓</span>
+            {{ s.label }}
+          </button>
+        </div>
+        <select v-model="assigneeFilter" class="iz-select projects-map__select">
+          <option value="">All assignees</option>
+          <option
+            v-for="m in orgMembers"
+            :key="'as-' + m.userId"
+            :value="m.userId"
+          >{{ m.displayName || m.userId }}</option>
+        </select>
+        <input
+          v-model="searchFilter"
+          type="search"
+          class="iz-input projects-map__search"
+          placeholder="Search name or number…"
+        />
+        <label class="projects-map__toggle">
+          <input type="checkbox" v-model="overdueOnly" />
+          <span>Overdue only</span>
+        </label>
         <button
-          v-for="s in statusOptions"
-          :key="'st-' + s.key"
+          v-if="anyFilterActive"
           type="button"
-          class="projects-map__pill"
-          :class="[
-            'projects-map__pill--st-' + s.key,
-            { 'projects-map__pill--on': statusFilter[s.key] }
-          ]"
-          :aria-pressed="statusFilter[s.key] ? 'true' : 'false'"
-          @click="toggleStatus(s.key)"
-        >
-          <span
-            v-if="statusFilter[s.key]"
-            class="projects-map__pill-check"
-            aria-hidden="true"
-          >✓</span>
-          {{ s.label }}
-        </button>
+          class="projects-map__clear"
+          @click="clearFilters"
+        >Clear all</button>
       </div>
-      <select v-model="assigneeFilter" class="iz-select projects-map__select">
-        <option value="">All assignees</option>
-        <option
-          v-for="m in orgMembers"
-          :key="'as-' + m.userId"
-          :value="m.userId"
-        >{{ m.displayName || m.userId }}</option>
-      </select>
-      <input
-        v-model="searchFilter"
-        type="search"
-        class="iz-input projects-map__search"
-        placeholder="Search name or number…"
-      />
-      <label class="projects-map__toggle">
-        <input type="checkbox" v-model="overdueOnly" />
-        <span>Overdue only</span>
-      </label>
-      <button
-        v-if="anyFilterActive"
-        type="button"
-        class="projects-map__clear"
-        @click="clearFilters"
-      >Clear all</button>
-    </div>
 
-    <div v-if="loading" class="iz-empty projects-map__state">Loading project locations…</div>
-    <div
-      v-else-if="!hasAnyOk"
-      class="iz-empty projects-map__state"
-    >No projects with addresses yet.</div>
-    <div
-      v-else-if="filteredProjects.length === 0"
-      class="iz-empty projects-map__state"
-    >
-      No projects match these filters.
-      <button
-        v-if="hiddenByStatusCount > 0"
-        type="button"
-        class="projects-map__clear"
-        @click="showAllStatuses"
-      >Show {{ hiddenByStatusCount }} hidden by status</button>
-      <button type="button" class="projects-map__clear" @click="clearFilters">Clear filters</button>
-    </div>
+      <div v-if="loading" class="iz-empty projects-map__state">Loading project locations…</div>
+      <div
+        v-else-if="!hasAnyOk"
+        class="iz-empty projects-map__state"
+      >No projects with addresses yet.</div>
+      <div
+        v-else-if="filteredProjects.length === 0"
+        class="iz-empty projects-map__state"
+      >
+        No projects match these filters.
+        <button
+          v-if="hiddenByStatusCount > 0"
+          type="button"
+          class="projects-map__clear"
+          @click="showAllStatuses"
+        >Show {{ hiddenByStatusCount }} hidden by status</button>
+        <button type="button" class="projects-map__clear" @click="clearFilters">Clear filters</button>
+      </div>
 
-    <div v-show="!loading && filteredProjects.length > 0" ref="mapRoot" class="projects-map__container"></div>
+      <div v-show="!loading && filteredProjects.length > 0" ref="mapRoot" class="projects-map__container"></div>
+    </div>
   </section>
 </template>
 
@@ -183,6 +231,7 @@ export default {
   },
   data() {
     return {
+      collapsed: false,
       statusFilter: Object.assign({}, DEFAULT_STATUS_FILTER),
       assigneeFilter: "",
       searchFilter: "",
@@ -242,6 +291,16 @@ export default {
       }
       return n;
     },
+    /** The folded header's one line: what the map would show, and the bad news. */
+    collapsedSummary() {
+      const shown = this.filteredProjects;
+      let overdue = 0;
+      for (let i = 0; i < shown.length; i++) {
+        if (shown[i].overdueTasks > 0) overdue++;
+      }
+      const base = shown.length + " of " + this.projects.length + " projects on the map";
+      return overdue > 0 ? base + " · " + overdue + " with overdue tasks" : base;
+    },
     anyFilterActive() {
       for (const key in DEFAULT_STATUS_FILTER) {
         if (this.statusFilter[key] !== DEFAULT_STATUS_FILTER[key]) return true;
@@ -259,6 +318,19 @@ export default {
     },
     loading(val) {
       if (!val) this.$nextTick(this.ensureMap);
+    },
+    // Leaflet measures its container once; a map built or resized while the
+    // body was folded (display: none) has a 0×0 view until told to re-measure.
+    collapsed(isCollapsed) {
+      if (isCollapsed) return;
+      this.$nextTick(() => {
+        if (!this._map) {
+          this.ensureMap();
+          return;
+        }
+        this._map.invalidateSize();
+        this.renderMarkers();
+      });
     },
   },
   mounted() {
@@ -305,7 +377,7 @@ export default {
     },
     ensureMap() {
       if (this._map) return;
-      if (!this.$refs.mapRoot) return;
+      if (this.collapsed || !this.$refs.mapRoot) return;
       if (this.filteredProjects.length === 0) return;
       this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true })
         .setView([52.3676, 4.9041], 6);
@@ -338,6 +410,7 @@ export default {
       this.renderMarkers();
     },
     renderMarkers() {
+      if (this.collapsed) return;
       if (!this._map || !this._cluster) {
         this.ensureMap();
         return;
@@ -380,26 +453,70 @@ export default {
   background: var(--bg-card, #fff);
   border-radius: var(--radius-card, 12px);
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
-  padding: var(--spacing-lg, 24px);
   margin-bottom: var(--spacing-xl, 32px);
+  overflow: hidden;
 }
 
+/* Header geometry follows .insights-panel__header, so the dashboard's folding
+   sections read as one set. */
+.projects-map__heading {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
 .projects-map__header {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.projects-map__header:hover {
+  background: var(--bg-subtle);
 }
 .projects-map__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-text-primary);
 }
+.projects-map__title svg {
+  color: var(--accent);
+}
+.projects-map__summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--iz-fs-sm, 12px);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+.projects-map__chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--color-text-muted, #9ca3af);
+  transition: transform 0.3s;
+}
+.projects-map__chevron--rotated {
+  transform: rotate(180deg);
+}
+.projects-map__body {
+  padding: 0 var(--spacing-lg, 24px) var(--spacing-lg, 24px);
+}
 .projects-map__count {
   display: inline-block;
-  margin-left: 8px;
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-secondary);
@@ -414,6 +531,8 @@ export default {
   background: var(--accent-bg);
 }
 .projects-map__chip {
+  display: inline-block;
+  margin-bottom: 12px;
   font-size: 11px;
   color: var(--color-badge-warning-text);
   background: var(--color-badge-warning-bg);

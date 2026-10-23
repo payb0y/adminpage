@@ -684,11 +684,14 @@
         </div>
       </div>
 
-      <!-- ── #1: Row 3 — Gantt Timeline ── -->
-      <div v-if="selectedProject.timeline.length > 0" class="proj-details__row">
+      <!-- ── #1: Row 3 — Project Timeline ──
+           projectcreatoraio's plan for this project: the Overview's timeline
+           figures over the Planning tab's Gantt (ProjectTimeline.vue, shared
+           with superadminpage and employee_dashboard). -->
+      <div class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
           <h4 class="proj-details__card-title">Project Timeline</h4>
-          <TimelineChart :timeline="selectedProject.timeline" />
+          <ProjectTimeline :src="timelineSrc" :items-src="timelineItemsSrc" :planning-url="planningUrl" />
         </div>
       </div>
 
@@ -1131,7 +1134,7 @@
 
 <script>
 import DonutChart from "./DonutChart.vue";
-import TimelineChart from "./TimelineChart.vue";
+import ProjectTimeline from "./ProjectTimeline.vue";
 import ProjectMap from "./ProjectMap.vue";
 import UpcomingEventsPanel from "./UpcomingEventsPanel.vue";
 import axios from "@nextcloud/axios";
@@ -1156,7 +1159,7 @@ const DRASCI_OPTIONS = [
 
 export default {
   name: "ProjectDetailsPanel",
-  components: { DonutChart, TimelineChart, ProjectMap, UpcomingEventsPanel },
+  components: { DonutChart, ProjectTimeline, ProjectMap, UpcomingEventsPanel },
   directives: {
     "click-outside": {
       bind: function (el, binding) {
@@ -1205,6 +1208,13 @@ export default {
       default: function () {
         return {};
       },
+    },
+    /* The share link's token in the public view, which has no user to call
+       projectcreatoraio with; the timeline then comes through adminpage's
+       public proxy instead. Null when signed in. */
+    publicToken: {
+      type: String,
+      default: null,
     },
   },
   data: function () {
@@ -1333,6 +1343,23 @@ export default {
         });
       }
       return list;
+    },
+    timelineSrc: function () {
+      if (!this.selectedProject) return null;
+      var id = this.selectedProject.id;
+      return this.publicToken
+        ? generateUrl("/apps/adminpage/api/public/{token}/projects/{id}/timeline", { token: this.publicToken, id: id })
+        : generateUrl("/apps/projectcreatoraio/api/v1/projects/{id}/timeline/summary", { id: id });
+    },
+    // The Planning tab's second request. The public proxy's summary carries
+    // the items itself.
+    timelineItemsSrc: function () {
+      if (!this.selectedProject || this.publicToken) return null;
+      return generateUrl("/apps/projectcreatoraio/api/v1/projects/{id}/timeline", { id: this.selectedProject.id });
+    },
+    planningUrl: function () {
+      if (!this.selectedProject || this.publicToken) return null;
+      return generateUrl("/apps/projectcreatoraio/new/projects/{id}?tab=planning", { id: this.selectedProject.id });
     },
     selectedProject: function () {
       if (!this.selectedProjectId) return null;

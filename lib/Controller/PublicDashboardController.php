@@ -6,6 +6,7 @@ namespace OCA\AdminPage\Controller;
 
 use OCA\AdminPage\Service\DeckService;
 use OCA\AdminPage\Service\KpiService;
+use OCA\AdminPage\Service\ProjectTimelineService;
 use OCA\AdminPage\Service\PublicTokenService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -18,6 +19,7 @@ class PublicDashboardController extends Controller {
     private PublicTokenService $publicTokenService;
     private KpiService $kpiService;
     private DeckService $deckService;
+    private ProjectTimelineService $projectTimelineService;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -26,12 +28,14 @@ class PublicDashboardController extends Controller {
         PublicTokenService $publicTokenService,
         KpiService $kpiService,
         DeckService $deckService,
+        ProjectTimelineService $projectTimelineService,
         LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
         $this->publicTokenService = $publicTokenService;
         $this->kpiService = $kpiService;
         $this->deckService = $deckService;
+        $this->projectTimelineService = $projectTimelineService;
         $this->logger = $logger;
     }
 
@@ -84,6 +88,35 @@ class PublicDashboardController extends Controller {
                 'performanceDetails' => $this->deckService->getPerformanceDetails($orgId),
                 'projectDetails' => $this->deckService->getProjectDetailsList($orgId),
             ]);
+        });
+    }
+
+    /**
+     * One project's timeline summary, for the Project Timeline card on the
+     * share link — the object projectcreatoraio's timeline/summary returns to
+     * a signed-in viewer. 404 when the project is not this link's
+     * organisation's, so a token cannot be used to probe other projects.
+     *
+     * @PublicPage
+     * @NoCSRFRequired
+     */
+    public function getProjectTimeline(string $token, int $projectId): JSONResponse {
+        return $this->guard(function () use ($token, $projectId) {
+            $orgId = $this->publicTokenService->validateToken($token);
+
+            if ($orgId === null) {
+                return new JSONResponse(
+                    ['error' => 'Invalid or expired link'],
+                    Http::STATUS_FORBIDDEN
+                );
+            }
+
+            $summary = $this->projectTimelineService->getSummary($orgId, $projectId);
+            if ($summary === null) {
+                return new JSONResponse(['error' => 'Project not found'], Http::STATUS_NOT_FOUND);
+            }
+
+            return new JSONResponse($summary);
         });
     }
 }
