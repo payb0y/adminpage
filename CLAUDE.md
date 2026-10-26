@@ -135,6 +135,10 @@ name each rule after the Planning method it mirrors.
   link's organisation, and without either sync.
 - Changing the card: edit adminpage's copy, run `npm test`, copy the three
   files to superadminpage and employee_dashboard, rebuild all three.
+- `projectTimeline.mjs` also exports `portfolioGanttOf`, several projects'
+  System Planning and phase rows on one range, used by employee_dashboard's
+  dashboard-wide Project Timeline (its `GanttWidget.vue` carries a copy of
+  this card's Gantt styles; keep the two in step).
 
 ## Database Conventions
 
