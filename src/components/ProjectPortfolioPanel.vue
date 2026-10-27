@@ -127,11 +127,11 @@
           <div class="portfolio__capacity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <div class="portfolio__capacity-controls">
-              <select class="iz-select iz-select--sm" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length || viewScope === 'mine'" aria-label="Filter by team capacity">
+              <select class="iz-select iz-select--sm" v-model="selectedTeamId" :disabled="teamsLoading || !teams.length" aria-label="Filter by team capacity">
                 <option value="all">All teams</option>
                 <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
               </select>
-              <small v-if="selectedTeam && viewScope !== 'mine'" class="portfolio__capacity-meta">{{ peopleCount(selectedTeam.memberCount) }} · max {{ maxPerPerson }} projects each</small>
+              <small v-if="selectedTeam" class="portfolio__capacity-meta">{{ peopleCount(selectedTeam.memberCount) }} · max {{ maxPerPerson }} projects each</small>
               <small v-if="teamsLoading">Loading teams...</small>
               <small v-else-if="teamError" class="portfolio__team-error">
                 {{ teamError }}
@@ -299,7 +299,6 @@
             :projects="capacity.projects || []"
             :overload-warnings="capacity.overloadWarnings || []"
             :max-per-person="maxPerPerson"
-            :show-teams="viewScope !== 'mine'"
           />
           <details v-if="toSchedule.length" class="portfolio__schedule-issues">
             <summary>To schedule: no actual start yet ({{ toSchedule.length }})</summary>
@@ -437,9 +436,6 @@ export default {
       if (scope.type === "team" && scope.team) {
         return scope.team.name + ": " + this.peopleCount(scope.team.memberCount) + ", " + limit;
       }
-      if (scope.type === "mine") {
-        return "My load across " + this.teamCount((this.capacity.teams || []).length) + ", " + limit;
-      }
       return this.peopleCount((this.capacity.people || []).length) + " in " + this.teamCount((this.capacity.teams || []).length) + ", " + limit;
     },
     periodLabel: function () {
@@ -496,9 +492,7 @@ export default {
       if (!this.collapsed) this.fetchTeams();
     },
     selectedTeamId: function () {
-      if (this.viewScope !== "mine") {
-        this.viewScope = this.selectedTeamId === "all" ? "all" : "team";
-      }
+      this.viewScope = this.selectedTeamId === "all" ? "all" : "team";
       if (this.selectedTeamId && !this.teamsLoading) {
         this.fetchPortfolio();
         this.fetchCapacity();
@@ -575,9 +569,7 @@ export default {
       this.portfolioError = null;
       try {
         var params = {};
-        if (this.viewScope === "mine") {
-          params.scope = "mine";
-        } else if (this.viewScope === "team" && this.hasPositiveTeamId) {
+        if (this.viewScope === "team" && this.hasPositiveTeamId) {
           params.scope = "team";
           params.teamId = Number(this.selectedTeamId);
         }

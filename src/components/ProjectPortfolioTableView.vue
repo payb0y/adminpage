@@ -98,7 +98,6 @@
               <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
             </select>
             <button
-              v-if="scope !== 'mine'"
               type="button"
               class="iz-btn iz-btn--quiet iz-btn--xs portfolio-table-view__capacity-btn"
               @click="$emit('edit-teams')"
@@ -149,7 +148,6 @@
         :projects="tableData.capacityProjects || []"
         :overload-warnings="tableData.overloadWarnings || []"
         :max-per-person="maxPerPerson"
-        :show-teams="scope !== 'mine'"
       />
     </section>
 
@@ -534,9 +532,6 @@ export default {
       var scope = this.tableData.scope;
       var limit = "max " + this.maxPerPerson + " projects per person";
       var teamCount = (this.tableData.teams || []).length;
-      if (scope.type === "mine") {
-        return "My load across " + teamCount + (teamCount === 1 ? " team" : " teams") + ", " + limit;
-      }
       if (scope.type === "team" && scope.team) {
         return this.peopleCount(scope.team.memberCount) + ", " + limit;
       }

@@ -20,7 +20,7 @@
           <tr v-for="person in people" :key="person.uid">
             <th scope="row" class="people-load__person">
               <span class="people-load__name">{{ person.displayName }}</span>
-              <small v-if="showTeams && person.teams.length">{{ teamNames(person) }}</small>
+              <small v-if="person.teams.length">{{ teamNames(person) }}</small>
             </th>
             <td v-for="(cell, index) in person.weeks" :key="index">
               <button
@@ -67,7 +67,6 @@ export default {
     projects: { type: Array, default: function () { return []; } },
     overloadWarnings: { type: Array, default: function () { return []; } },
     maxPerPerson: { type: Number, default: 2 },
-    showTeams: { type: Boolean, default: true },
     emptyText: { type: String, default: "No team members in this view." },
   },
   data: function () {
