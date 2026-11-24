@@ -29,11 +29,11 @@
             <line x1="8" y1="2" x2="8" y2="18" />
             <line x1="16" y1="6" x2="16" y2="22" />
           </svg>
-          Project Map
+          {{ t("Project Map") }}
           <span
             class="projects-map__count"
             :class="{ 'projects-map__count--filtered': isNarrowed }"
-          >{{ filteredProjects.length }}<template v-if="isNarrowed"> of {{ mappableCount }}</template></span>
+          ><template v-if="isNarrowed">{{ t("{shown} of {total}", { shown: filteredProjects.length, total: mappableCount }) }}</template><template v-else>{{ filteredProjects.length }}</template></span>
         </span>
         <span v-if="collapsed && !loading && hasAnyOk" class="projects-map__summary">{{ collapsedSummary }}</span>
         <svg
@@ -57,8 +57,7 @@
 
     <div :id="'projects-map-body-' + _uid" v-show="!collapsed" class="projects-map__body">
       <div v-if="geocodingInFlight > 0" class="projects-map__chip">
-        Geocoding {{ geocodingInFlight }} more in the background — they'll
-        appear next time you load the dashboard.
+        {{ t("Geocoding {count} more in the background — they'll appear next time you load the dashboard.", { count: geocodingInFlight }) }}
       </div>
 
       <div class="projects-map__filters">
@@ -84,7 +83,7 @@
           </button>
         </div>
         <select v-model="assigneeFilter" class="iz-select projects-map__select">
-          <option value="">All assignees</option>
+          <option value="">{{ t("All assignees") }}</option>
           <option
             v-for="m in orgMembers"
             :key="'as-' + m.userId"
@@ -95,37 +94,37 @@
           v-model="searchFilter"
           type="search"
           class="iz-input projects-map__search"
-          placeholder="Search name or number…"
+          :placeholder="t('Search name or number…')"
         />
         <label class="projects-map__toggle">
           <input type="checkbox" v-model="overdueOnly" />
-          <span>Overdue only</span>
+          <span>{{ t("Overdue only") }}</span>
         </label>
         <button
           v-if="anyFilterActive"
           type="button"
           class="projects-map__clear"
           @click="clearFilters"
-        >Clear all</button>
+        >{{ t("Clear all") }}</button>
       </div>
 
-      <div v-if="loading" class="iz-empty projects-map__state">Loading project locations…</div>
+      <div v-if="loading" class="iz-empty projects-map__state">{{ t("Loading project locations…") }}</div>
       <div
         v-else-if="!hasAnyOk"
         class="iz-empty projects-map__state"
-      >No projects with addresses yet.</div>
+      >{{ t("No projects with addresses yet.") }}</div>
       <div
         v-else-if="filteredProjects.length === 0"
         class="iz-empty projects-map__state"
       >
-        No projects match these filters.
+        {{ t("No projects match these filters.") }}
         <button
           v-if="hiddenByStatusCount > 0"
           type="button"
           class="projects-map__clear"
           @click="showAllStatuses"
-        >Show {{ hiddenByStatusCount }} hidden by status</button>
-        <button type="button" class="projects-map__clear" @click="clearFilters">Clear filters</button>
+        >{{ t("Show {count} hidden by status", { count: hiddenByStatusCount }) }}</button>
+        <button type="button" class="projects-map__clear" @click="clearFilters">{{ t("Clear filters") }}</button>
       </div>
 
       <div v-show="!loading && filteredProjects.length > 0" ref="mapRoot" class="projects-map__container"></div>
@@ -139,6 +138,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import { t } from "../lib/l10n.mjs";
 
 // Canonical encoding, owned by projectcreatoraio's ProjectStatus enum — that app
 // writes oc_custom_projects.status. Mirrors GeocodeService::STATUS_LABELS.
@@ -170,6 +170,18 @@ const DEFAULT_STATUS_FILTER = {
 // Anything outside 0–4 is corrupt data. Fall back to "active" rather than
 // returning undefined, so a bad row still gets a pin instead of vanishing from
 // the map with no pill that can bring it back.
+/* The pill and popup wording per status code; the backend's statusLabel is
+   English and never shown. */
+function statusLabel(key) {
+  return {
+    active: t("Active"),
+    waiting: t("Waiting on Customer"),
+    hold: t("On Hold"),
+    done: t("Done"),
+    archived: t("Archived"),
+  }[key];
+}
+
 function statusKey(project) {
   return STATUS_KEY_BY_NUM[project.status] || "active";
 }
@@ -195,19 +207,19 @@ function pinHtml(project) {
 
 function popupHtml(project) {
   const overdueLine = project.overdueTasks > 0
-    ? ' · <span class="projects-map__popup-danger">' + project.overdueTasks + ' overdue</span>'
+    ? ' · <span class="projects-map__popup-danger">' + escapeHtml(t("{count} overdue", { count: project.overdueTasks })) + '</span>'
     : '';
   const number = project.number ? ' <small>' + escapeHtml(project.number) + '</small>' : '';
   return (
     '<div class="projects-map__popup">' +
     '<strong>' + escapeHtml(project.name) + '</strong>' + number +
-    '<div class="projects-map__popup-row">' + escapeHtml(project.statusLabel) +
+    '<div class="projects-map__popup-row">' + escapeHtml(statusLabel(statusKey(project))) +
     ' · ' + project.completionPct + '%</div>' +
     '<div class="projects-map__popup-row">' +
-    project.doneTasks + '/' + project.totalTasks + ' tasks' + overdueLine +
+    escapeHtml(t("{done}/{total} tasks", { done: project.doneTasks, total: project.totalTasks })) + overdueLine +
     '</div>' +
     '<button type="button" data-project-id="' + project.id +
-    '" class="projects-map__popup-cta">Open in details →</button>' +
+    '" class="projects-map__popup-cta">' + escapeHtml(t("Open in details →")) + '</button>' +
     '</div>'
   );
 }
@@ -245,11 +257,11 @@ export default {
   computed: {
     statusOptions() {
       return [
-        { key: "active",   label: "Active" },
-        { key: "waiting",  label: "Waiting on Customer" },
-        { key: "hold",     label: "On Hold" },
-        { key: "done",     label: "Done" },
-        { key: "archived", label: "Archived" },
+        { key: "active",   label: statusLabel("active") },
+        { key: "waiting",  label: statusLabel("waiting") },
+        { key: "hold",     label: statusLabel("hold") },
+        { key: "done",     label: statusLabel("done") },
+        { key: "archived", label: statusLabel("archived") },
       ];
     },
     /** Projects that could be plotted at all, before any filter is applied. */
@@ -298,8 +310,8 @@ export default {
       for (let i = 0; i < shown.length; i++) {
         if (shown[i].overdueTasks > 0) overdue++;
       }
-      const base = shown.length + " of " + this.projects.length + " projects on the map";
-      return overdue > 0 ? base + " · " + overdue + " with overdue tasks" : base;
+      const base = t("{shown} of {total} projects on the map", { shown: shown.length, total: this.projects.length });
+      return overdue > 0 ? t("{summary} · {count} with overdue tasks", { summary: base, count: overdue }) : base;
     },
     anyFilterActive() {
       for (const key in DEFAULT_STATUS_FILTER) {
@@ -385,8 +397,11 @@ export default {
         maxZoom: 19,
         // OSM requires a Referer; override Nextcloud only for tiles, without page paths.
         referrerPolicy: "strict-origin",
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+        // Escaped first, then the link goes back around "OpenStreetMap".
+        attribution: escapeHtml(t("© OpenStreetMap contributors")).replace(
+          "OpenStreetMap",
+          '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
+        ),
       }).addTo(this._map);
       this._cluster = L.markerClusterGroup();
       this._map.addLayer(this._cluster);
@@ -396,9 +411,9 @@ export default {
       this._map.on("zoomstart", markUserPan);
 
       this._popupClickHandler = (e) => {
-        const t = e.target;
-        if (t && t.classList && t.classList.contains("projects-map__popup-cta")) {
-          const id = parseInt(t.getAttribute("data-project-id"), 10);
+        const target = e.target;
+        if (target && target.classList && target.classList.contains("projects-map__popup-cta")) {
+          const id = parseInt(target.getAttribute("data-project-id"), 10);
           if (Number.isFinite(id)) {
             if (this._map && this._map.closePopup) this._map.closePopup();
             this.$emit("select-project", id);

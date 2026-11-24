@@ -2,11 +2,13 @@ import Vue from "vue";
 import PublicDashboard from "./components/PublicDashboard.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t, n, tc } from "./lib/l10n.mjs";
 
+// t(), n() and tc() in every template, the same functions .js/.mjs files and
+// component scripts import from ./lib/l10n.mjs. Nextcloud registers
+// l10n/<lang>.js before this bundle.
 Vue.mixin({
-  methods: {
-    t: (app, text) => text,
-  },
+  methods: { t, n, tc },
 });
 
 const mountEl = document.getElementById("adminpage-root");
@@ -28,15 +30,15 @@ if (mountEl) {
       if (this.loading) {
         return h("div", { class: "adminpage-loading" }, [
           h("div", { class: "adminpage-loading__spinner" }),
-          h("p", "Loading dashboard…"),
+          h("p", t("Loading dashboard…")),
         ]);
       }
       if (this.expired) {
         return h("div", { class: "adminpage-expired" }, [
-          h("h2", "Link Unavailable"),
+          h("h2", t("Link Unavailable")),
           h(
             "p",
-            "This public dashboard link is invalid, has expired, or has been revoked.",
+            t("This public dashboard link is invalid, has expired, or has been revoked."),
           ),
         ]);
       }
@@ -74,7 +76,7 @@ if (mountEl) {
               },
               on: { click: () => this.retry() },
             },
-            "Try again",
+            t("Try again"),
           ),
         ]);
       }
@@ -120,12 +122,12 @@ if (mountEl) {
           return serverMsg;
         }
         if (status && status >= 500) {
-          return "The server ran into a problem loading the dashboard. Please try again in a moment.";
+          return t("The server ran into a problem loading the dashboard. Please try again in a moment.");
         }
         if (e && e.request && !e.response) {
-          return "Couldn't reach the server. Check your connection and try again.";
+          return t("Couldn't reach the server. Check your connection and try again.");
         }
-        return "Something went wrong loading the dashboard. Please try again.";
+        return t("Something went wrong loading the dashboard. Please try again.");
       },
     },
   });

@@ -12,10 +12,10 @@
             <line x1="15" y1="9" x2="9" y2="15"/>
             <line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
-        <h2 style="margin:16px 0 8px;color:#1a1a2e;font-size:20px;font-weight:600;">Link Unavailable</h2>
+        <h2 style="margin:16px 0 8px;color:#1a1a2e;font-size:20px;font-weight:600;"><?php p($l->t('Link Unavailable')); ?></h2>
         <p style="color:#6b7280;font-size:14px;max-width:400px;">
-            This public dashboard link is invalid, has expired, or has been revoked.<br/>
-            Please contact the organization administrator for a new link.
+            <?php p($l->t('This public dashboard link is invalid, has expired, or has been revoked.')); ?><br/>
+            <?php p($l->t('Please contact the organization administrator for a new link.')); ?>
         </p>
     </div>
 </div>

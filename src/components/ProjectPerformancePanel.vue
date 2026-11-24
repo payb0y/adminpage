@@ -25,7 +25,7 @@
           <line x1="12" y1="20" x2="12" y2="4" />
           <line x1="6" y1="20" x2="6" y2="14" />
         </svg>
-        Project Performance Analytics
+        {{ t("Project Performance Analytics") }}
       </h3>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -71,17 +71,17 @@
               @click="showDatePicker = !showDatePicker"
             >
               <span class="perf-panel__date-range-value">{{
-                perfDateFrom || "Start date"
+                perfDateFrom || t("Start date")
               }}</span>
               <span class="perf-panel__date-range-arrow">→</span>
               <span class="perf-panel__date-range-value">{{
-                perfDateTo || "End date"
+                perfDateTo || t("End date")
               }}</span>
             </div>
             <button
               v-if="perfDateFrom || perfDateTo"
               class="perf-panel__date-range-clear"
-              title="Clear dates"
+              :title="t('Clear dates')"
               @click.stop="clearPerfDates"
             >
               ✕
@@ -106,7 +106,7 @@
               class="perf-panel__cr-badge"
               :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '' }"
               @click="completionRateFilter = ''"
-            >All</span>
+            >{{ t("All") }}</span>
             <span
               class="perf-panel__cr-badge perf-panel__cr-badge--red"
               :class="{ 'perf-panel__cr-badge--active': completionRateFilter === '0-25' }"
@@ -149,9 +149,9 @@
             <select
               v-model="memberFilter"
               class="iz-select iz-select--sm perf-panel__member-scope-select"
-              aria-label="Scope the panel to one member"
+              :aria-label="t('Scope the panel to one member')"
             >
-              <option value="">All members</option>
+              <option value="">{{ t("All members") }}</option>
               <option
                 v-for="m in memberFilterOptions"
                 :key="'mfo-' + m.userId"
@@ -163,7 +163,7 @@
             <button
               v-if="memberFilter"
               class="perf-panel__date-range-clear"
-              title="Clear member filter"
+              :title="t('Clear member filter')"
               @click.stop="memberFilter = ''"
             >
               ✕
@@ -191,8 +191,8 @@
               </div>
               <div class="perf-panel__date-picker-grid">
                 <span
-                  v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
-                  :key="d"
+                  v-for="(d, di) in weekdayLabels"
+                  :key="'dow-' + di"
                   class="perf-panel__date-picker-dow"
                   >{{ d }}</span
                 >
@@ -220,8 +220,8 @@
               </div>
               <div class="perf-panel__date-picker-grid">
                 <span
-                  v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
-                  :key="d"
+                  v-for="(d, di) in weekdayLabels"
+                  :key="'dow-' + di"
                   class="perf-panel__date-picker-dow"
                   >{{ d }}</span
                 >
@@ -244,13 +244,13 @@
                 perfDateStep = 'from';
               "
             >
-              Clear
+              {{ t("Clear") }}
             </button>
             <button
               class="perf-panel__date-picker-btn perf-panel__date-picker-btn--apply"
               @click.stop="showDatePicker = false"
             >
-              Apply
+              {{ t("Apply") }}
             </button>
           </div>
         </div>
@@ -270,9 +270,9 @@
         >
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
-              Project Progress<br />Comparison
+              {{ t("Project Progress Comparison") }}
             </h3>
-            <span class="perf-panel__card-drill" title="Click for details">
+            <span class="perf-panel__card-drill" :title="t('Click for details')">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -315,9 +315,12 @@
             v-if="crFilteredProjectProgress.length > progressPreviewLimit"
             class="perf-panel__bar-hint"
           >
-            Showing {{ previewProjectProgress.length }} of
-            {{ crFilteredProjectProgress.length }} projects (click for full
-            details)
+            {{
+              t("Showing {shown} of {total} projects (click for full details)", {
+                shown: previewProjectProgress.length,
+                total: crFilteredProjectProgress.length,
+              })
+            }}
           </div>
         </div>
 
@@ -328,8 +331,8 @@
           @click="openModal('member')"
         >
           <div class="perf-panel__card-header-row">
-            <h3 class="perf-panel__card-title">Member<br />Performance</h3>
-            <span class="perf-panel__card-drill" title="Click for details">
+            <h3 class="perf-panel__card-title">{{ t("Member Performance") }}</h3>
+            <span class="perf-panel__card-drill" :title="t('Click for details')">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -351,7 +354,7 @@
           </div>
           <div class="perf-panel__card-title-underline"></div>
           <p class="perf-panel__card-desc">
-            Projects, tasks and status per member
+            {{ t("Projects, tasks and status per member") }}
           </p>
 
           <!-- Every control below stops the click. The card itself opens the
@@ -375,16 +378,16 @@
                 v-model="memberSearch"
                 class="iz-input iz-input--sm"
                 type="search"
-                placeholder="Find a member"
-                aria-label="Find a member"
+:placeholder="t('Find a member')"
+                :aria-label="t('Find a member')"
               />
             </label>
             <select
               v-model="memberProject"
               class="iz-select iz-select--sm"
-              aria-label="Filter by project"
+              :aria-label="t('Filter by project')"
             >
-              <option value="all">All projects</option>
+              <option value="all">{{ t("All projects") }}</option>
               <option
                 v-for="p in memberProjectOptions"
                 :key="'mpo-' + p"
@@ -398,7 +401,7 @@
           <div
             class="perf-panel__member-chips"
             role="group"
-            aria-label="Filter by status"
+            :aria-label="t('Filter by status')"
             @click.stop
           >
             <button
@@ -407,7 +410,7 @@
               :aria-pressed="memberBucket === 'all' ? 'true' : 'false'"
               @click="memberBucket = 'all'"
             >
-              All
+              {{ t("All") }}
               <span class="perf-panel__member-chip-n">{{
                 memberBucketTotals.all
               }}</span>
@@ -452,12 +455,12 @@
                 </div>
                 <span class="perf-panel__member-stats">
                   <span class="perf-panel__member-count">{{
-                    mem.projects.length === 1
-                      ? "1 project"
-                      : mem.projects.length + " projects"
+                    n("{count} project", "{count} projects", mem.projects.length, {
+                      count: mem.projects.length,
+                    })
                   }}</span>
                   <span class="perf-panel__bar-value">{{
-                    mem.total === 1 ? "1 task" : mem.total + " tasks"
+                    n("{count} task", "{count} tasks", mem.total, { count: mem.total })
                   }}</span>
                 </span>
               </div>
@@ -473,7 +476,12 @@
                         memberBucket !== 'all' && memberBucket !== b.key,
                     }"
                     :style="{ flexGrow: mem.counts[b.key], background: b.color }"
-                    :title="mem.counts[b.key] + ' ' + b.label.toLowerCase()"
+                    :title="
+                      t('{count} {status}', {
+                        count: mem.counts[b.key],
+                        status: b.label.toLowerCase(),
+                      })
+                    "
                   ></span>
                 </template>
               </div>
@@ -508,8 +516,12 @@
             v-if="filteredMemberRollup.length > memberPreviewLimit"
             class="perf-panel__bar-hint"
           >
-            Showing {{ previewMemberRollup.length }} of
-            {{ filteredMemberRollup.length }} members (click for full details)
+            {{
+              t("Showing {shown} of {total} members (click for full details)", {
+                shown: previewMemberRollup.length,
+                total: filteredMemberRollup.length,
+              })
+            }}
           </div>
         </div>
       </div>
@@ -520,11 +532,11 @@
         <div class="perf-panel__card">
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
-              Project Tasks Delay<br />Overview
+              {{ t("Project Tasks Delay Overview") }}
             </h3>
             <span
               class="perf-panel__card-drill perf-panel__card-drill--visible"
-              title="Click for details"
+              :title="t('Click for details')"
               @click="openModal('delay')"
             >
               <svg
@@ -555,43 +567,19 @@
                 'perf-panel__status-badge--active': delayStatusFilter === '',
               }"
               @click="delayStatusFilter = ''"
-              >All</span
+              >{{ t("All") }}</span
             >
             <span
-              class="perf-panel__status-badge perf-panel__status-badge--green"
-              :class="{
-                'perf-panel__status-badge--active':
-                  delayStatusFilter === 'Active',
-              }"
-              @click="delayStatusFilter = 'Active'"
-              >Active</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--amber"
-              :class="{
-                'perf-panel__status-badge--active':
-                  delayStatusFilter === 'Waiting on Customer',
-              }"
-              @click="delayStatusFilter = 'Waiting on Customer'"
-              >W.o.c.</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--orange"
-              :class="{
-                'perf-panel__status-badge--active':
-                  delayStatusFilter === 'On Hold',
-              }"
-              @click="delayStatusFilter = 'On Hold'"
-              >On Hold</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--slate"
-              :class="{
-                'perf-panel__status-badge--active':
-                  delayStatusFilter === 'Done',
-              }"
-              @click="delayStatusFilter = 'Done'"
-              >Done</span
+              v-for="b in statusBadges"
+              :key="'delayStatusFilter-' + b.code"
+              class="perf-panel__status-badge"
+              :class="[
+                'perf-panel__status-badge--' + b.modifier,
+                { 'perf-panel__status-badge--active': delayStatusFilter === b.code },
+              ]"
+              :title="b.title"
+              @click="delayStatusFilter = b.code"
+              >{{ b.label }}</span
             >
           </div>
 
@@ -602,7 +590,7 @@
                 v-model="delaySearch"
                 class="perf-panel__proj-search"
                 type="text"
-                placeholder="Filter…"
+                :placeholder="t('Filter…')"
                 @click.stop
               />
               <div class="perf-panel__proj-items">
@@ -622,7 +610,7 @@
                   v-if="filteredDelayProjects.length === 0"
                   class="perf-panel__proj-empty"
                 >
-                  No match
+                  {{ t("No match") }}
                 </div>
               </div>
             </div>
@@ -633,7 +621,7 @@
                   <button
                     class="perf-panel__chart-toggle-btn"
                     :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'donut' }"
-                    title="Percentage view"
+                    :title="t('Percentage view')"
                     @click.stop="delayChartMode = 'donut'"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
@@ -641,7 +629,7 @@
                   <button
                     class="perf-panel__chart-toggle-btn"
                     :class="{ 'perf-panel__chart-toggle-btn--active': delayChartMode === 'bar' }"
-                    title="Count view"
+                    :title="t('Count view')"
                     @click.stop="delayChartMode = 'bar'"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -660,7 +648,7 @@
               </template>
               <div v-else class="perf-panel__chart-empty">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="perf-panel__chart-empty-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                <span class="perf-panel__chart-empty-text">No projects match the current filters</span>
+                <span class="perf-panel__chart-empty-text">{{ t("No projects match the current filters") }}</span>
               </div>
             </div>
           </div>
@@ -670,11 +658,11 @@
         <div class="perf-panel__card">
           <div class="perf-panel__card-header-row">
             <h3 class="perf-panel__card-title">
-              Task Completion<br />Over Time
+              {{ t("Task Completion Over Time") }}
             </h3>
             <span
               class="perf-panel__card-drill perf-panel__card-drill--visible"
-              title="Click for details"
+              :title="t('Click for details')"
               @click="openModal('completion')"
             >
               <svg
@@ -702,47 +690,22 @@
             <span
               class="perf-panel__status-badge"
               :class="{
-                'perf-panel__status-badge--active':
-                  completionStatusFilter === '',
+                'perf-panel__status-badge--active': completionStatusFilter === '',
               }"
               @click="completionStatusFilter = ''"
-              >All</span
+              >{{ t("All") }}</span
             >
             <span
-              class="perf-panel__status-badge perf-panel__status-badge--green"
-              :class="{
-                'perf-panel__status-badge--active':
-                  completionStatusFilter === 'Active',
-              }"
-              @click="completionStatusFilter = 'Active'"
-              >Active</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--amber"
-              :class="{
-                'perf-panel__status-badge--active':
-                  completionStatusFilter === 'Waiting on Customer',
-              }"
-              @click="completionStatusFilter = 'Waiting on Customer'"
-              >W.o.c.</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--orange"
-              :class="{
-                'perf-panel__status-badge--active':
-                  completionStatusFilter === 'On Hold',
-              }"
-              @click="completionStatusFilter = 'On Hold'"
-              >On Hold</span
-            >
-            <span
-              class="perf-panel__status-badge perf-panel__status-badge--slate"
-              :class="{
-                'perf-panel__status-badge--active':
-                  completionStatusFilter === 'Done',
-              }"
-              @click="completionStatusFilter = 'Done'"
-              >Done</span
+              v-for="b in statusBadges"
+              :key="'completionStatusFilter-' + b.code"
+              class="perf-panel__status-badge"
+              :class="[
+                'perf-panel__status-badge--' + b.modifier,
+                { 'perf-panel__status-badge--active': completionStatusFilter === b.code },
+              ]"
+              :title="b.title"
+              @click="completionStatusFilter = b.code"
+              >{{ b.label }}</span
             >
           </div>
 
@@ -753,7 +716,7 @@
                 v-model="completionSearch"
                 class="perf-panel__proj-search"
                 type="text"
-                placeholder="Filter…"
+                :placeholder="t('Filter…')"
                 @click.stop
               />
               <div class="perf-panel__proj-items">
@@ -773,7 +736,7 @@
                   v-if="filteredCompletionProjects.length === 0"
                   class="perf-panel__proj-empty"
                 >
-                  No match
+                  {{ t("No match") }}
                 </div>
               </div>
             </div>
@@ -787,7 +750,7 @@
               />
               <div v-else class="perf-panel__chart-empty">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="perf-panel__chart-empty-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                <span class="perf-panel__chart-empty-text">No projects match the current filters</span>
+                <span class="perf-panel__chart-empty-text">{{ t("No projects match the current filters") }}</span>
               </div>
             </div>
           </div>
@@ -797,7 +760,7 @@
       <!-- ── PER PROJECT DETAILS ── -->
       <div class="perf-panel__project-details">
         <div class="perf-panel__card">
-          <h3 class="perf-panel__card-title">Per Project Details</h3>
+          <h3 class="perf-panel__card-title">{{ t("Per Project Details") }}</h3>
           <div class="perf-panel__card-title-underline"></div>
           <ProjectDetailsPanel
             ref="detailsPanel"
@@ -824,14 +787,14 @@
           <!-- Progress Detail -->
           <template v-if="modal === 'progress'">
             <div class="perf-modal__sort-bar" @click.stop>
-              <span class="perf-modal__sort-label">% Done:</span>
+              <span class="perf-modal__sort-label">{{ t("% Done:") }}</span>
               <button
                 class="iz-chip iz-chip--active"
                 @click="
                   progressSortBy = progressSortBy === 'desc' ? 'asc' : 'desc'
                 "
               >
-                {{ progressSortBy === "desc" ? "High → Low" : "Low → High" }}
+                {{ progressSortBy === "desc" ? t("High → Low") : t("Low → High") }}
               </button>
             </div>
             <div
@@ -848,13 +811,13 @@
                 <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
-                    title="Open in Per Project Details"
+                    :title="t('Open in Per Project Details')"
                     @click.stop="goToProjectDetails(proj)"
                   >
-                    &#8594; Details
+                    {{ t("→ Details") }}
                   </button>
                   <span class="iz-badge iz-badge--accent">
-                    {{ proj.done }}/{{ proj.total }} done
+                    {{ t("{done}/{total} done", { done: proj.done, total: proj.total }) }}
                   </span>
                   <span
                     class="iz-badge"
@@ -892,10 +855,10 @@
                   <table class="iz-table">
                     <thead>
                       <tr>
-                        <th>Task</th>
-                        <th>Stack</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
+                        <th>{{ t("Task") }}</th>
+                        <th>{{ t("Stack") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Due Date") }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -910,7 +873,7 @@
                           <span
                             class="perf-modal__status"
                             :class="'perf-modal__status--' + task.status"
-                            >{{ task.status }}</span
+                            >{{ taskStatusLabel(task.status) }}</span
                           >
                         </td>
                         <!-- date only: task.due arrives as a full timestamp,
@@ -928,7 +891,7 @@
               v-if="dateFilteredProgressDetails.length === 0"
               class="iz-empty perf-modal__empty"
             >
-              No project data available
+              {{ t("No project data available") }}
             </div>
           </template>
 
@@ -952,7 +915,7 @@
                 </div>
                 <div class="iz-row__actions">
                   <span class="iz-badge iz-badge--accent">
-                    {{ mem.done }}/{{ mem.total }} done
+                    {{ t("{done}/{total} done", { done: mem.done, total: mem.total }) }}
                   </span>
                   <span
                     class="iz-badge"
@@ -992,11 +955,11 @@
                   <table class="iz-table">
                     <thead>
                       <tr>
-                        <th>Task</th>
-                        <th>Project</th>
-                        <th>Stack</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
+                        <th>{{ t("Task") }}</th>
+                        <th>{{ t("Project") }}</th>
+                        <th>{{ t("Stack") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Due Date") }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1012,7 +975,7 @@
                           <span
                             class="perf-modal__status"
                             :class="'perf-modal__status--' + task.status"
-                            >{{ task.status }}</span
+                            >{{ taskStatusLabel(task.status) }}</span
                           >
                         </td>
                         <!-- date only: task.due arrives as a full timestamp,
@@ -1030,14 +993,14 @@
               v-if="dateFilteredMemberDetails.length === 0"
               class="iz-empty perf-modal__empty"
             >
-              No member assignment data available
+              {{ t("No member assignment data available") }}
             </div>
           </template>
 
           <!-- Delay Detail -->
           <template v-if="modal === 'delay'">
             <div class="perf-modal__sort-bar">
-              <span class="perf-modal__sort-label">Sort by:</span>
+              <span class="perf-modal__sort-label">{{ t("Sort by:") }}</span>
               <button
                 class="iz-chip"
                 :class="{
@@ -1045,7 +1008,7 @@
                 }"
                 @click="delaySortBy = 'latest'"
               >
-                Latest Opened
+                {{ t("Latest Opened") }}
               </button>
               <button
                 class="iz-chip"
@@ -1054,7 +1017,7 @@
                 }"
                 @click="delaySortBy = 'oldest'"
               >
-                Oldest Opened
+                {{ t("Oldest Opened") }}
               </button>
             </div>
             <div
@@ -1071,19 +1034,19 @@
                 <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
-                    title="Open in Per Project Details"
+                    :title="t('Open in Per Project Details')"
                     @click.stop="goToProjectDetails(proj)"
                   >
-                    &#8594; Details
+                    {{ t("→ Details") }}
                   </button>
                   <span class="iz-badge iz-badge--success">
-                    {{ countByCategory(proj.tasks, "on-time") }} on-time
+                    {{ t("{count} on-time", { count: countByCategory(proj.tasks, "on-time") }) }}
                   </span>
                   <span class="iz-badge iz-badge--warning">
-                    {{ countByCategory(proj.tasks, "delayed") }} delayed
+                    {{ t("{count} delayed", { count: countByCategory(proj.tasks, "delayed") }) }}
                   </span>
                   <span class="iz-badge iz-badge--danger">
-                    {{ countByCategory(proj.tasks, "blocked") }} blocked
+                    {{ t("{count} blocked", { count: countByCategory(proj.tasks, "blocked") }) }}
                   </span>
                   <span class="iz-badge iz-badge--muted">
                     <!-- inline SVG, not the U+23F2 timer emoji this used to
@@ -1105,7 +1068,7 @@
                       <circle cx="12" cy="12" r="9" />
                       <polyline points="12 7 12 12 15.5 14" />
                     </svg>
-                    {{ formatAge(proj.avgDaysActive) }} avg
+                    {{ t("{age} avg", { age: formatAge(proj.avgDaysActive) }) }}
                   </span>
                   <svg
                     class="iz-row__chevron"
@@ -1131,13 +1094,13 @@
                   <table class="iz-table">
                     <thead>
                       <tr>
-                        <th>Task</th>
-                        <th>Assigned</th>
-                        <th>Stack</th>
-                        <th>Status</th>
-                        <th>Category</th>
-                        <th>Due</th>
-                        <th>Opened</th>
+                        <th>{{ t("Task") }}</th>
+                        <th>{{ t("Assigned") }}</th>
+                        <th>{{ t("Stack") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Category") }}</th>
+                        <th>{{ t("Due") }}</th>
+                        <th>{{ t("Opened") }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1155,7 +1118,7 @@
                             >
                           </template>
                           <span v-else class="perf-modal__assignee-none"
-                            >Unassigned</span
+                            >{{ t("Unassigned") }}</span
                           >
                         </td>
                         <td>
@@ -1167,7 +1130,7 @@
                           <span
                             class="perf-modal__status"
                             :class="'perf-modal__status--' + task.status"
-                            >{{ task.status }}</span
+                            >{{ taskStatusLabel(task.status) }}</span
                           >
                         </td>
                         <td>
@@ -1175,9 +1138,9 @@
                             class="perf-modal__category"
                             :class="'perf-modal__category--' + task.category"
                           >
-                            {{ task.category }}
+                            {{ categoryLabel(task.category) }}
                             <template v-if="task.days_overdue">
-                              ({{ task.days_overdue }}d)</template
+                              {{ t("({days}d)", { days: task.days_overdue }) }}</template
                             >
                           </span>
                         </td>
@@ -1205,14 +1168,14 @@
               v-if="sortedDelayDetails.length === 0"
               class="iz-empty perf-modal__empty"
             >
-              No delay data available
+              {{ t("No delay data available") }}
             </div>
           </template>
 
           <!-- Completion Detail -->
           <template v-if="modal === 'completion'">
             <div class="perf-modal__sort-bar" @click.stop>
-              <span class="perf-modal__sort-label">Completion Rate:</span>
+              <span class="perf-modal__sort-label">{{ t("Completion Rate:") }}</span>
               <button
                 class="iz-chip iz-chip--active"
                 @click="
@@ -1222,8 +1185,8 @@
               >
                 {{
                   completionSortBy === "desc"
-                    ? "High \u2192 Low"
-                    : "Low \u2192 High"
+                    ? t("High → Low")
+                    : t("Low → High")
                 }}
               </button>
             </div>
@@ -1241,13 +1204,18 @@
                 <div class="iz-row__actions">
                   <button
                     class="perf-modal__goto-btn"
-                    title="Open in Per Project Details"
+                    :title="t('Open in Per Project Details')"
                     @click.stop="goToProjectDetails(proj)"
                   >
-                    &#8594; Details
+                    {{ t("→ Details") }}
                   </button>
                   <span class="iz-badge iz-badge--accent">
-                    {{ proj.completed }}/{{ proj.total_tasks }} completed
+                    {{
+                      t("{done}/{total} completed", {
+                        done: proj.completed,
+                        total: proj.total_tasks,
+                      })
+                    }}
                   </span>
                   <svg
                     class="iz-row__chevron"
@@ -1274,16 +1242,16 @@
                     v-if="proj.tasks.length === 0"
                     class="perf-modal__empty-inline"
                   >
-                    No completed tasks yet
+                    {{ t("No completed tasks yet") }}
                   </div>
                   <table v-else class="iz-table">
                     <thead>
                       <tr>
-                        <th>Task</th>
-                        <th>Stack</th>
-                        <th>Completed</th>
-                        <th>Due Date</th>
-                        <th>Opened</th>
+                        <th>{{ t("Task") }}</th>
+                        <th>{{ t("Stack") }}</th>
+                        <th>{{ tc("Completed", "date") }}</th>
+                        <th>{{ t("Due Date") }}</th>
+                        <th>{{ t("Opened") }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1319,7 +1287,7 @@
               v-if="sortedCompletionDetails.length === 0"
               class="iz-empty perf-modal__empty"
             >
-              No completion data available
+              {{ t("No completion data available") }}
             </div>
           </template>
         </div>
@@ -1333,6 +1301,18 @@ import DonutChart from "./DonutChart.vue";
 import BarChart from "./BarChart.vue";
 import AreaChart from "./AreaChart.vue";
 import ProjectDetailsPanel from "./ProjectDetailsPanel.vue";
+import { t, n, tc, locale } from "../lib/l10n.mjs";
+import { PROJECT_STATUS, toStatusCode } from "../lib/projectStatus.mjs";
+
+/* Monday-first weekday initials and month names come from Intl in the
+   user's locale, not from fixed English lists. */
+function intlFormat(date, options) {
+  try {
+    return new Intl.DateTimeFormat(locale(), options).format(date);
+  } catch (e) {
+    return new Intl.DateTimeFormat(undefined, options).format(date);
+  }
+}
 
 export default {
   name: "ProjectPerformancePanel",
@@ -1450,6 +1430,7 @@ export default {
       completionSortBy: "desc",
       delaySearch: "",
       completionSearch: "",
+      // A PROJECT_STATUS code, or "" for every status.
       delayStatusFilter: "",
       completionStatusFilter: "",
       completionRateFilter: "",
@@ -1490,10 +1471,34 @@ export default {
        let tidying up a board drag a member's completion rate down. */
     memberBuckets: function () {
       return [
-        { key: "done", label: "Done", color: "var(--color-success)" },
-        { key: "progress", label: "In progress", color: "var(--chart-5)" },
-        { key: "overdue", label: "Overdue", color: "var(--color-danger)" },
+        { key: "done", label: tc("Done", "project status"), color: "var(--color-success)" },
+        { key: "progress", label: t("In progress"), color: "var(--chart-5)" },
+        { key: "overdue", label: t("Overdue"), color: "var(--color-danger)" },
       ];
+    },
+    /* The status chips over the delay and completion charts. They filter on
+       the numeric project status, never on the label shown. */
+    statusBadges: function () {
+      return [
+        { code: PROJECT_STATUS.ACTIVE, label: t("Active"), modifier: "green" },
+        {
+          code: PROJECT_STATUS.WAITING,
+          label: t("W.o.c."),
+          title: t("Waiting on Customer"),
+          modifier: "amber",
+        },
+        { code: PROJECT_STATUS.ON_HOLD, label: t("On Hold"), modifier: "orange" },
+        { code: PROJECT_STATUS.DONE, label: tc("Done", "project status"), modifier: "slate" },
+      ];
+    },
+    /* Monday-first short weekday names for the date picker. 1 Jan 2024 was a
+       Monday. */
+    weekdayLabels: function () {
+      var out = [];
+      for (var i = 0; i < 7; i++) {
+        out.push(intlFormat(new Date(2024, 0, 1 + i), { weekday: "short" }));
+      }
+      return out;
     },
     memberRollup: function () {
       /* Date-only string compare, matching the CAST(duedate AS DATE) the
@@ -1519,17 +1524,17 @@ export default {
         var total = 0;
 
         for (var j = 0; j < (mem.tasks || []).length; j++) {
-          var t = mem.tasks[j];
-          if (t.status === "archived") continue;
+          var task = mem.tasks[j];
+          if (task.status === "archived") continue;
 
           var bucket = "progress";
-          if (t.status === "done") {
+          if (task.status === "done") {
             bucket = "done";
-          } else if (t.due && String(t.due).substring(0, 10) < todayStr) {
+          } else if (task.due && String(task.due).substring(0, 10) < todayStr) {
             bucket = "overdue";
           }
 
-          var name = t.project || "Unassigned project";
+          var name = task.project || t("Unassigned project");
           if (!byProject[name]) {
             byProject[name] = {
               name: name,
@@ -1553,8 +1558,8 @@ export default {
           total: total,
           counts: counts,
           projects: order
-            .map(function (n) {
-              return byProject[n];
+            .map(function (projectName) {
+              return byProject[projectName];
             })
             .sort(function (a, b) {
               return b.total - a.total;
@@ -1646,15 +1651,15 @@ export default {
     },
     memberEmptyMessage: function () {
       if (this.memberSearch.trim()) {
-        return 'No member matches "' + this.memberSearch.trim() + '".';
+        return t('No member matches "{search}".', { search: this.memberSearch.trim() });
       }
       if (this.memberProject !== "all") {
-        return "Nobody is assigned on this project.";
+        return t("Nobody is assigned on this project.");
       }
       if (this.memberBucket !== "all") {
-        return "No task is in this state.";
+        return t("No task is in this state.");
       }
-      return "No member assignment data available";
+      return t("No member assignment data available");
     },
     hasDateFilter: function () {
       return !!(this.perfDateFrom || this.perfDateTo);
@@ -1689,13 +1694,13 @@ export default {
         var total = 0;
         var done = 0;
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.created_at || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.created_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
+          if (!this.matchesMember(task)) continue;
           total++;
-          if (t.status === "done") done++;
+          if (task.status === "done") done++;
         }
         result.push({
           name: proj.name,
@@ -1716,21 +1721,22 @@ export default {
         var delayed = 0;
         var blocked = 0;
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.createdAt || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.createdAt || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
-          if (t.category === "delayed") delayed++;
-          else if (t.category === "blocked") blocked++;
+          if (!this.matchesMember(task)) continue;
+          if (task.category === "delayed") delayed++;
+          else if (task.category === "blocked") blocked++;
           else onTime++;
         }
         var total = onTime + delayed + blocked;
         result.push({
           name: proj.name,
           status: proj.status || "",
+          statusCode: toStatusCode(proj.statusCode),
           chart: {
-            labels: ["On-time Tasks", "Delayed Tasks", "Blocked Tasks"],
+            labels: [t("On-time Tasks"), t("Delayed Tasks"), t("Blocked Tasks")],
             data: [
               total > 0 ? Math.round((onTime / total) * 100) : 0,
               total > 0 ? Math.round((delayed / total) * 100) : 0,
@@ -1752,18 +1758,21 @@ export default {
         var proj = list[i];
         var completedDates = [];
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.completed_at || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.completed_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
-          completedDates.push(new Date(t.completed_at));
+          if (!this.matchesMember(task)) continue;
+          completedDates.push(new Date(task.completed_at));
         }
         if (completedDates.length === 0) {
           result.push({
             name: proj.name,
             status: proj.status || "",
-            weeks: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
+            statusCode: toStatusCode(proj.statusCode),
+            weeks: [1, 2, 3, 4, 5, 6].map(function (w) {
+              return t("Week {n}", { n: w });
+            }),
             data: [0, 0, 0, 0, 0, 0],
           });
           continue;
@@ -1781,25 +1790,8 @@ export default {
           var weekEnd = new Date(weekStart);
           weekEnd.setDate(weekEnd.getDate() + 6);
           weekEnd.setHours(23, 59, 59, 999);
-          var months = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
           weekLabels.push(
-            months[weekStart.getMonth()] +
-              " " +
-              (weekStart.getDate() < 10 ? "0" : "") +
-              weekStart.getDate(),
+            intlFormat(weekStart, { month: "short", day: "2-digit" }),
           );
           var count = 0;
           for (var k = 0; k < completedDates.length; k++) {
@@ -1811,6 +1803,7 @@ export default {
         result.push({
           name: proj.name,
           status: proj.status || "",
+          statusCode: toStatusCode(proj.statusCode),
           weeks: weekLabels,
           data: weekCounts,
         });
@@ -1860,7 +1853,7 @@ export default {
         if (q && proj.name.toLowerCase().indexOf(q) === -1) {
           continue;
         }
-        if (statusFilter && proj.status !== statusFilter) {
+        if (statusFilter !== "" && toStatusCode(proj.statusCode) !== statusFilter) {
           continue;
         }
         if (allowed && !allowed[proj.name]) {
@@ -1880,7 +1873,7 @@ export default {
         if (q && proj.name.toLowerCase().indexOf(q) === -1) {
           continue;
         }
-        if (statusFilter && proj.status !== statusFilter) {
+        if (statusFilter !== "" && toStatusCode(proj.statusCode) !== statusFilter) {
           continue;
         }
         if (allowed && !allowed[proj.name]) {
@@ -1904,7 +1897,7 @@ export default {
     },
     activeDelayBarChart: function () {
       var colors = ["#2ec4b6", "#f4a261", "#e63946"];
-      var labels = ["On-time", "Delayed", "Blocked"];
+      var labels = [t("On-time"), t("Delayed"), t("Blocked")];
       var empty = { labels: labels, data: [0, 0, 0], colors: colors };
       var activeProj = this.effectiveDelayProjects[this.delayIndex];
       if (!activeProj) return empty;
@@ -1924,15 +1917,15 @@ export default {
       var delayed = 0;
       var blocked = 0;
       for (var j = 0; j < tasks.length; j++) {
-        var t = tasks[j];
+        var task = tasks[j];
         if (from || to) {
-          var ca = (t.createdAt || "").substring(0, 10);
+          var ca = (task.createdAt || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
         }
-        if (!this.matchesMember(t)) continue;
-        if (t.category === "delayed") delayed++;
-        else if (t.category === "blocked") blocked++;
+        if (!this.matchesMember(task)) continue;
+        if (task.category === "delayed") delayed++;
+        else if (task.category === "blocked") blocked++;
         else onTime++;
       }
       return { labels: labels, data: [onTime, delayed, blocked], colors: colors };
@@ -1968,14 +1961,14 @@ export default {
         var total = 0;
         var done = 0;
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.created_at || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.created_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
-          tasks.push(t);
+          if (!this.matchesMember(task)) continue;
+          tasks.push(task);
           total++;
-          if (t.status === "done") done++;
+          if (task.status === "done") done++;
         }
         result.push({
           name: proj.name,
@@ -2004,13 +1997,13 @@ export default {
         var total = 0;
         var done = 0;
         for (var j = 0; j < (mem.tasks || []).length; j++) {
-          var t = mem.tasks[j];
-          var ca = (t.created_at || "").substring(0, 10);
+          var task = mem.tasks[j];
+          var ca = (task.created_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          tasks.push(t);
+          tasks.push(task);
           total++;
-          if (t.status === "done") done++;
+          if (task.status === "done") done++;
         }
         if (total > 0) {
           result.push({
@@ -2039,27 +2032,28 @@ export default {
         var latestOpened = null;
         var oldestOpened = null;
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.createdAt || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.createdAt || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
-          tasks.push(t);
-          if (t.createdAt) {
-            var created = new Date(t.createdAt);
+          if (!this.matchesMember(task)) continue;
+          tasks.push(task);
+          if (task.createdAt) {
+            var created = new Date(task.createdAt);
             var age = Math.floor((now - created) / (1000 * 60 * 60 * 24));
             totalAge += age;
             ageCount++;
-            if (!latestOpened || t.createdAt > latestOpened)
-              latestOpened = t.createdAt;
-            if (!oldestOpened || t.createdAt < oldestOpened)
-              oldestOpened = t.createdAt;
+            if (!latestOpened || task.createdAt > latestOpened)
+              latestOpened = task.createdAt;
+            if (!oldestOpened || task.createdAt < oldestOpened)
+              oldestOpened = task.createdAt;
           }
         }
         result.push({
           name: proj.name,
           id: proj.id,
           status: proj.status || "",
+          statusCode: toStatusCode(proj.statusCode),
           tasks: tasks,
           avgDaysActive: ageCount > 0 ? Math.round(totalAge / ageCount) : 0,
           latestTaskOpened: latestOpened,
@@ -2078,17 +2072,18 @@ export default {
         var proj = list[i];
         var tasks = [];
         for (var j = 0; j < (proj.tasks || []).length; j++) {
-          var t = proj.tasks[j];
-          var ca = (t.completed_at || "").substring(0, 10);
+          var task = proj.tasks[j];
+          var ca = (task.completed_at || "").substring(0, 10);
           if (from && ca < from) continue;
           if (to && ca > to) continue;
-          if (!this.matchesMember(t)) continue;
-          tasks.push(t);
+          if (!this.matchesMember(task)) continue;
+          tasks.push(task);
         }
         result.push({
           name: proj.name,
           id: proj.id,
           status: proj.status || "",
+          statusCode: toStatusCode(proj.statusCode),
           total_tasks: proj.total_tasks,
           completed: tasks.length,
           tasks: tasks,
@@ -2177,10 +2172,10 @@ export default {
     },
     modalTitle: function () {
       var titles = {
-        progress: "Project Progress \u2014 Task Details",
-        member: "Member Performance \u2014 Task Details",
-        delay: "Task Delay Overview \u2014 Task Details",
-        completion: "Task Completion \u2014 Completed Tasks",
+        progress: t("Project Progress — Task Details"),
+        member: t("Member Performance — Task Details"),
+        delay: t("Task Delay Overview — Task Details"),
+        completion: t("Task Completion — Completed Tasks"),
       };
       return titles[this.modal] || "";
     },
@@ -2275,15 +2270,30 @@ export default {
       return "iz-badge--danger";
     },
     countByCategory: function (tasks, cat) {
-      return tasks.filter(function (t) {
-        return t.category === cat;
+      return tasks.filter(function (task) {
+        return task.category === cat;
       }).length;
     },
     formatAge: function (days) {
-      if (!days || days < 1) return "0d";
-      if (days < 7) return days + "d";
+      if (!days || days < 1) return t("{days}d", { days: 0 });
+      if (days < 7) return t("{days}d", { days: days });
       var weeks = Math.floor(days / 7);
-      return weeks + (weeks === 1 ? " week" : " weeks");
+      return n("%n week", "%n weeks", weeks);
+    },
+    /* Deck task state (open / done / archived) as the user reads it. The
+       raw code stays on the CSS modifier. */
+    taskStatusLabel: function (status) {
+      if (status === "open") return t("Open");
+      if (status === "done") return t("Done");
+      if (status === "archived") return t("Archived");
+      return status;
+    },
+    /* Delay category (on-time / delayed / blocked) as the user reads it. */
+    categoryLabel: function (category) {
+      if (category === "on-time") return t("On-time");
+      if (category === "delayed") return t("Delayed");
+      if (category === "blocked") return t("Blocked");
+      return category;
     },
     taskAge: function (createdAt) {
       if (!createdAt) return "\u2014";
@@ -2292,21 +2302,20 @@ export default {
       var now = new Date();
       var diffMs = now.getTime() - created.getTime();
       var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      if (days < 1) return "Today";
-      if (days === 1) return "1 day";
-      if (days < 7) return days + " days";
+      if (days < 1) return t("Today");
+      if (days < 7) return n("%n day", "%n days", days);
       var weeks = Math.floor(days / 7);
-      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      if (weeks < 5) return n("%n week", "%n weeks", weeks);
       var months = Math.floor(days / 30);
-      if (months < 12) return months + (months === 1 ? " month" : " months");
+      if (months < 12) return n("%n month", "%n months", months);
       var years = Math.floor(days / 365);
-      return years + (years === 1 ? " year" : " years");
+      return n("%n year", "%n years", years);
     },
     formatDateShort: function (d) {
       if (!d) return "\u2014";
       var date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString("en-GB", {
+      return date.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -2335,12 +2344,13 @@ export default {
         }
       });
     },
-    filterProjectsByStatus: function (statusLabel) {
+    /* statusCode: a PROJECT_STATUS code, or null/"" for every status. */
+    filterProjectsByStatus: function (statusCode) {
       this.collapsed = false;
       var self = this;
       this.$nextTick(function () {
         if (self.$refs.detailsPanel) {
-          self.$refs.detailsPanel.applyProjectFilter(statusLabel);
+          self.$refs.detailsPanel.applyProjectFilter(statusCode);
         }
       });
     },
@@ -2414,21 +2424,7 @@ export default {
         this.perfCalendarBase.getMonth() + offset,
         1,
       );
-      var months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      return months[d.getMonth()] + " " + d.getFullYear();
+      return intlFormat(d, { month: "long", year: "numeric" });
     },
     shiftPerfCalendar: function (dir) {
       var d = new Date(this.perfCalendarBase);

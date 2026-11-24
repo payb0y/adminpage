@@ -13,9 +13,9 @@
         </div>
         <div class="storage-list__amount">
           <span>{{ formatBytes(item.usedBytes) }}</span>
-          <span>of {{ formatBytes(item.quotaBytes) }}</span>
+          <span>{{ t('of {quota}', { quota: formatBytes(item.quotaBytes) }) }}</span>
         </div>
-        <div class="storage-list__meter iz-meter iz-meter--thin" role="progressbar" :aria-label="item.name + ' storage used'" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="item.percentage || 0">
+        <div class="storage-list__meter iz-meter iz-meter--thin" role="progressbar" :aria-label="t('{name} storage used', { name: item.name })" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="item.percentage || 0">
           <span :class="['iz-meter__fill', meterClass(item.status)]" :style="{ width: meterWidth(item.percentage) }"></span>
         </div>
       </li>
@@ -24,6 +24,8 @@
 </template>
 
 <script>
+import { t, locale } from "../lib/l10n.mjs";
+
 export default {
   name: "StorageEntityList",
   props: {
@@ -40,11 +42,11 @@ export default {
   },
   methods: {
     formatBytes: function (bytes) {
-      if (bytes === null || bytes === undefined) return "Unavailable";
+      if (bytes === null || bytes === undefined) return t("Unavailable");
       if (bytes === 0) return "0 B";
       var units = ["B", "KB", "MB", "GB", "TB", "PB"];
       var index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-      return new Intl.NumberFormat(undefined, { maximumFractionDigits: index > 2 ? 2 : 1 }).format(bytes / Math.pow(1024, index)) + " " + units[index];
+      return new Intl.NumberFormat(locale(), { maximumFractionDigits: index > 2 ? 2 : 1 }).format(bytes / Math.pow(1024, index)) + " " + units[index];
     },
     meterWidth: function (percentage) { return Math.min(100, Math.max(0, percentage || 0)) + "%"; },
     pillClass: function (status) {
@@ -54,7 +56,7 @@ export default {
       return { healthy: "iz-meter__fill--ok", warning: "iz-meter__fill--warn", critical: "iz-meter__fill--danger" }[status] || "iz-meter__fill--neutral";
     },
     statusLabel: function (status) {
-      return { healthy: "Healthy", warning: "Over 80%", critical: "At capacity" }[status] || "Unavailable";
+      return { healthy: t("Healthy"), warning: t("Over 80%"), critical: t("At capacity") }[status] || t("Unavailable");
     },
   },
 };

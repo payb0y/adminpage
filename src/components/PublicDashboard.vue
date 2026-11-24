@@ -34,7 +34,7 @@
 
     <!-- ── Footer ── -->
     <footer class="public-dashboard__footer">
-      <span>Public Dashboard</span>
+      <span>{{ t('Public Dashboard') }}</span>
     </footer>
   </div>
 </template>

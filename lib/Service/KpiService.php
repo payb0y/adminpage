@@ -16,6 +16,14 @@ class KpiService {
         $this->db = $db;
     }
 
+    /*
+     * Every metric carries a stable `key`; the frontend looks values up by it
+     * and words the label itself, through the app's translations. `label` and
+     * `value` stay the English strings they always were, for compatibility —
+     * nothing may match on them. Where `value` is pre-formatted with a unit
+     * ("3d", "12 pub / 4 priv", "2 wks"), the bare numbers ride along too.
+     */
+
     /**
      * Build KPI card data scoped to a single organization.
      *
@@ -43,11 +51,11 @@ class KpiService {
             'icon'      => 'icon-folder',
             'iconColor' => '#4A90D9',
             'metrics'   => [
-                ['value' => (string)$counts['active'],   'label' => 'Active'],
-                ['value' => (string)$counts['waiting'],  'label' => 'W.o.c.'],
-                ['value' => (string)$counts['on_hold'],  'label' => 'On Hold'],
-                ['value' => (string)$counts['done'],     'label' => 'Done'],
-                ['value' => (string)$withIssue,          'label' => 'With Issue'],
+                ['key' => 'active',     'value' => (string)$counts['active'],   'label' => 'Active'],
+                ['key' => 'waiting',    'value' => (string)$counts['waiting'],  'label' => 'W.o.c.'],
+                ['key' => 'on_hold',    'value' => (string)$counts['on_hold'],  'label' => 'On Hold'],
+                ['key' => 'done',       'value' => (string)$counts['done'],     'label' => 'Done'],
+                ['key' => 'with_issue', 'value' => (string)$withIssue,          'label' => 'With Issue'],
             ],
         ];
     }
@@ -124,12 +132,13 @@ class KpiService {
             'icon'      => 'icon-checkmark',
             'iconColor' => '#E67E5A',
             'metrics'   => [
-                ['value' => (string)$counts['overdue'],     'label' => 'Overdue'],
-                ['value' => (string)$counts['today'],       'label' => 'Today'],
-                ['value' => (string)$counts['upcoming'],    'label' => 'Upcoming'],
-                ['value' => (string)$counts['in_progress'], 'label' => 'In Progress'],
-                ['value' => (string)$counts['non_due'],     'label' => 'Non Due'],
-                ['value' => $counts['avg_days'] . 'd',      'label' => 'Avg Days Active'],
+                ['key' => 'overdue',         'value' => (string)$counts['overdue'],     'label' => 'Overdue'],
+                ['key' => 'today',           'value' => (string)$counts['today'],       'label' => 'Today'],
+                ['key' => 'upcoming',        'value' => (string)$counts['upcoming'],    'label' => 'Upcoming'],
+                ['key' => 'in_progress',     'value' => (string)$counts['in_progress'], 'label' => 'In Progress'],
+                ['key' => 'non_due',         'value' => (string)$counts['non_due'],     'label' => 'Non Due'],
+                ['key' => 'avg_days_active', 'value' => $counts['avg_days'] . 'd',      'label' => 'Avg Days Active',
+                    'days' => $counts['avg_days']],
             ],
             'oldestTask' => $oldest,
         ];
@@ -227,10 +236,12 @@ class KpiService {
             'icon'      => 'icon-files',
             'iconColor' => '#8B5CF6',
             'metrics'   => [
-                ['value' => (string)$whiteboards,                                         'label' => 'Whiteboards'],
-                ['value' => (string)$scrumbanBoards,                                      'label' => 'Scrumban Boards'],
-                ['value' => $files['public'] . ' pub / ' . $files['private'] . ' priv',   'label' => 'Files'],
-                ['value' => $notes['public'] . ' pub / ' . $notes['private'] . ' priv',   'label' => 'Notes'],
+                ['key' => 'whiteboards',     'value' => (string)$whiteboards,    'label' => 'Whiteboards'],
+                ['key' => 'scrumban_boards', 'value' => (string)$scrumbanBoards, 'label' => 'Scrumban Boards'],
+                ['key' => 'files', 'value' => $files['public'] . ' pub / ' . $files['private'] . ' priv', 'label' => 'Files',
+                    'public' => $files['public'], 'private' => $files['private']],
+                ['key' => 'notes', 'value' => $notes['public'] . ' pub / ' . $notes['private'] . ' priv', 'label' => 'Notes',
+                    'public' => $notes['public'], 'private' => $notes['private']],
             ],
         ];
     }
@@ -318,7 +329,7 @@ class KpiService {
             INNER JOIN *PREFIX*custom_projects cp
                 ON pnf.parent = cp.folder_id
                AND cp.organization_id = ?
-            WHERE pnf.name = 'Public Notes'
+            WHERE pnf.name IN ('Public Notes', 'Openbare notities')
               AND pnf.mimetype = (
                   SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory'
               )
@@ -369,10 +380,14 @@ class KpiService {
             'icon'      => 'icon-calendar',
             'iconColor' => '#0EA5E9',
             'metrics'   => [
-                ['value' => $completionRate . '%',  'label' => 'Avg Completion Rate'],
-                ['value' => $scheduleElapsed . '%', 'label' => 'Avg Schedule Elapsed'],
-                ['value' => $coordinationWeeks,     'label' => 'Avg Coordination Pending'],
-                ['value' => $prepWeeks,             'label' => 'Avg Required Prep Time'],
+                ['key' => 'avg_completion_rate', 'value' => $completionRate . '%', 'label' => 'Avg Completion Rate',
+                    'percent' => (int)$completionRate],
+                ['key' => 'avg_schedule_elapsed', 'value' => $scheduleElapsed . '%', 'label' => 'Avg Schedule Elapsed',
+                    'percent' => $scheduleElapsed],
+                ['key' => 'avg_coordination_pending', 'value' => $this->legacyWeeks($coordinationWeeks),
+                    'label' => 'Avg Coordination Pending', 'weeks' => $coordinationWeeks],
+                ['key' => 'avg_required_prep_time', 'value' => $this->legacyWeeks($prepWeeks),
+                    'label' => 'Avg Required Prep Time', 'weeks' => $prepWeeks],
             ],
         ];
     }
@@ -420,7 +435,7 @@ class KpiService {
      * Average coordination pending time in weeks.
      * Measures weeks from each project's request_date start_date until NOW.
      */
-    private function avgCoordinationPending(int $orgId): string {
+    private function avgCoordinationPending(int $orgId): int {
         $sql = "
             SELECT
                 ROUND(AVG({$this->datediffDays('NOW()', 'pti.start_date')} / 7.0)) AS avg_weeks
@@ -435,8 +450,7 @@ class KpiService {
         $result->execute([$orgId]);
         $row = $result->fetch();
 
-        $weeks = (int)($row['avg_weeks'] ?? 0);
-        return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
+        return (int)($row['avg_weeks'] ?? 0);
     }
 
     /**
@@ -450,7 +464,7 @@ class KpiService {
      * Zero is a legitimate stored value, so unset projects are excluded rather
      * than averaged in as 0.
      */
-    private function avgRequiredPrepTime(int $orgId): string {
+    private function avgRequiredPrepTime(int $orgId): int {
         $sql = "
             SELECT ROUND(AVG(cp.required_preparation_weeks)) AS avg_weeks
             FROM *PREFIX*custom_projects cp
@@ -462,7 +476,14 @@ class KpiService {
         $result->execute([$orgId]);
         $row = $result->fetch();
 
-        $weeks = (int)($row['avg_weeks'] ?? 0);
+        return (int)($row['avg_weeks'] ?? 0);
+    }
+
+    /**
+     * The English "2 wks" the `value` field has always carried. Display text
+     * is made in the frontend from `weeks`; this stays for compatibility.
+     */
+    private function legacyWeeks(int $weeks): string {
         return $weeks . ' wk' . ($weeks !== 1 ? 's' : '');
     }
 

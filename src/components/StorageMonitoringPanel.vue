@@ -5,47 +5,47 @@
   <div :class="['storage-monitor', embedded ? 'iz-panel--flush' : 'iz-panel']">
     <div v-if="loading && !storage" class="storage-monitor__state iz-empty">
       <span class="iz-spinner" aria-hidden="true"></span>
-      <span>Calculating current storage usage...</span>
+      <span>{{ t("Calculating current storage usage...") }}</span>
     </div>
     <div v-else-if="error && !storage" class="storage-monitor__state iz-error">
       <span>{{ error }}</span>
-      <button class="iz-btn iz-btn--sm" type="button" @click="$emit('retry')">Try again</button>
+      <button class="iz-btn iz-btn--sm" type="button" @click="$emit('retry')">{{ t("Try again") }}</button>
     </div>
 
     <template v-else-if="storage">
       <p class="storage-monitor__headline">
         <strong>{{ formatBytes(summary.usedBytes) }}</strong>
-        <span>of {{ formatBytes(summary.capacityBytes) }} configured capacity</span>
+        <span>{{ t("of {capacity} configured capacity", { capacity: formatBytes(summary.capacityBytes) }) }}</span>
       </p>
-      <div class="storage-monitor__meter iz-meter" role="progressbar" aria-label="Organization storage used" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="summary.percentage || 0">
+      <div class="storage-monitor__meter iz-meter" role="progressbar" :aria-label="t('Organization storage used')" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="summary.percentage || 0">
         <span class="iz-meter__fill" :style="{ width: meterWidth(summary.percentage) }"></span>
       </div>
 
       <div class="storage-monitor__metrics iz-metrics">
         <div class="iz-metric">
-          <span class="iz-metric__label">Private user storage</span>
+          <span class="iz-metric__label">{{ t("Private user storage") }}</span>
           <strong class="iz-metric__value">{{ formatBytes(summary.private.usedBytes) }}</strong>
-          <span class="iz-metric__label">{{ formatBytes(summary.private.capacityBytes) }} capacity</span>
+          <span class="iz-metric__label">{{ t("{capacity} capacity", { capacity: formatBytes(summary.private.capacityBytes) }) }}</span>
         </div>
         <div class="iz-metric">
-          <span class="iz-metric__label">Shared project storage</span>
+          <span class="iz-metric__label">{{ t("Shared project storage") }}</span>
           <strong class="iz-metric__value">{{ formatBytes(summary.shared.usedBytes) }}</strong>
-          <span class="iz-metric__label">{{ formatBytes(summary.shared.capacityBytes) }} capacity</span>
+          <span class="iz-metric__label">{{ t("{capacity} capacity", { capacity: formatBytes(summary.shared.capacityBytes) }) }}</span>
         </div>
         <div class="iz-metric">
-          <span class="iz-metric__label">Needs attention</span>
+          <span class="iz-metric__label">{{ t("Needs attention") }}</span>
           <strong class="iz-metric__value">{{ attentionCount }}</strong>
-          <span class="iz-metric__label">at or above 80%</span>
+          <span class="iz-metric__label">{{ t("at or above 80%") }}</span>
         </div>
       </div>
 
       <p v-if="!summary.complete" class="storage-monitor__notice iz-inset">
-        Some usage or quota measurements are unavailable. Totals include known measurements only.
+        {{ t("Some usage or quota measurements are unavailable. Totals include known measurements only.") }}
       </p>
 
       <div class="storage-monitor__lists">
-        <StorageEntityList title="Private" empty-text="No organization members found." :items="storage.users || []" />
-        <StorageEntityList title="Public" empty-text="No projects found." :items="storage.projects || []" />
+        <StorageEntityList :title="t('Private')" :empty-text="t('No organization members found.')" :items="storage.users || []" />
+        <StorageEntityList :title="t('Public')" :empty-text="t('No projects found.')" :items="storage.projects || []" />
       </div>
     </template>
   </div>
@@ -53,6 +53,7 @@
 
 <script>
 import StorageEntityList from "./StorageEntityList.vue";
+import { t, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "StorageMonitoringPanel",
@@ -74,11 +75,11 @@ export default {
   },
   methods: {
     formatBytes: function (bytes) {
-      if (bytes === null || bytes === undefined) return "Unavailable";
+      if (bytes === null || bytes === undefined) return t("Unavailable");
       if (bytes === 0) return "0 B";
       var units = ["B", "KB", "MB", "GB", "TB", "PB"];
       var index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-      return new Intl.NumberFormat(undefined, { maximumFractionDigits: index > 2 ? 2 : 1 }).format(bytes / Math.pow(1024, index)) + " " + units[index];
+      return new Intl.NumberFormat(locale(), { maximumFractionDigits: index > 2 ? 2 : 1 }).format(bytes / Math.pow(1024, index)) + " " + units[index];
     },
     meterWidth: function (percentage) {
       return Math.min(100, Math.max(0, percentage || 0)) + "%";

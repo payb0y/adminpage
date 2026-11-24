@@ -11,6 +11,7 @@ use OCA\AdminPage\Service\PublicTokenService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IL10N;
 use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 
@@ -21,6 +22,7 @@ class PublicDashboardController extends Controller {
     private DeckService $deckService;
     private ProjectTimelineService $projectTimelineService;
     private LoggerInterface $logger;
+    private IL10N $l;
 
     public function __construct(
         string $appName,
@@ -29,7 +31,8 @@ class PublicDashboardController extends Controller {
         KpiService $kpiService,
         DeckService $deckService,
         ProjectTimelineService $projectTimelineService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        IL10N $l
     ) {
         parent::__construct($appName, $request);
         $this->publicTokenService = $publicTokenService;
@@ -37,6 +40,7 @@ class PublicDashboardController extends Controller {
         $this->deckService = $deckService;
         $this->projectTimelineService = $projectTimelineService;
         $this->logger = $logger;
+        $this->l = $l;
     }
 
     /**
@@ -56,7 +60,7 @@ class PublicDashboardController extends Controller {
             return new JSONResponse(
                 [
                     'error' => 'internal',
-                    'message' => 'Something went wrong loading this dashboard. Please try again in a moment.',
+                    'message' => $this->l->t('Something went wrong loading this dashboard. Please try again in a moment.'),
                 ],
                 Http::STATUS_INTERNAL_SERVER_ERROR,
             );
@@ -73,7 +77,7 @@ class PublicDashboardController extends Controller {
 
             if ($orgId === null) {
                 return new JSONResponse(
-                    ['error' => 'Invalid or expired link'],
+                    ['error' => $this->l->t('Invalid or expired link')],
                     Http::STATUS_FORBIDDEN
                 );
             }
@@ -106,14 +110,14 @@ class PublicDashboardController extends Controller {
 
             if ($orgId === null) {
                 return new JSONResponse(
-                    ['error' => 'Invalid or expired link'],
+                    ['error' => $this->l->t('Invalid or expired link')],
                     Http::STATUS_FORBIDDEN
                 );
             }
 
             $summary = $this->projectTimelineService->getSummary($orgId, $projectId);
             if ($summary === null) {
-                return new JSONResponse(['error' => 'Project not found'], Http::STATUS_NOT_FOUND);
+                return new JSONResponse(['error' => $this->l->t('Project not found')], Http::STATUS_NOT_FOUND);
             }
 
             return new JSONResponse($summary);

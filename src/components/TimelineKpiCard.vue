@@ -17,7 +17,7 @@
           <polyline points="12 6 12 12 16 14" />
         </svg>
       </div>
-      <span class="iz-kpi__title timeline-kpi__title">Timeline</span>
+      <span class="iz-kpi__title timeline-kpi__title">{{ t("Timeline") }}</span>
     </div>
 
     <!-- Hero figure. The completion rate used to sit in the gauge's centre; it
@@ -26,8 +26,8 @@
     <div class="iz-kpi__hero timeline-kpi__hero">
       <span class="iz-kpi__hero-value timeline-kpi__hero-value iz-figure">{{ completionRate }}%</span>
       <span class="iz-kpi__hero-label timeline-kpi__hero-label">
-        Complete<template v-if="scheduleElapsed !== null">
-          · {{ scheduleElapsed }}% elapsed</template
+        {{ t("Complete") }}<template v-if="scheduleElapsed !== null">
+          · {{ t("{percent}% elapsed", { percent: scheduleElapsed }) }}</template
         >
       </span>
     </div>
@@ -46,11 +46,11 @@
            128px in a 116px column and clipped. -->
       <div class="timeline-kpi__stats">
         <div class="timeline-kpi__stat">
-          <span class="timeline-kpi__stat-label">Coordination</span>
+          <span class="timeline-kpi__stat-label">{{ t("Coordination") }}</span>
           <span class="timeline-kpi__stat-value">{{ coordinationPending }}</span>
         </div>
         <div class="timeline-kpi__stat">
-          <span class="timeline-kpi__stat-label">Prep Time</span>
+          <span class="timeline-kpi__stat-label">{{ t("Prep Time") }}</span>
           <span class="timeline-kpi__stat-value">{{ prepTime }}</span>
         </div>
       </div>
@@ -62,6 +62,7 @@
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 import { themeColor as izThemeColor } from "../lib/izChart";
+import { t, n } from "../lib/l10n.mjs";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 export default {
@@ -78,27 +79,28 @@ export default {
     };
   },
   computed: {
+    /* Metrics by their stable backend key; the English label is never read. */
     metricsMap: function () {
       var map = {};
       (this.kpi.metrics || []).forEach(function (m) {
-        map[m.label] = m.value;
+        if (m.key) map[m.key] = m;
       });
       return map;
     },
     completionRate: function () {
-      var val = this.metricsMap["Avg Completion Rate"] || "0%";
-      return parseInt(val, 10) || 0;
+      var m = this.metricsMap.avg_completion_rate;
+      return m ? parseInt(m.percent, 10) || 0 : 0;
     },
     coordinationPending: function () {
-      return this.metricsMap["Avg Coordination Pending"] || "0 wks";
+      return this.formatWeeks(this.metricsMap.avg_coordination_pending);
     },
     prepTime: function () {
-      return this.metricsMap["Avg Required Prep Time"] || "0 wks";
+      return this.formatWeeks(this.metricsMap.avg_required_prep_time);
     },
     scheduleElapsed: function () {
-      var val = this.metricsMap["Avg Schedule Elapsed"];
-      if (val === undefined || val === null) return null;
-      return parseInt(val, 10) || 0;
+      var m = this.metricsMap.avg_schedule_elapsed;
+      if (!m || m.percent === undefined || m.percent === null) return null;
+      return parseInt(m.percent, 10) || 0;
     },
     /* Completion ramp, on the theme's status tokens rather than raw hexes. */
     gaugeColorToken: function () {
@@ -129,6 +131,11 @@ export default {
     },
   },
   methods: {
+    /* Whole weeks from the metric's bare number, worded here. */
+    formatWeeks: function (metric) {
+      if (!metric || metric.weeks === undefined || metric.weeks === null) return t("0 wks");
+      return n("%n wk", "%n wks", parseInt(metric.weeks, 10) || 0);
+    },
     /* Resolve theme tokens at render time rather than hardcoding hexes: the
        chart then follows the In Zicht palette, and light/dark automatically,
        instead of drifting from it. getComputedStyle resolves the var() chain,
@@ -166,7 +173,7 @@ export default {
         type: "doughnut",
         /* Labelled so the tooltip reads 'Complete 40%' rather than naming the
            dataset index. */
-        data: { labels: ["Complete", "Remaining"], datasets: datasets },
+        data: { labels: [t("Complete"), t("Remaining")], datasets: datasets },
         options: {
           responsive: true,
           maintainAspectRatio: true,

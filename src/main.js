@@ -2,11 +2,13 @@ import Vue from "vue";
 import Dashboard from "./components/Dashboard.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t, n, tc } from "./lib/l10n.mjs";
 
+// t(), n() and tc() in every template, the same functions .js/.mjs files and
+// component scripts import from ./lib/l10n.mjs. Nextcloud registers
+// l10n/<lang>.js before this bundle.
 Vue.mixin({
-  methods: {
-    t: (app, text) => text,
-  },
+  methods: { t, n, tc },
 });
 
 const mountEl = document.getElementById("adminpage-root");
@@ -32,7 +34,7 @@ if (mountEl) {
       if (this.loading) {
         return h("div", { class: "adminpage-loading" }, [
           h("div", { class: "adminpage-loading__spinner" }),
-          h("p", "Loading dashboard data..."),
+          h("p", t("Loading dashboard data...")),
         ]);
       }
       if (this.error) {
@@ -69,7 +71,7 @@ if (mountEl) {
               },
               on: { click: () => this.retry() },
             },
-            "Try again",
+            t("Try again"),
           ),
         ]);
       }
@@ -128,18 +130,18 @@ if (mountEl) {
         const serverMsg =
           e && e.response && e.response.data && e.response.data.message;
         if (status === 403) {
-          return "You don't have permission to view this dashboard.";
+          return t("You don't have permission to view this dashboard.");
         }
         if (serverMsg) {
           return serverMsg;
         }
         if (status && status >= 500) {
-          return "The server ran into a problem loading the dashboard. Please try again in a moment.";
+          return t("The server ran into a problem loading the dashboard. Please try again in a moment.");
         }
         if (e && e.request && !e.response) {
-          return "Couldn't reach the server. Check your connection and try again.";
+          return t("Couldn't reach the server. Check your connection and try again.");
         }
-        return "Something went wrong loading the dashboard. Please try again.";
+        return t("Something went wrong loading the dashboard. Please try again.");
       },
       async fetchBackupJobs() {
         try {

@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { t } from "../lib/l10n.mjs";
 import { themeColor } from "../lib/izChart";
 import {
   Chart,
@@ -114,7 +115,7 @@ export default {
               padding: 10,
               cornerRadius: 8,
               callbacks: {
-                label: (context) => ` ${context.parsed.y} completed tasks`,
+                label: (context) => " " + t("{count} completed tasks", { count: context.parsed.y }),
               },
             },
           },
@@ -158,7 +159,7 @@ export default {
               if (point) {
                 const { ctx: c } = chart;
                 c.save();
-                const text = `${maxVal} completed tasks`;
+                const text = t("{count} completed tasks", { count: maxVal });
                 c.font = "11px -apple-system, BlinkMacSystemFont, sans-serif";
                 const textWidth = c.measureText(text).width;
                 const boxPad = 6;

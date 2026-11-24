@@ -4,12 +4,13 @@
       <canvas ref="chartCanvas" :width="width" :height="height"></canvas>
     </div>
     <div v-else class="bar-chart__empty">
-      <span class="bar-chart__empty-text">No tasks yet</span>
+      <span class="bar-chart__empty-text">{{ t("No tasks yet") }}</span>
     </div>
   </div>
 </template>
 
 <script>
+import { t } from "../lib/l10n.mjs";
 import { themeColor } from "../lib/izChart";
 import {
   Chart,
@@ -101,7 +102,7 @@ export default {
               padding: 10,
               cornerRadius: 8,
               callbacks: {
-                label: (context) => ` ${context.parsed.y} tasks`,
+                label: (context) => " " + t("{count} tasks", { count: context.parsed.y }),
               },
             },
           },

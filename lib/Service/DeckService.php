@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace OCA\AdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 class DeckService {
 
     use SqlDialectTrait;
 
     private IDBConnection $db;
+    private IL10N $l;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     /**
@@ -206,6 +209,7 @@ class DeckService {
                 'name'     => $p['project_name'],
                 'board_id' => $bid,
                 'status'   => $this->statusLabel((int)$p['project_status']),
+                'statusCode' => (int)$p['project_status'],
                 'tasks'    => [],
             ];
         }
@@ -282,7 +286,7 @@ class DeckService {
         });
         if (empty($memberPerformance)) {
             $memberPerformance[] = [
-                'name'     => 'No Assignments',
+                'name'     => $this->l->t('No Assignments'),
                 'total'    => 0,
                 'done'     => 0,
                 'progress' => 0,
@@ -330,8 +334,9 @@ class DeckService {
             $taskDelayProjects[] = [
                 'name'   => $proj['name'],
                 'status' => $proj['status'],
+                'statusCode' => $proj['statusCode'],
                 'chart'  => [
-                    'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
+                    'labels' => $this->delayChartLabels(),
                     'data'   => [
                         $total > 0 ? (int)round(($onTime  / $total) * 100) : 0,
                         $total > 0 ? (int)round(($delayed / $total) * 100) : 0,
@@ -356,7 +361,8 @@ class DeckService {
                 $taskCompletionProjects[] = [
                     'name'   => $proj['name'],
                     'status' => $proj['status'],
-                    'weeks'  => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    'statusCode' => $proj['statusCode'],
+                    'weeks'  => $this->placeholderWeeks(),
                     'data'   => [0, 0, 0, 0, 0, 0],
                 ];
                 continue;
@@ -370,7 +376,7 @@ class DeckService {
                 $weekStart = (clone $now)->modify("-{$i} weeks")->modify('monday this week');
                 $weekEnd   = (clone $weekStart)->modify('+6 days')->setTime(23, 59, 59);
 
-                $weekLabels[] = $weekStart->format('M d');
+                $weekLabels[] = $this->shortDate($weekStart);
 
                 $count = 0;
                 foreach ($completedDates as $d) {
@@ -384,6 +390,7 @@ class DeckService {
             $taskCompletionProjects[] = [
                 'name'   => $proj['name'],
                 'status' => $proj['status'],
+                'statusCode' => $proj['statusCode'],
                 'weeks'  => $weekLabels,
                 'data'   => $weekCounts,
             ];
@@ -397,6 +404,43 @@ class DeckService {
         ];
     }
 
+    /** Legend of the task delay donut, in the user's language. */
+    private function delayChartLabels(): array {
+        return [
+            $this->l->t('On-time Tasks'),
+            $this->l->t('Delayed Tasks'),
+            $this->l->t('Blocked Tasks'),
+        ];
+    }
+
+    /** "Week 1" … "Week 6", for a project with nothing completed yet. */
+    private function placeholderWeeks(): array {
+        $weeks = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $weeks[] = $this->l->t('Week %s', [$i]);
+        }
+        return $weeks;
+    }
+
+    /**
+     * Day and short month in the user's locale ("Nov 17", "17 nov."). Intl
+     * knows the order and the month names; DateTime::format('M d') only
+     * speaks English.
+     */
+    private function shortDate(\DateTimeInterface $date): string {
+        if (class_exists(\IntlDateFormatter::class) && class_exists(\IntlDatePatternGenerator::class)) {
+            $locale = $this->l->getLocaleCode();
+            $pattern = (new \IntlDatePatternGenerator($locale))->getBestPattern('MMMd');
+            $formatter = new \IntlDateFormatter($locale, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE,
+                $date->getTimezone(), null, $pattern ?: null);
+            $formatted = $formatter->format($date);
+            if (is_string($formatted) && $formatted !== '') {
+                return $formatted;
+            }
+        }
+        return $date->format('M d');
+    }
+
     /**
      * Return a safe empty response when no projects exist.
      */
@@ -404,13 +448,13 @@ class DeckService {
         return [
             'projectProgress' => [],
             'memberPerformance' => [
-                ['name' => 'No Assignments', 'total' => 0, 'done' => 0, 'progress' => 0],
+                ['name' => $this->l->t('No Assignments'), 'total' => 0, 'done' => 0, 'progress' => 0],
             ],
             'taskDelayProjects' => [
                 [
-                    'name'  => 'No Projects',
+                    'name'  => $this->l->t('No Projects'),
                     'chart' => [
-                        'labels' => ['On-time Tasks', 'Delayed Tasks', 'Blocked Tasks'],
+                        'labels' => $this->delayChartLabels(),
                         'data'   => [0, 0, 0],
                         'colors' => ['#2ec4b6', '#f4a261', '#e63946'],
                     ],
@@ -418,8 +462,8 @@ class DeckService {
             ],
             'taskCompletionProjects' => [
                 [
-                    'name'  => 'No Projects',
-                    'weeks' => ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    'name'  => $this->l->t('No Projects'),
+                    'weeks' => $this->placeholderWeeks(),
                     'data'  => [0, 0, 0, 0, 0, 0],
                 ],
             ],
@@ -457,6 +501,7 @@ class DeckService {
                 'name'     => $p['project_name'],
                 'board_id' => $bid,
                 'status'   => $this->statusLabel((int)$p['project_status']),
+                'statusCode' => (int)$p['project_status'],
                 'tasks'    => [],
             ];
         }
@@ -656,6 +701,7 @@ class DeckService {
                 'name'              => $proj['name'],
                 'id'                => $proj['board_id'],
                 'status'            => $proj['status'] ?? '',
+                'statusCode'        => $proj['statusCode'] ?? null,
                 'tasks'             => $tasks,
                 'avgDaysActive'     => $avgDays,
                 'latestTaskOpened'  => $latestOpened ? date('Y-m-d H:i:s', $latestOpened) : null,
@@ -699,6 +745,7 @@ class DeckService {
                 'name'        => $proj['name'],
                 'id'          => $proj['board_id'],
                 'status'      => $proj['status'] ?? '',
+                'statusCode'  => $proj['statusCode'] ?? null,
                 'total_tasks' => $totalTasks,
                 'completed'   => count($completed),
                 'tasks'       => $completed,
@@ -888,8 +935,12 @@ class DeckService {
     /**
      * Canonical encoding, owned by projectcreatoraio's ProjectStatus enum
      * (lib/Enum/ProjectStatus.php) — that app writes oc_custom_projects.status.
-     * Keep in sync with GeocodeService::STATUS_LABELS and
+     * Keep in sync with GeocodeService::statusLabel and
      * KpiService::countProjectsByStatus.
+     *
+     * English on purpose: the frontend filters on the numeric status
+     * (`statusCode` / `status`) and words the label in the user's language.
+     * This string stays in the payload only for compatibility.
      */
     private function statusLabel(int $status): string {
         switch ($status) {
@@ -1075,7 +1126,7 @@ class DeckService {
         $sqlNotes = "
             SELECT cp.id AS project_id, COUNT(f.fileid) AS cnt
             FROM *PREFIX*custom_projects cp
-            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name = 'Public Notes'
+            LEFT JOIN *PREFIX*filecache pnf ON pnf.parent = cp.folder_id AND pnf.name IN ('Public Notes', 'Openbare notities')
             LEFT JOIN *PREFIX*filecache f ON f.parent = pnf.fileid
                 AND f.mimetype != (SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory')
             WHERE cp.organization_id = ? AND cp.id IN (" . implode(',', array_fill(0, count($projectIds), '?')) . ")

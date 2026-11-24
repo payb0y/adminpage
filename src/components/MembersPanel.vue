@@ -25,7 +25,7 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
-        Organization Members
+        {{ t("Organization Members") }}
         <span class="members-panel__count">{{ members.length }}</span>
       </h3>
       <svg
@@ -57,7 +57,7 @@
           v-model="search"
           class="iz-input members-panel__search"
           type="text"
-          placeholder="Search members…"
+          :placeholder="t('Search members…')"
         />
         <div class="members-panel__role-badges">
           <span
@@ -67,7 +67,7 @@
               roleFilter = '';
               currentPage = 1;
             "
-            >All</span
+            >{{ t("All") }}</span
           >
           <span
             class="members-panel__role-badge members-panel__role-badge--admin-color"
@@ -78,7 +78,7 @@
               roleFilter = 'admin';
               currentPage = 1;
             "
-            >Admin</span
+            >{{ t("Admin") }}</span
           >
           <span
             class="members-panel__role-badge members-panel__role-badge--member-color"
@@ -89,7 +89,7 @@
               roleFilter = 'member';
               currentPage = 1;
             "
-            >Member</span
+            >{{ t("Member") }}</span
           >
         </div>
         <button
@@ -97,17 +97,17 @@
           type="button"
           class="members-panel__add-toggle"
           @click="openAddMode"
-        >+ Add member</button>
+        >{{ t("+ Add member") }}</button>
       </div>
 
       <div v-if="addMode" class="members-panel__add-form">
         <div class="members-panel__add-form-header">
-          <span class="members-panel__add-form-title">Add member</span>
+          <span class="members-panel__add-form-title">{{ t("Add member") }}</span>
           <button
             type="button"
             class="members-panel__add-form-close"
             @click="closeAddMode"
-            aria-label="Close add form"
+            :aria-label="t('Close add form')"
           >×</button>
         </div>
 
@@ -115,19 +115,19 @@
         <div v-if="createdUser" class="members-panel__reveal">
           <div class="members-panel__reveal-heading">
             <span class="members-panel__reveal-check" aria-hidden="true">✓</span>
-            User created and added
+            {{ t("User created and added") }}
           </div>
           <div class="members-panel__reveal-row">
-            <span class="members-panel__reveal-label">UID</span>
+            <span class="members-panel__reveal-label">{{ t("UID") }}</span>
             <span class="members-panel__reveal-value">{{ createdUser.uid }}</span>
             <button
               type="button"
               class="members-panel__reveal-btn"
               @click="copyToClipboard(createdUser.uid, 'uid')"
-            >{{ copyFlags.uid ? "Copied!" : "Copy" }}</button>
+            >{{ copyFlags.uid ? t("Copied!") : t("Copy") }}</button>
           </div>
           <div class="members-panel__reveal-row">
-            <span class="members-panel__reveal-label">Password</span>
+            <span class="members-panel__reveal-label">{{ t("Password") }}</span>
             <span class="members-panel__reveal-value">
               <template v-if="revealCreatedPassword">{{ createdUser.password }}</template>
               <template v-else>{{ "•".repeat(createdUser.password.length) }}</template>
@@ -136,29 +136,29 @@
               type="button"
               class="members-panel__reveal-btn"
               @click="revealCreatedPassword = !revealCreatedPassword"
-            >{{ revealCreatedPassword ? "Hide" : "Show" }}</button>
+            >{{ revealCreatedPassword ? t("Hide") : t("Show") }}</button>
             <button
               type="button"
               class="members-panel__reveal-btn"
               @click="copyToClipboard(createdUser.password, 'password')"
-            >{{ copyFlags.password ? "Copied!" : "Copy" }}</button>
+            >{{ copyFlags.password ? t("Copied!") : t("Copy") }}</button>
           </div>
           <div class="members-panel__reveal-row members-panel__reveal-row--full">
             <button
               type="button"
               class="members-panel__reveal-btn members-panel__reveal-btn--wide"
               @click="copyToClipboard(createdUser.uid + ' / ' + createdUser.password, 'both')"
-            >{{ copyFlags.both ? "Copied!" : "Copy both" }}</button>
+            >{{ copyFlags.both ? t("Copied!") : t("Copy both") }}</button>
           </div>
           <p class="members-panel__reveal-warning">
-            Share these credentials with the user now — the password won't be visible again.
+            {{ t("Share these credentials with the user now — the password won't be visible again.") }}
           </p>
           <div class="members-panel__reveal-actions">
             <button
               type="button"
               class="members-panel__btn members-panel__btn--primary"
               @click="confirmCreatedUser"
-            >Done</button>
+            >{{ t("Done") }}</button>
           </div>
         </div>
 
@@ -172,7 +172,7 @@
               :class="{ 'members-panel__add-tab--active': addTab === 'existing' }"
               :aria-selected="addTab === 'existing'"
               @click="addTab = 'existing'"
-            >Existing user</button>
+            >{{ t("Existing user") }}</button>
             <button
               type="button"
               role="tab"
@@ -180,7 +180,7 @@
               :class="{ 'members-panel__add-tab--active': addTab === 'new' }"
               :aria-selected="addTab === 'new'"
               @click="addTab = 'new'"
-            >New user</button>
+            >{{ t("New user") }}</button>
           </div>
 
           <!-- Existing user tab -->
@@ -190,19 +190,19 @@
               class="iz-input members-panel__add-form-input"
               :value="addSearchTerm"
               @input="onAddSearchInput($event)"
-              placeholder="Search by name, email, or UID (min 2 characters)…"
+              :placeholder="t('Search by name, email, or UID (min 2 characters)…')"
             />
             <div v-if="addError" class="members-panel__add-form-error">
               {{ addError }}
             </div>
             <div v-if="addSearchLoading" class="members-panel__add-form-state">
-              Searching…
+              {{ t("Searching…") }}
             </div>
             <div
               v-else-if="addSearchTerm.trim().length >= 2 && addSearchResults.length === 0"
               class="members-panel__add-form-state"
             >
-              No users match.
+              {{ t("No users match.") }}
             </div>
             <ul
               v-else-if="addSearchResults.length > 0"
@@ -216,14 +216,14 @@
                 <div class="members-panel__add-form-result-info">
                   <span class="members-panel__add-form-result-name">{{ u.displayName || u.uid }}</span>
                   <span class="members-panel__add-form-result-meta">
-                    <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.uid }}
+                    <template v-if="u.email">{{ u.email }} · </template>{{ t("uid: {userId}", { userId: u.uid }) }}
                   </span>
                 </div>
                 <button
                   type="button"
                   class="members-panel__add-form-add-btn"
                   :disabled="addingUid !== null"
-                  :aria-label="'Add ' + (u.displayName || u.uid)"
+                  :aria-label="t('Add {name}', { name: u.displayName || u.uid })"
                   @click="addMember(u.uid)"
                 >
                   <span
@@ -241,7 +241,7 @@
           <div v-else-if="addTab === 'new'">
             <div class="members-panel__field">
               <label class="members-panel__field-label" for="newuser-uid">
-                UID <span class="members-panel__field-required">*</span>
+                {{ t("UID") }} <span class="members-panel__field-required">*</span>
               </label>
               <input
                 id="newuser-uid"
@@ -261,7 +261,7 @@
 
             <div class="members-panel__field">
               <label class="members-panel__field-label" for="newuser-display">
-                Display name <span class="members-panel__field-required">*</span>
+                {{ t("Display name") }} <span class="members-panel__field-required">*</span>
               </label>
               <input
                 id="newuser-display"
@@ -278,7 +278,7 @@
             </div>
 
             <div class="members-panel__field">
-              <label class="members-panel__field-label" for="newuser-email">Email</label>
+              <label class="members-panel__field-label" for="newuser-email">{{ t("Email") }}</label>
               <input
                 id="newuser-email"
                 type="email"
@@ -296,7 +296,7 @@
 
             <div class="members-panel__field">
               <label class="members-panel__field-label" for="newuser-password">
-                Password <span class="members-panel__field-required">*</span>
+                {{ t("Password") }} <span class="members-panel__field-required">*</span>
               </label>
               <div class="members-panel__password-row">
                 <input
@@ -312,8 +312,8 @@
                 <button
                   type="button"
                   class="members-panel__icon-btn"
-                  :aria-label="newUserShowPassword ? 'Hide password' : 'Show password'"
-                  :title="newUserShowPassword ? 'Hide password' : 'Show password'"
+                  :aria-label="newUserShowPassword ? t('Hide password') : t('Show password')"
+                  :title="newUserShowPassword ? t('Hide password') : t('Show password')"
                   :disabled="newUserSubmitting"
                   @click="newUserShowPassword = !newUserShowPassword"
                 >
@@ -356,8 +356,8 @@
                   v-if="newUser.autoGenerate"
                   type="button"
                   class="members-panel__icon-btn"
-                  aria-label="Regenerate password"
-                  title="Regenerate password"
+                  :aria-label="t('Regenerate password')"
+                  :title="t('Regenerate password')"
                   :disabled="newUserSubmitting"
                   @click="newUser.password = generatePassword()"
                 >
@@ -387,7 +387,7 @@
                   :disabled="newUserSubmitting"
                   @change="onAutoGenerateChange"
                 />
-                Auto-generate
+                {{ t("Auto-generate") }}
               </label>
               <div
                 v-if="newUserBlurred.password && newUserFieldErrors.password"
@@ -406,7 +406,7 @@
                 class="members-panel__btn members-panel__btn--ghost"
                 :disabled="newUserSubmitting"
                 @click="closeAddMode"
-              >Cancel</button>
+              >{{ t("Cancel") }}</button>
               <button
                 type="button"
                 class="members-panel__btn members-panel__btn--primary"
@@ -418,7 +418,7 @@
                   class="members-panel__spinner members-panel__spinner--inline"
                   aria-hidden="true"
                 ></span>
-                Create &amp; add member
+                {{ t("Create & add member") }}
               </button>
             </div>
           </div>
@@ -426,7 +426,7 @@
       </div>
 
       <div v-if="filteredMembers.length === 0" class="iz-empty members-panel__empty">
-        No members match your filters.
+        {{ t("No members match your filters.") }}
       </div>
 
       <div
@@ -457,26 +457,26 @@
               class="members-panel__stat-pill"
             >
               {{ member.doneTasks }}/{{ member.assignedTasks }}
-              <span class="members-panel__stat-label">tasks</span>
+              <span class="members-panel__stat-label">{{ t("tasks") }}</span>
             </span>
             <span
               v-if="member.overdueTasks > 0"
               class="members-panel__stat-pill members-panel__stat-pill--danger"
             >
               {{ member.overdueTasks }}
-              <span class="members-panel__stat-label">overdue</span>
+              <span class="members-panel__stat-label">{{ t("overdue") }}</span>
             </span>
             <span
               class="members-panel__role"
               :class="'members-panel__role--' + member.role"
             >
-              {{ member.role }}
+              {{ roleLabel(member.role) }}
             </span>
             <button
               v-if="canAdd && !isOwner(member)"
               type="button"
               class="members-panel__remove-btn"
-              title="Remove member"
+:title="t('Remove member')"
               @click.stop="requestRemove(member.userId)"
             >
               <svg
@@ -522,51 +522,50 @@
         <div v-if="expanded[member.userId]" class="members-panel__detail">
           <div class="members-panel__detail-grid">
             <div class="members-panel__detail-item" v-if="member.userId">
-              <span class="members-panel__detail-label">Username</span>
+              <span class="members-panel__detail-label">{{ t("Username") }}</span>
               <span class="members-panel__detail-value">{{
                 member.userId
               }}</span>
             </div>
             <div class="members-panel__detail-item" v-if="member.email">
-              <span class="members-panel__detail-label">Email</span>
+              <span class="members-panel__detail-label">{{ t("Email") }}</span>
               <span class="members-panel__detail-value">{{
                 member.email
               }}</span>
             </div>
             <div class="members-panel__detail-item" v-if="member.phone">
-              <span class="members-panel__detail-label">Phone</span>
+              <span class="members-panel__detail-label">{{ t("Phone") }}</span>
               <span class="members-panel__detail-value">{{
                 member.phone
               }}</span>
             </div>
             <div class="members-panel__detail-item" v-if="member.organisation">
-              <span class="members-panel__detail-label">Organisation</span>
+              <span class="members-panel__detail-label">{{ t("Organisation") }}</span>
               <span class="members-panel__detail-value">{{
                 member.organisation
               }}</span>
             </div>
             <div class="members-panel__detail-item" v-if="member.title">
-              <span class="members-panel__detail-label">Title / Role</span>
+              <span class="members-panel__detail-label">{{ t("Title / Role") }}</span>
               <span class="members-panel__detail-value">{{
                 member.title
               }}</span>
             </div>
             <div class="members-panel__detail-item">
-              <span class="members-panel__detail-label">Org Role</span>
+              <span class="members-panel__detail-label">{{ t("Org Role") }}</span>
               <span
                 class="members-panel__detail-value"
-                style="text-transform: capitalize"
-                >{{ member.role }}</span
+                >{{ roleLabel(member.role) }}</span
               >
             </div>
             <div class="members-panel__detail-item" v-if="member.joinedAt">
-              <span class="members-panel__detail-label">Joined</span>
+              <span class="members-panel__detail-label">{{ t("Joined") }}</span>
               <span class="members-panel__detail-value">{{
                 formatDate(member.joinedAt)
               }}</span>
             </div>
             <div class="members-panel__detail-item" v-if="member.lastActive">
-              <span class="members-panel__detail-label">Last Active</span>
+              <span class="members-panel__detail-label">{{ t("Last Active") }}</span>
               <span class="members-panel__detail-value">{{
                 formatDate(member.lastActive)
               }}</span>
@@ -576,9 +575,9 @@
           <!-- Task Stats Bar -->
           <div v-if="member.assignedTasks > 0" class="members-panel__tasks">
             <div class="members-panel__tasks-header">
-              <span class="members-panel__tasks-title">Task Performance</span>
+              <span class="members-panel__tasks-title">{{ t("Task Performance") }}</span>
               <span class="members-panel__tasks-pct"
-                >{{ taskPct(member) }}% complete</span
+                >{{ t("{percent}% complete", { percent: taskPct(member) }) }}</span
               >
             </div>
             <div class="members-panel__tasks-bar">
@@ -593,16 +592,17 @@
                 <span
                   class="members-panel__dot members-panel__dot--done"
                 ></span>
-                {{ member.doneTasks }} done
+                {{ t("{count} done", { count: member.doneTasks }) }}
               </span>
               <span class="members-panel__tasks-stat">
                 <span
                   class="members-panel__dot members-panel__dot--open"
                 ></span>
                 {{
-                  member.assignedTasks - member.doneTasks - member.overdueTasks
+                  t("{count} in progress", {
+                    count: member.assignedTasks - member.doneTasks - member.overdueTasks,
+                  })
                 }}
-                in progress
               </span>
               <span
                 v-if="member.overdueTasks > 0"
@@ -611,12 +611,12 @@
                 <span
                   class="members-panel__dot members-panel__dot--overdue"
                 ></span>
-                {{ member.overdueTasks }} overdue
+                {{ t("{count} overdue", { count: member.overdueTasks }) }}
               </span>
             </div>
           </div>
           <div v-else class="members-panel__tasks-empty">
-            No task assignments yet
+            {{ t("No task assignments yet") }}
           </div>
         </div>
       </div>
@@ -645,17 +645,21 @@
         v-if="filteredMembers.length > 0"
         class="members-panel__showing-hint"
       >
-        Showing {{ paginatedMembers.length }} of
-        {{ filteredMembers.length }} members
+        {{
+          t("Showing {shown} of {total} members", {
+            shown: paginatedMembers.length,
+            total: filteredMembers.length,
+          })
+        }}
       </div>
     </div>
 
     <ConfirmDialog
       v-if="confirmRemoveUid"
-      title="Remove this member?"
+      :title="t('Remove this member?')"
       :message="removeMessage"
-      confirm-label="Remove member"
-      busy-label="Removing…"
+      :confirm-label="t('Remove member')"
+      :busy-label="t('Removing…')"
       danger
       :busy="removingUid !== null"
       :error="removeError || ''"
@@ -668,6 +672,7 @@
 <script>
 import axios from "@nextcloud/axios";
 import { generateOcsUrl } from "@nextcloud/router";
+import { t, locale } from "../lib/l10n.mjs";
 
 const OCS_HEADERS = {
   "OCS-APIRequest": "true",
@@ -761,10 +766,9 @@ export default {
       var uid = this.confirmRemoveUid;
       var m = (this.members || []).find(function (x) { return x.userId === uid; });
       var name = (m && (m.displayName || m.userId)) || uid;
-      return (
-        name +
-        " loses access to this organization's projects immediately. Their " +
-        "In Zicht account is not deleted."
+      return t(
+        "{name} loses access to this organization's projects immediately. Their In Zicht account is not deleted.",
+        { name: name },
       );
     },
     filteredMembers: function () {
@@ -839,6 +843,16 @@ export default {
     },
   },
   methods: {
+    /* The organisation role as the user reads it; the code stays the filter key. */
+    roleLabel: function (role) {
+      if (role === "admin") return t("Admin");
+      if (role === "member") return t("Member");
+      return role;
+    },
+    /* HTTP status for the error line, or a word when there was no response. */
+    errorCode: function (e) {
+      return (e && e.response && e.response.status) || t("network");
+    },
     toggle: function (uid) {
       this.$set(this.expanded, uid, !this.expanded[uid]);
     },
@@ -846,7 +860,7 @@ export default {
       if (!dateStr) return "—";
       var d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-GB", {
+      return d.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -921,8 +935,7 @@ export default {
         this.addSearchResults = data.users || [];
       } catch (e) {
         if (token !== this._addSearchToken) return;
-        const code = (e && e.response && e.response.status) || "network";
-        this.addError = "Search failed (" + code + ")";
+        this.addError = t("Search failed ({code})", { code: this.errorCode(e) });
         this.addSearchResults = [];
       } finally {
         if (token === this._addSearchToken) {
@@ -945,13 +958,12 @@ export default {
             headers: OCS_HEADERS,
           }
         );
-        var msg = "Added " + uid;
+        var msg = t("Added {uid}", { uid: uid });
         this.closeAddMode();
         this.showToast(msg);
         this.$emit("reload");
       } catch (e) {
-        const code = (e && e.response && e.response.status) || "network";
-        this.addError = "Failed to add (" + code + ")";
+        this.addError = t("Failed to add ({code})", { code: this.errorCode(e) });
       } finally {
         this.addingUid = null;
       }
@@ -979,11 +991,10 @@ export default {
           }
         );
         this.confirmRemoveUid = null;
-        this.showToast("Removed " + uid);
+        this.showToast(t("Removed {uid}", { uid: uid }));
         this.$emit("reload");
       } catch (e) {
-        const code = (e && e.response && e.response.status) || "network";
-        this.removeError = "Failed to remove (" + code + ")";
+        this.removeError = t("Failed to remove ({code})", { code: this.errorCode(e) });
       } finally {
         this.removingUid = null;
       }
@@ -1014,22 +1025,22 @@ export default {
       var nu = this.newUser;
       var uid = nu.uid.trim();
       if (!uid) {
-        errs.uid = "Required";
+        errs.uid = t("Required");
       } else if (!/^[A-Za-z0-9._@-]+$/.test(uid)) {
-        errs.uid = "Use letters, digits, or . _ @ - (no spaces).";
+        errs.uid = t("Use letters, digits, or . _ @ - (no spaces).");
       }
       if (!nu.displayName.trim()) {
-        errs.displayName = "Required";
+        errs.displayName = t("Required");
       }
       var email = nu.email.trim();
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errs.email = "Invalid email address.";
+        errs.email = t("Invalid email address.");
       }
       if (!nu.autoGenerate) {
         if (!nu.password) {
-          errs.password = "Required";
+          errs.password = t("Required");
         } else if (nu.password.length < 10) {
-          errs.password = "At least 10 characters.";
+          errs.password = t("At least 10 characters.");
         }
       }
       this.newUserFieldErrors = errs;
@@ -1069,7 +1080,7 @@ export default {
           this.revealCreatedPassword = false;
           this.$emit("reload");
         } else {
-          var msg = "User " + params.userId + " created and added";
+          var msg = t("User {uid} created and added", { uid: params.userId });
           this.closeAddMode();
           this.showToast(msg);
           this.$emit("reload");
@@ -1077,7 +1088,7 @@ export default {
       } catch (e) {
         this.newUserError = this.extractServerError(
           e,
-          "Couldn't create user. Please try again."
+          t("Couldn't create user. Please try again.")
         );
       } finally {
         this.newUserSubmitting = false;
@@ -1085,19 +1096,19 @@ export default {
     },
     extractServerError: function (err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       var ocsMsg =
         err.response.data &&
         err.response.data.ocs &&
         err.response.data.ocs.meta &&
         err.response.data.ocs.meta.message;
       if (ocsMsg) return ocsMsg;
-      return fallback + " (HTTP " + err.response.status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: err.response.status });
     },
     confirmCreatedUser: function () {
       var uid = this.createdUser ? this.createdUser.uid : null;
       this.closeAddMode();
-      if (uid) this.showToast("User " + uid + " created and added");
+      if (uid) this.showToast(t("User {uid} created and added", { uid: uid }));
     },
     resetNewUserForm: function () {
       this.newUser = {

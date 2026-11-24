@@ -23,7 +23,7 @@
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
-        Organization
+        {{ t("Organization") }}
       </h3>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@
         <span class="iz-identity__avatar org-panel__avatar">{{ initials }}</span>
         <div class="org-panel__profile-text">
           <span class="org-panel__name">{{ profile.name }}</span>
-          <span class="org-panel__admin">Admin: {{ profile.adminUid }}</span>
+          <span class="org-panel__admin">{{ t("Admin: {adminUid}", { adminUid: profile.adminUid }) }}</span>
         </div>
       </div>
 
@@ -58,23 +58,23 @@
           class="org-panel__detail-row"
           v-if="profile.contactFirstName || profile.contactLastName"
         >
-          <span class="org-panel__detail-label">Contact Name</span>
+          <span class="org-panel__detail-label">{{ t("Contact Name") }}</span>
           <span class="org-panel__detail-value">{{ contactFullName }}</span>
         </div>
         <div class="org-panel__detail-row">
-          <span class="org-panel__detail-label">Contact Email</span>
+          <span class="org-panel__detail-label">{{ t("Contact Email") }}</span>
           <span class="org-panel__detail-value">{{
             profile.contactEmail
           }}</span>
         </div>
         <div class="org-panel__detail-row" v-if="profile.contactPhone">
-          <span class="org-panel__detail-label">Contact Phone</span>
+          <span class="org-panel__detail-label">{{ t("Contact Phone") }}</span>
           <span class="org-panel__detail-value">{{
             profile.contactPhone
           }}</span>
         </div>
         <div class="org-panel__detail-row">
-          <span class="org-panel__detail-label">Admin User</span>
+          <span class="org-panel__detail-label">{{ t("Admin User") }}</span>
           <span class="org-panel__detail-value">{{ profile.adminUid }}</span>
         </div>
       </div>

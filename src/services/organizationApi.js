@@ -1,5 +1,6 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t } from "../lib/l10n.mjs";
 
 const OCS_HEADERS = {
   "OCS-APIRequest": "true",
@@ -32,14 +33,14 @@ function requestConfig() {
 function unwrap(response) {
   const data = response && response.data;
   if (!data || !data.ocs || data.ocs.data === undefined) {
-    throw new Error("The server returned an invalid organization response.");
+    throw new Error(t("The server returned an invalid organization response."));
   }
   return data.ocs.data;
 }
 
 function readableError(error) {
   if (!error || !error.response) {
-    return error && error.message ? error.message : "Couldn't reach the server. Try again.";
+    return error && error.message ? error.message : t("Couldn't reach the server. Try again.");
   }
 
   const responseData = error.response.data || {};
@@ -47,12 +48,12 @@ function readableError(error) {
     responseData.message ||
     (responseData.ocs && responseData.ocs.meta && responseData.ocs.meta.message);
   if (message) return String(message);
-  return "Request failed (HTTP " + error.response.status + ")";
+  return t("Request failed (HTTP {status})", { status: error.response.status });
 }
 
 function normalizeProjectAssignments(projectTeams) {
   if (!Array.isArray(projectTeams)) {
-    throw new Error("The server returned an invalid project assignment list.");
+    throw new Error(t("The server returned an invalid project assignment list."));
   }
   return projectTeams.map(function (assignment) {
     var team = assignment && assignment.team;
@@ -88,7 +89,7 @@ async function request(method, url, payload) {
 export async function listOrganizationTeams(organizationId) {
   const data = await request("get", teamsUrl(organizationId));
   if (!Array.isArray(data.teams)) {
-    throw new Error("The server returned an invalid team list.");
+    throw new Error(t("The server returned an invalid team list."));
   }
   return data.teams;
 }
@@ -142,7 +143,7 @@ export async function assignProjectTeam(organizationId, projectId, teamId) {
   const persistedTeamId = persisted && persisted.team ? persisted.team.id : null;
   const requestedTeamId = teamId == null ? null : Number(teamId);
   if (!persisted || persistedTeamId !== requestedTeamId) {
-    throw new Error("The server did not persist the requested project assignment.");
+    throw new Error(t("The server did not persist the requested project assignment."));
   }
   return assignments;
 }

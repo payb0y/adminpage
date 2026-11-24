@@ -7,35 +7,36 @@
           v-model="tabSearch"
           type="text"
           class="iz-input proj-details__tabs-search-input"
-          placeholder="Search projects…"
+          :placeholder="t('Search projects…')"
         />
         <select
           v-model="tabStatusFilter"
           class="iz-select proj-details__tabs-status-select"
         >
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Waiting on Customer">Waiting on Customer</option>
-          <option value="On Hold">On Hold</option>
-          <option value="Done">Done</option>
+          <option value="">{{ t("All Statuses") }}</option>
+          <option
+            v-for="opt in projectStatusOptions"
+            :key="'ps-' + opt.value"
+            :value="opt.value"
+          >{{ opt.label }}</option>
         </select>
         <select
           v-model="tabTaskDueFilter"
           class="iz-select proj-details__tabs-status-select"
         >
-          <option value="">All Task Due</option>
-          <option value="overdue">Has Overdue</option>
-          <option value="today">Has Due Today</option>
-          <option value="nextSevenDays">Has Upcoming</option>
-          <option value="nodue">Has No Due Date</option>
+          <option value="">{{ t("All Task Due") }}</option>
+          <option value="overdue">{{ t("Has Overdue") }}</option>
+          <option value="today">{{ t("Has Due Today") }}</option>
+          <option value="nextSevenDays">{{ t("Has Upcoming") }}</option>
+          <option value="nodue">{{ t("Has No Due Date") }}</option>
         </select>
         <select
           v-model="tabTaskStatusFilter"
           class="iz-select proj-details__tabs-status-select"
         >
-          <option value="">All Task Status</option>
-          <option value="open">Has Open Tasks</option>
-          <option value="done">Has Done Tasks</option>
+          <option value="">{{ t("All Task Status") }}</option>
+          <option value="open">{{ t("Has Open Tasks") }}</option>
+          <option value="done">{{ t("Has Done Tasks") }}</option>
         </select>
         <button
           v-if="
@@ -47,7 +48,7 @@
           class="proj-details__tabs-clear"
           @click="clearProjectFilters"
         >
-          ✕ Clear
+          {{ t("✕ Clear") }}
         </button>
       </div>
       <div class="proj-details__tabs-strip">
@@ -61,8 +62,7 @@
           <span
             class="proj-details__tab-dot"
             :class="
-              'proj-details__tab-dot--' +
-              p.statusLabel.toLowerCase().replace(/ /g, '-')
+              'proj-details__tab-dot--' + projectStatusSlug(p.status)
             "
           ></span>
           <span class="proj-details__tab-name">{{ p.name }}</span>
@@ -71,7 +71,7 @@
           }}</span>
         </button>
         <span v-if="projects.length === 0" class="proj-details__tabs-empty">
-          No projects
+          {{ t("No projects") }}
         </span>
       </div>
     </div>
@@ -95,7 +95,7 @@
         />
       </svg>
       <p class="proj-details__empty-text">
-        Select a project above to view detailed analytics
+        {{ t("Select a project above to view detailed analytics") }}
       </p>
     </div>
 
@@ -106,25 +106,24 @@
         <!-- Project Overview -->
         <div class="proj-details__card">
           <div class="proj-details__card-header">
-            <h4 class="proj-details__card-title">Project Overview</h4>
+            <h4 class="proj-details__card-title">{{ t("Project Overview") }}</h4>
             <span
               class="proj-details__badge"
               :class="
-                'proj-details__badge--' +
-                selectedProject.statusLabel.toLowerCase().replace(/ /g, '-')
+                'proj-details__badge--' + projectStatusSlug(selectedProject.status)
               "
-              >{{ selectedProject.statusLabel }}</span
+              >{{ projectStatusLabel(selectedProject.status) }}</span
             >
           </div>
           <div class="proj-details__info-grid">
             <div class="proj-details__info-item">
-              <span class="proj-details__info-label">Project Name</span>
+              <span class="proj-details__info-label">{{ t("Project Name") }}</span>
               <span class="proj-details__info-value">{{
                 selectedProject.name
               }}</span>
             </div>
             <div class="proj-details__info-item" v-if="selectedProject.number">
-              <span class="proj-details__info-label">Project Number</span>
+              <span class="proj-details__info-label">{{ t("Project Number") }}</span>
               <span class="proj-details__info-value">{{
                 selectedProject.number
               }}</span>
@@ -133,7 +132,7 @@
               class="proj-details__info-item"
               v-if="selectedProject.description"
             >
-              <span class="proj-details__info-label">Description</span>
+              <span class="proj-details__info-label">{{ t("Description") }}</span>
               <span class="proj-details__info-value">{{
                 selectedProject.description
               }}</span>
@@ -144,19 +143,19 @@
                 selectedProject.location && selectedProject.location !== ','
               "
             >
-              <span class="proj-details__info-label">Project Location</span>
+              <span class="proj-details__info-label">{{ t("Project Location") }}</span>
               <span class="proj-details__info-value">{{
                 selectedProject.location
               }}</span>
             </div>
             <div class="proj-details__info-item">
-              <span class="proj-details__info-label">Created</span>
+              <span class="proj-details__info-label">{{ t("Created") }}</span>
               <span class="proj-details__info-value">{{
                 formatDate(selectedProject.createdAt)
               }}</span>
             </div>
             <div class="proj-details__info-item">
-              <span class="proj-details__info-label">Last Updated</span>
+              <span class="proj-details__info-label">{{ t("Last Updated") }}</span>
               <span class="proj-details__info-value">{{
                 formatDate(selectedProject.updatedAt)
               }}</span>
@@ -165,7 +164,7 @@
           <!-- Compact Completion bar inside overview card -->
           <div class="proj-details__progress">
             <div class="proj-details__progress-header">
-              <span class="proj-details__progress-label">Task Completion</span>
+              <span class="proj-details__progress-label">{{ t("Task Completion") }}</span>
               <span class="proj-details__progress-pct"
                 >{{ selectedProject.completionPct }}%</span
               >
@@ -186,21 +185,25 @@
               ></div>
             </div>
             <span class="proj-details__progress-detail">
-              {{ selectedProject.doneTasks }} of
-              {{ selectedProject.totalTasks }} tasks completed
+              {{
+                t("{done} of {total} tasks completed", {
+                  done: selectedProject.doneTasks,
+                  total: selectedProject.totalTasks,
+                })
+              }}
             </span>
           </div>
         </div>
 
         <!-- Client Contact + Resources -->
         <div class="proj-details__card">
-          <h4 class="proj-details__card-title">Client &amp; Resources</h4>
+          <h4 class="proj-details__card-title">{{ t("Client & Resources") }}</h4>
           <div class="proj-details__info-grid" v-if="hasClientInfo">
             <div
               class="proj-details__info-item"
               v-if="selectedProject.clientName"
             >
-              <span class="proj-details__info-label">Client</span>
+              <span class="proj-details__info-label">{{ t("Client") }}</span>
               <span class="proj-details__info-value">{{
                 selectedProject.clientName
               }}</span>
@@ -209,7 +212,7 @@
               class="proj-details__info-item"
               v-if="selectedProject.clientEmail"
             >
-              <span class="proj-details__info-label">Email</span>
+              <span class="proj-details__info-label">{{ t("Email") }}</span>
               <a
                 :href="'mailto:' + selectedProject.clientEmail"
                 class="proj-details__info-link"
@@ -220,7 +223,7 @@
               class="proj-details__info-item"
               v-if="selectedProject.clientPhone"
             >
-              <span class="proj-details__info-label">Phone</span>
+              <span class="proj-details__info-label">{{ t("Phone") }}</span>
               <a
                 :href="'tel:' + selectedProject.clientPhone"
                 class="proj-details__info-link"
@@ -231,37 +234,37 @@
               class="proj-details__info-item"
               v-if="selectedProject.clientAddress"
             >
-              <span class="proj-details__info-label">Client Address</span>
+              <span class="proj-details__info-label">{{ t("Client Address") }}</span>
               <span class="proj-details__info-value proj-details__info-value--multiline">{{
                 selectedProject.clientAddress
               }}</span>
             </div>
           </div>
           <div v-else class="proj-details__no-client">
-            No client information
+            {{ t("No client information") }}
           </div>
           <!-- Resource summary -->
           <h4 class="proj-details__card-title proj-details__card-title--sub">
-            Resources
+            {{ t("Resources") }}
           </h4>
           <div class="proj-details__resources">
             <div class="proj-details__resource-item">
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.files
               }}</span>
-              <span class="proj-details__resource-label">Files</span>
+              <span class="proj-details__resource-label">{{ t("Files") }}</span>
             </div>
             <div class="proj-details__resource-item">
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.whiteboards
               }}</span>
-              <span class="proj-details__resource-label">Whiteboards</span>
+              <span class="proj-details__resource-label">{{ t("Whiteboards") }}</span>
             </div>
             <div class="proj-details__resource-item">
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.notes
               }}</span>
-              <span class="proj-details__resource-label">Notes</span>
+              <span class="proj-details__resource-label">{{ t("Notes") }}</span>
             </div>
           </div>
         </div>
@@ -271,7 +274,7 @@
       <div class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
           <div class="proj-details__card-header">
-            <h4 class="proj-details__card-title">Project Location</h4>
+            <h4 class="proj-details__card-title">{{ t("Project Location") }}</h4>
           </div>
           <ProjectMap
             v-if="geocodeStatus[selectedProject.id] === 'loaded' && geocodeByProject[selectedProject.id]"
@@ -279,13 +282,13 @@
             :lng="Number(geocodeByProject[selectedProject.id].lng)"
             :display-name="geocodeByProject[selectedProject.id].displayName || null"
           />
-          <div v-else-if="geocodeStatus[selectedProject.id] === 'loading'" class="proj-details__map-state">Loading map…</div>
-          <div v-else-if="geocodeStatus[selectedProject.id] === 'no_address'" class="proj-details__map-state">No address available for this project.</div>
-          <div v-else-if="geocodeStatus[selectedProject.id] === 'not_found'" class="proj-details__map-state">Couldn't locate this address on the map.</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'loading'" class="proj-details__map-state">{{ t("Loading map…") }}</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'no_address'" class="proj-details__map-state">{{ t("No address available for this project.") }}</div>
+          <div v-else-if="geocodeStatus[selectedProject.id] === 'not_found'" class="proj-details__map-state">{{ t("Couldn't locate this address on the map.") }}</div>
           <div v-else-if="geocodeStatus[selectedProject.id] === 'unavailable'" class="proj-details__map-state proj-details__map-state--error">
-            {{ geocodeError[selectedProject.id] || "Map unavailable." }}
+            {{ geocodeError[selectedProject.id] || t("Map unavailable.") }}
           </div>
-          <div v-else class="proj-details__map-state">Loading map…</div>
+          <div v-else class="proj-details__map-state">{{ t("Loading map…") }}</div>
         </div>
       </div>
 
@@ -296,19 +299,19 @@
       >
         <!-- Task Distribution by Stack (donut only, no table) -->
         <div class="proj-details__card">
-          <h4 class="proj-details__card-title">Task Distribution</h4>
+          <h4 class="proj-details__card-title">{{ t("Task Distribution") }}</h4>
           <div
             v-if="stackChartData.data.length > 0"
             class="proj-details__chart-wrap"
           >
             <DonutChart :chart-data="stackChartData" />
           </div>
-          <div v-else class="proj-details__no-data">No tasks found</div>
+          <div v-else class="proj-details__no-data">{{ t("No tasks found") }}</div>
         </div>
 
         <!-- Due Date Breakdown (standalone) -->
         <div class="proj-details__card">
-          <h4 class="proj-details__card-title">Due Dates</h4>
+          <h4 class="proj-details__card-title">{{ t("Due Dates") }}</h4>
           <div class="proj-details__due-grid">
             <div
               class="proj-details__due-item"
@@ -321,32 +324,32 @@
               <span class="proj-details__due-value">{{
                 selectedProject.dueStats.overdue
               }}</span>
-              <span class="proj-details__due-label">Overdue</span>
+              <span class="proj-details__due-label">{{ t("Overdue") }}</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--warning">
               <span class="proj-details__due-value">{{
                 selectedProject.dueStats.today
               }}</span>
-              <span class="proj-details__due-label">Due Today</span>
+              <span class="proj-details__due-label">{{ t("Due Today") }}</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--info">
               <span class="proj-details__due-value">{{
                 selectedProject.dueStats.upcoming
               }}</span>
-              <span class="proj-details__due-label">Upcoming</span>
+              <span class="proj-details__due-label">{{ t("Upcoming") }}</span>
             </div>
             <div class="proj-details__due-item proj-details__due-item--muted">
               <span class="proj-details__due-value">{{
                 selectedProject.dueStats.no_due
               }}</span>
-              <span class="proj-details__due-label">No Due Date</span>
+              <span class="proj-details__due-label">{{ t("No Due Date") }}</span>
             </div>
           </div>
         </div>
 
         <!-- #2: Team Workload (separated assignees with progress bars) -->
         <div v-if="showTeamWorkload" class="proj-details__card">
-          <h4 class="proj-details__card-title">Team Workload</h4>
+          <h4 class="proj-details__card-title">{{ t("Team Workload") }}</h4>
           <div
             v-if="selectedProject.assignees.length > 0"
             class="proj-details__team-list"
@@ -380,7 +383,7 @@
               </div>
             </div>
           </div>
-          <div v-else class="proj-details__no-data">No team assignments</div>
+          <div v-else class="proj-details__no-data">{{ t("No team assignments") }}</div>
         </div>
       </div>
 
@@ -392,7 +395,7 @@
           <span class="proj-details__kpi-stat-value"
             >{{ selectedProject.completionPct }}%</span
           >
-          <span class="proj-details__kpi-stat-label">Completion Rate</span>
+          <span class="proj-details__kpi-stat-label">{{ t("Completion Rate") }}</span>
           <div class="proj-details__kpi-bar">
             <div
               class="proj-details__kpi-bar-fill"
@@ -408,29 +411,29 @@
               }"
             ></div>
           </div>
-          <span class="proj-details__kpi-stat-sub"
-            >{{ selectedProject.doneTasks }}/{{
-              selectedProject.totalTasks
-            }}
-            tasks</span
-          >
+          <span class="proj-details__kpi-stat-sub">{{
+            t("{done}/{total} tasks", {
+              done: selectedProject.doneTasks,
+              total: selectedProject.totalTasks,
+            })
+          }}</span>
         </div>
         <div class="proj-details__kpi-stat">
           <span class="proj-details__kpi-stat-value">{{
             coordinationPending
           }}</span>
-          <span class="proj-details__kpi-stat-label">Coordination Pending</span>
+          <span class="proj-details__kpi-stat-label">{{ t("Coordination Pending") }}</span>
           <span class="proj-details__kpi-stat-sub"
-            >Weeks since Request Date</span
+            >{{ t("Weeks since Request Date") }}</span
           >
         </div>
         <div class="proj-details__kpi-stat">
           <span class="proj-details__kpi-stat-value">{{
             requiredPrepTime
           }}</span>
-          <span class="proj-details__kpi-stat-label">Required Prep Time</span>
+          <span class="proj-details__kpi-stat-label">{{ t("Required Prep Time") }}</span>
           <span class="proj-details__kpi-stat-sub"
-            >Planned preparation period</span
+            >{{ t("Planned preparation period") }}</span
           >
         </div>
       </div>
@@ -443,18 +446,18 @@
         <div class="proj-details__card proj-details__card--full">
           <div class="proj-details__card-header">
             <h4 class="proj-details__card-title">
-              Upcoming Meetings
+              {{ t("Upcoming Meetings") }}
               <span class="proj-details__count">{{ projectMeetings.length }}</span>
               <span
                 v-if="!linkedMeetings.length"
                 class="proj-details__card-hint"
-              >the team's meetings — none are linked to this project</span>
+              >{{ t("the team's meetings — none are linked to this project") }}</span>
             </h4>
           </div>
           <div
             v-if="projectMembersLoading[selectedProject.id]"
             class="proj-details__members-state"
-          >Loading…</div>
+          >{{ t("Loading…") }}</div>
           <UpcomingEventsPanel v-else :embedded="true" :events="projectMeetings" />
         </div>
       </div>
@@ -464,7 +467,7 @@
         <div class="proj-details__card proj-details__card--full">
           <div class="proj-details__card-header">
             <h4 class="proj-details__card-title">
-              Team Members
+              {{ t("Team Members") }}
               <span class="proj-details__count">{{
                 projectMemberCount(selectedProject.id)
               }}</span>
@@ -477,7 +480,7 @@
               <span aria-hidden="true">{{
                 isAddPanelOpen(selectedProject.id) ? "×" : "+"
               }}</span>
-              {{ isAddPanelOpen(selectedProject.id) ? "Close" : "Add" }}
+              {{ isAddPanelOpen(selectedProject.id) ? t("Close") : t("Add") }}
             </button>
           </div>
 
@@ -493,7 +496,7 @@
               @input="
                 getAddPanelState(selectedProject.id).search = $event.target.value
               "
-              placeholder="Search org members…"
+              :placeholder="t('Search org members…')"
             />
             <div
               v-if="getAddPanelState(selectedProject.id).error"
@@ -515,14 +518,14 @@
                     u.displayName || u.userId || u.id
                   }}</span>
                   <span class="proj-details__add-form-result-meta">
-                    <template v-if="u.email">{{ u.email }} · </template>uid: {{ u.userId || u.id }}
+                    <template v-if="u.email">{{ u.email }} · </template>{{ t("uid: {userId}", { userId: u.userId || u.id }) }}
                   </span>
                 </div>
                 <select
                   :value="rowRoleFor(selectedProject.id, u.userId || u.id)"
                   class="iz-select proj-details__add-form-role"
                   :aria-label="
-                    'DRASCI role for ' + (u.displayName || u.userId || u.id)
+                    t('DRASCI role for {name}', { name: u.displayName || u.userId || u.id })
                   "
                   @change="
                     setRowRole(
@@ -532,7 +535,7 @@
                     )
                   "
                 >
-                  <option value="">DRASCI role…</option>
+                  <option value="">{{ t("DRASCI role…") }}</option>
                   <option
                     v-for="opt in drasciOptions()"
                     :key="'r-' + opt.value"
@@ -551,9 +554,9 @@
                   :title="
                     rowRoleFor(selectedProject.id, u.userId || u.id)
                       ? ''
-                      : 'Choose a DRASCI role first'
+                      : t('Choose a DRASCI role first')
                   "
-                  :aria-label="'Add ' + (u.displayName || u.userId || u.id)"
+                  :aria-label="t('Add {name}', { name: u.displayName || u.userId || u.id })"
                   @click="addProjectMember(selectedProject.id, u.userId || u.id)"
                 >
                   <span
@@ -571,9 +574,9 @@
             <div v-else class="proj-details__add-form-state">
               <template
                 v-if="getAddPanelState(selectedProject.id).search.trim()"
-              >No matches.</template>
+              >{{ t("No matches.") }}</template>
               <template v-else
-                >All organization members are already on this project.</template
+                >{{ t("All organization members are already on this project.") }}</template
               >
             </div>
           </div>
@@ -582,7 +585,7 @@
           <div
             v-if="projectMembersLoading[selectedProject.id]"
             class="proj-details__members-state"
-          >Loading…</div>
+          >{{ t("Loading…") }}</div>
           <div
             v-else-if="projectMembersError[selectedProject.id]"
             class="proj-details__members-state proj-details__members-state--error"
@@ -613,7 +616,7 @@
                 <span
                   v-else
                   class="proj-details__member-email proj-details__member-email--muted"
-                >No email</span>
+                >{{ t("No email") }}</span>
               </div>
               <template
                 v-if="
@@ -633,7 +636,7 @@
                     )
                   "
                 >
-                  <option value="" disabled>Pick role…</option>
+                  <option value="" disabled>{{ t("Pick role…") }}</option>
                   <option
                     v-for="opt in drasciOptions()"
                     :key="'er-' + opt.value"
@@ -646,7 +649,7 @@
                   type="button"
                   class="proj-details__member-drasci-cancel"
                   @click="cancelEditRole(selectedProject.id)"
-                  aria-label="Cancel"
+                  :aria-label="t('Cancel')"
                 >×</button>
                 <span
                   v-if="editRoleState[selectedProject.id].error"
@@ -661,10 +664,10 @@
                 "
                 role="button"
                 tabindex="0"
-                :title="'Click to change DRASCI role'"
+                :title="t('Click to change DRASCI role')"
                 @click="beginEditRole(selectedProject.id, m.userId)"
                 @keydown.enter.prevent="beginEditRole(selectedProject.id, m.userId)"
-              >{{ m.drasciRoleLabel || drasciLabelFromRole(m.drasciRole) }}</span>
+              >{{ drasciLabelFromRole(m.drasciRole, m.drasciRoleLabel) }}</span>
               <span
                 class="proj-details__member-role"
                 :class="
@@ -674,12 +677,12 @@
                 "
               >
                 <span v-if="m.isOwner" aria-hidden="true">★</span>
-                {{ m.isOwner ? "Owner" : "Member" }}
+                {{ m.isOwner ? t("Owner") : tc("Member", "project member") }}
               </span>
             </li>
           </ul>
           <div v-else class="proj-details__members-state">
-            No team members assigned to this project.
+            {{ t("No team members assigned to this project.") }}
           </div>
         </div>
       </div>
@@ -690,7 +693,7 @@
            with superadminpage and employee_dashboard). -->
       <div class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
-          <h4 class="proj-details__card-title">Project Timeline</h4>
+          <h4 class="proj-details__card-title">{{ t("Project Timeline") }}</h4>
           <ProjectTimeline :src="timelineSrc" :items-src="timelineItemsSrc" :planning-url="planningUrl" />
         </div>
       </div>
@@ -698,7 +701,7 @@
       <!-- ── #6: Row 4 — Task Browser with summary strip + sorting ── -->
       <div class="proj-details__row">
         <div class="proj-details__card proj-details__card--full">
-          <h4 class="proj-details__card-title">Task Browser</h4>
+          <h4 class="proj-details__card-title">{{ t("Task Browser") }}</h4>
 
           <!-- Urgency summary strip -->
           <div class="proj-details__tb-summary">
@@ -713,7 +716,7 @@
               <span
                 class="proj-details__tb-summary-dot proj-details__tb-summary-dot--danger"
               ></span>
-              {{ dueCounts.overdue }} Overdue
+              {{ t("{count} Overdue", { count: dueCounts.overdue }) }}
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--warning"
@@ -726,7 +729,7 @@
               <span
                 class="proj-details__tb-summary-dot proj-details__tb-summary-dot--warning"
               ></span>
-              {{ dueCounts.today }} Due Today
+              {{ t("{count} Due Today", { count: dueCounts.today }) }}
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--success"
@@ -739,7 +742,7 @@
               <span
                 class="proj-details__tb-summary-dot proj-details__tb-summary-dot--success"
               ></span>
-              {{ statusCounts.done }} Done
+              {{ t("{count} Done", { count: statusCounts.done }) }}
             </button>
             <button
               class="proj-details__tb-summary-pill proj-details__tb-summary-pill--info"
@@ -752,7 +755,7 @@
               <span
                 class="proj-details__tb-summary-dot proj-details__tb-summary-dot--info"
               ></span>
-              {{ statusCounts.open }} Open
+              {{ t("{count} Open", { count: statusCounts.open }) }}
             </button>
             <button
               v-if="signatureCount"
@@ -766,92 +769,92 @@
               <span
                 class="proj-details__tb-summary-dot proj-details__tb-summary-dot--sign"
               ></span>
-              {{ signatureCount }} To sign
+              {{ t("{count} To sign", { count: signatureCount }) }}
             </button>
           </div>
 
           <!-- Filters -->
           <div class="proj-details__tb-filters">
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Search</label>
+              <label class="proj-details__tb-label">{{ t("Search") }}</label>
               <input
                 v-model="tbFilterName"
                 type="text"
                 class="iz-input proj-details__tb-input"
-                placeholder="Task name…"
+                :placeholder="t('Task name…')"
               />
             </div>
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Status</label>
+              <label class="proj-details__tb-label">{{ t("Status") }}</label>
               <select v-model="tbFilterStatus" class="iz-select proj-details__tb-select">
-                <option value="">All</option>
-                <option value="open">Open</option>
-                <option value="done">Done</option>
-                <option value="archived">Archived</option>
+                <option value="">{{ t("All") }}</option>
+                <option value="open">{{ t("Open") }}</option>
+                <option value="done">{{ tc("Done", "project status") }}</option>
+                <option value="archived">{{ t("Archived") }}</option>
               </select>
             </div>
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Stack</label>
+              <label class="proj-details__tb-label">{{ t("Stack") }}</label>
               <select v-model="tbFilterStack" class="iz-select proj-details__tb-select">
-                <option value="">All</option>
+                <option value="">{{ t("All") }}</option>
                 <option v-for="s in projectStacks" :key="s" :value="s">
                   {{ s }}
                 </option>
               </select>
             </div>
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Label</label>
+              <label class="proj-details__tb-label">{{ t("Label") }}</label>
               <select v-model="tbFilterLabel" class="iz-select proj-details__tb-select">
-                <option value="">All</option>
+                <option value="">{{ t("All") }}</option>
                 <option v-for="l in projectLabels" :key="l" :value="l">
                   {{ l }}
                 </option>
               </select>
             </div>
             <div v-if="showAssignees" class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Assignee</label>
+              <label class="proj-details__tb-label">{{ t("Assignee") }}</label>
               <select
                 v-model="tbFilterAssignee"
                 class="iz-select proj-details__tb-select"
               >
-                <option value="">All</option>
+                <option value="">{{ t("All") }}</option>
                 <option v-for="a in projectAssigneeNames" :key="a" :value="a">
                   {{ a }}
                 </option>
               </select>
             </div>
             <div class="proj-details__tb-filter">
-              <label class="proj-details__tb-label">Due</label>
+              <label class="proj-details__tb-label">{{ t("Due") }}</label>
               <select v-model="tbFilterDue" class="iz-select proj-details__tb-select">
-                <option value="">All</option>
-                <option value="overdue">Overdue</option>
-                <option value="today">Today</option>
-                <option value="tomorrow">Tomorrow</option>
-                <option value="nextSevenDays">Next 7 Days</option>
-                <option value="later">Later</option>
-                <option value="nodue">No Due Date</option>
+                <option value="">{{ t("All") }}</option>
+                <option value="overdue">{{ t("Overdue") }}</option>
+                <option value="today">{{ t("Today") }}</option>
+                <option value="tomorrow">{{ t("Tomorrow") }}</option>
+                <option value="nextSevenDays">{{ t("Next 7 Days") }}</option>
+                <option value="later">{{ t("Later") }}</option>
+                <option value="nodue">{{ t("No Due Date") }}</option>
               </select>
             </div>
           </div>
 
           <!-- Date range filter (own row) -->
           <div class="proj-details__date-filter-row">
-            <label class="proj-details__tb-label">Opened</label>
+            <label class="proj-details__tb-label">{{ t("Opened") }}</label>
             <div
               class="proj-details__date-range"
               @click="showDateRangePicker = !showDateRangePicker"
             >
               <span class="proj-details__date-range-value">
-                {{ tbFilterDateFrom || "Start" }}
+                {{ tbFilterDateFrom || t("Start") }}
               </span>
               <span class="proj-details__date-range-arrow">→</span>
               <span class="proj-details__date-range-value">
-                {{ tbFilterDateTo || "End" }}
+                {{ tbFilterDateTo || t("End") }}
               </span>
               <button
                 v-if="tbFilterDateFrom || tbFilterDateTo"
                 class="proj-details__date-range-clear"
-                title="Clear dates"
+                :title="t('Clear dates')"
                 @click.stop="
                   tbFilterDateFrom = '';
                   tbFilterDateTo = '';
@@ -883,7 +886,7 @@
                   </div>
                   <div class="proj-details__date-picker-grid">
                     <span
-                      v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                      v-for="d in weekdayNames"
                       :key="d"
                       class="proj-details__date-picker-dow"
                       >{{ d }}</span
@@ -912,7 +915,7 @@
                   </div>
                   <div class="proj-details__date-picker-grid">
                     <span
-                      v-for="d in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']"
+                      v-for="d in weekdayNames"
                       :key="d"
                       class="proj-details__date-picker-dow"
                       >{{ d }}</span
@@ -936,13 +939,13 @@
                     datePickStep = 'from';
                   "
                 >
-                  Clear
+                  {{ t("Clear") }}
                 </button>
                 <button
                   class="proj-details__date-picker-btn proj-details__date-picker-btn--apply"
                   @click.stop="showDateRangePicker = false"
                 >
-                  Apply
+                  {{ t("Apply") }}
                 </button>
               </div>
             </div>
@@ -950,7 +953,7 @@
 
           <!-- Count -->
           <div class="proj-details__tb-count">
-            {{ browserRows.length }} of {{ browserTotal }} rows
+            {{ t("{shown} of {total} rows", { shown: browserRows.length, total: browserTotal }) }}
           </div>
 
           <!-- Table with sortable headers -->
@@ -965,12 +968,12 @@
                     }"
                     @click="toggleSort('title')"
                   >
-                    Task
+                    {{ t("Task") }}
                     <span class="proj-details__sort-arrow">{{
                       sortArrow("title")
                     }}</span>
                   </th>
-                  <th>Stack</th>
+                  <th>{{ t("Stack") }}</th>
                   <th
                     class="proj-details__th-sort"
                     :class="{
@@ -978,13 +981,13 @@
                     }"
                     @click="toggleSort('status')"
                   >
-                    Status
+                    {{ t("Status") }}
                     <span class="proj-details__sort-arrow">{{
                       sortArrow("status")
                     }}</span>
                   </th>
-                  <th>Labels</th>
-                  <th v-if="showAssignees">Assignees</th>
+                  <th>{{ t("Labels") }}</th>
+                  <th v-if="showAssignees">{{ t("Assignees") }}</th>
                   <th
                     class="proj-details__th-sort"
                     :class="{
@@ -992,7 +995,7 @@
                     }"
                     @click="toggleSort('due')"
                   >
-                    Due Date
+                    {{ t("Due Date") }}
                     <span class="proj-details__sort-arrow">{{
                       sortArrow("due")
                     }}</span>
@@ -1004,7 +1007,7 @@
                     }"
                     @click="toggleSort('age')"
                   >
-                    Opened
+                    {{ t("Opened") }}
                     <span class="proj-details__sort-arrow">{{
                       sortArrow("age")
                     }}</span>
@@ -1014,7 +1017,7 @@
               <tbody>
                 <tr v-if="browserRows.length === 0">
                   <td :colspan="showAssignees ? 7 : 6" class="proj-details__tb-empty">
-                    No tasks match the current filters
+                    {{ t("No tasks match the current filters") }}
                   </td>
                 </tr>
                 <tr
@@ -1029,7 +1032,7 @@
                       v-if="task.kind === 'signature'"
                       :href="task.signUrl"
                       class="proj-details__tb-sign-link"
-                      :title="'Sent for signature by ' + task.requestedBy"
+                      :title="t('Sent for signature by {name}', { name: task.requestedBy })"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1060,7 +1063,7 @@
                     <span
                       class="proj-details__tb-status"
                       :class="'proj-details__tb-status--' + task.status"
-                      >{{ task.statusLabel || task.status }}</span
+                      >{{ taskStatusLabel(task) }}</span
                     >
                   </td>
                   <td>
@@ -1113,17 +1116,17 @@
               :disabled="tbPage <= 1"
               @click="tbPage--"
             >
-              &lsaquo; Prev
+              {{ t("‹ Prev") }}
             </button>
             <span class="proj-details__tb-page-info"
-              >Page {{ tbPage }} of {{ totalPages }}</span
+              >{{ t("Page {page} of {total}", { page: tbPage, total: totalPages }) }}</span
             >
             <button
               class="proj-details__tb-page-btn"
               :disabled="tbPage >= totalPages"
               @click="tbPage++"
             >
-              Next &rsaquo;
+              {{ t("Next ›") }}
             </button>
           </div>
         </div>
@@ -1139,6 +1142,13 @@ import ProjectMap from "./ProjectMap.vue";
 import UpcomingEventsPanel from "./UpcomingEventsPanel.vue";
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
+import { t, n, tc, locale } from "../lib/l10n.mjs";
+import {
+  PROJECT_STATUS_FILTERS,
+  projectStatusLabel,
+  projectStatusSlug,
+  toStatusCode,
+} from "../lib/projectStatus.mjs";
 
 // projectcreatoraio uses plain app routes but its controllers still require
 // the OCS-APIRequest header (see ProjectApiController.php).
@@ -1148,14 +1158,17 @@ const PCAIO_HEADERS = {
   "Content-Type": "application/json",
 };
 
-const DRASCI_OPTIONS = [
-  { value: "driver", label: "Driver" },
-  { value: "responsible", label: "Responsible" },
-  { value: "accountable", label: "Accountable" },
-  { value: "supportive", label: "Supportive" },
-  { value: "consulted", label: "Consulted" },
-  { value: "informed", label: "Informed" },
-];
+// Built on call, not at module load, so the labels follow the user's language.
+function drasciOptionList() {
+  return [
+    { value: "driver", label: t("Driver") },
+    { value: "responsible", label: t("Responsible") },
+    { value: "accountable", label: t("Accountable") },
+    { value: "supportive", label: t("Supportive") },
+    { value: "consulted", label: t("Consulted") },
+    { value: "informed", label: t("Informed") },
+  ];
+}
 
 export default {
   name: "ProjectDetailsPanel",
@@ -1221,6 +1234,7 @@ export default {
     return {
       selectedProjectId: "",
       tabSearch: "",
+      // A project status code as a string ("1" … "4"), "" for all.
       tabStatusFilter: "",
       tabTaskDueFilter: "",
       tabTaskStatusFilter: "",
@@ -1310,7 +1324,7 @@ export default {
       var list = this.projects;
       if (this.tabStatusFilter) {
         list = list.filter(function (p) {
-          return p.statusLabel === self.tabStatusFilter;
+          return String(p.status) === self.tabStatusFilter;
         });
       }
       if (this.tabTaskDueFilter) {
@@ -1343,6 +1357,26 @@ export default {
         });
       }
       return list;
+    },
+    projectStatusOptions: function () {
+      return PROJECT_STATUS_FILTERS.map(function (code) {
+        return { value: String(code), label: projectStatusLabel(code) };
+      });
+    },
+    /* Monday-first short weekday names in the user's locale (1 Jan 2024 was
+       a Monday). */
+    weekdayNames: function () {
+      var fmt;
+      try {
+        fmt = new Intl.DateTimeFormat(locale(), { weekday: "short", timeZone: "UTC" });
+      } catch (e) {
+        fmt = new Intl.DateTimeFormat(undefined, { weekday: "short", timeZone: "UTC" });
+      }
+      var out = [];
+      for (var i = 0; i < 7; i++) {
+        out.push(fmt.format(new Date(Date.UTC(2024, 0, 1 + i))));
+      }
+      return out;
     },
     timelineSrc: function () {
       if (!this.selectedProject) return null;
@@ -1453,12 +1487,11 @@ export default {
           id: "sig-" + s.signUuid,
           kind: "signature",
           title: s.fileName,
-          stack: "Signatures",
+          stack: t("Signatures"),
           status: "tosign",
-          statusLabel: "to sign",
           labels: s.signatureFlow
-            ? ["Signature", s.signatureFlow]
-            : ["Signature"],
+            ? [t("Signature"), s.signatureFlow]
+            : [t("Signature")],
           assignees: s.signerName ? [s.signerName] : [],
           due: null,
           dueBucket: "nodue",
@@ -1478,7 +1511,8 @@ export default {
       // A signature has no Deck stack, no status but "to sign" and no due
       // date, so a filter on any of those three excludes the whole set.
       if (this.tbFilterStatus && this.tbFilterStatus !== "tosign") return [];
-      if (this.tbFilterStack && this.tbFilterStack !== "Signatures") return [];
+      // The stack filter lists Deck stacks only, so any choice excludes them.
+      if (this.tbFilterStack) return [];
       if (this.tbFilterDue && this.tbFilterDue !== "nodue") return [];
       return this.projectSignatureRows.filter(function (r) {
         if (
@@ -1548,7 +1582,7 @@ export default {
         (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
       );
       var weeks = Math.round(days / 7);
-      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+      return n("{count} wk", "{count} wks", weeks, { count: weeks });
     },
     requiredPrepTime: function () {
       if (!this.selectedProject) return "—";
@@ -1568,7 +1602,7 @@ export default {
         (e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24),
       );
       var weeks = Math.round(days / 7);
-      return weeks + " wk" + (weeks !== 1 ? "s" : "");
+      return n("{count} wk", "{count} wks", weeks, { count: weeks });
     },
     // Summary counts for the urgency strip
     dueCounts: function () {
@@ -1669,8 +1703,8 @@ export default {
       this.tbSortDir = "asc";
     },
     /* ---- Date range picker helpers ---- */
-    pad: function (n) {
-      return n < 10 ? "0" + n : "" + n;
+    pad: function (num) {
+      return num < 10 ? "0" + num : "" + num;
     },
     toDateStr: function (d) {
       return (
@@ -1687,21 +1721,12 @@ export default {
         this.calendarBase.getMonth() + offset,
         1,
       );
-      var months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      return months[d.getMonth()] + " " + d.getFullYear();
+      // Month and year in the user's locale ("November 2026", "november 2026").
+      try {
+        return new Intl.DateTimeFormat(locale(), { month: "long", year: "numeric" }).format(d);
+      } catch (e) {
+        return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      }
     },
     shiftCalendar: function (dir) {
       var d = new Date(this.calendarBase);
@@ -1798,17 +1823,18 @@ export default {
       var now = new Date();
       var diffMs = now.getTime() - created.getTime();
       var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      if (days < 1) return "Today";
-      if (days === 1) return "1 day";
-      if (days < 7) return days + " days";
+      if (days < 1) return t("Today");
+      if (days < 7) return n("%n day", "%n days", days);
       var weeks = Math.floor(days / 7);
-      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      if (weeks < 5) return n("%n week", "%n weeks", weeks);
       var months = Math.floor(days / 30);
-      if (months < 12) return months + (months === 1 ? " month" : " months");
+      if (months < 12) return n("%n month", "%n months", months);
       var years = Math.floor(days / 365);
-      return years + (years === 1 ? " year" : " years");
+      return n("%n year", "%n years", years);
     },
-    applyProjectFilter: function (statusLabel) {
+    /* Called with a project status code (number or numeric string) from the
+       Projects KPI card; null or "" shows every status. */
+    applyProjectFilter: function (statusCode) {
       // Deselect current project so user sees filtered list
       this.selectedProjectId = "";
       // Clear all existing filters
@@ -1817,7 +1843,8 @@ export default {
       this.tabTaskDueFilter = "";
       this.tabTaskStatusFilter = "";
       // Set the matching project status filter
-      this.tabStatusFilter = statusLabel;
+      var code = toStatusCode(statusCode);
+      this.tabStatusFilter = code === null ? "" : String(code);
       var self = this;
       this.$nextTick(function () {
         var el = self.$el;
@@ -1894,21 +1921,42 @@ export default {
       if (!d) return "—";
       var date = new Date(d);
       if (isNaN(date.getTime())) return d;
-      return date.toLocaleDateString("en-GB", {
+      return date.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
       });
     },
-    drasciOptions: function () {
-      return DRASCI_OPTIONS;
-    },
-    drasciLabelFromRole: function (role) {
-      if (!role) return "Unassigned";
-      for (var i = 0; i < DRASCI_OPTIONS.length; i++) {
-        if (DRASCI_OPTIONS[i].value === role) return DRASCI_OPTIONS[i].label;
+    projectStatusLabel: projectStatusLabel,
+    projectStatusSlug: projectStatusSlug,
+    /* What the Status column shows for a task row: Deck's status code
+       (open / done / archived) or a signature waiting to be signed. */
+    taskStatusLabel: function (task) {
+      switch (task.status) {
+        case "open":
+          return t("Open");
+        case "done":
+          return tc("Done", "project status");
+        case "archived":
+          return t("Archived");
+        case "tosign":
+          return t("to sign");
+        default:
+          return task.status;
       }
-      return "Unassigned";
+    },
+    drasciOptions: function () {
+      return drasciOptionList();
+    },
+    /* The role's label in the user's language; the server's (English)
+       drasciRoleLabel only for a role this list does not know. */
+    drasciLabelFromRole: function (role, serverLabel) {
+      if (!role) return t("Unassigned");
+      var options = drasciOptionList();
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].value === role) return options[i].label;
+      }
+      return serverLabel || t("Unassigned");
     },
     hasMembers: function (projectId) {
       var list = this.projectMembersById[projectId];
@@ -2034,7 +2082,7 @@ export default {
         this.$set(
           this.projectMembersError,
           projectId,
-          this.extractProjectMembersError(e, "Couldn't load team members.")
+          this.extractProjectMembersError(e, t("Couldn't load team members."))
         );
       } finally {
         this.$set(this.projectMembersLoading, projectId, false);
@@ -2045,7 +2093,7 @@ export default {
       if (s.addingUid !== null) return;
       var role = (s.rowRoles && s.rowRoles[uid]) || "";
       if (!role) {
-        s.error = "Choose a DRASCI role before adding.";
+        s.error = t("Choose a DRASCI role before adding.");
         return;
       }
       s.addingUid = uid;
@@ -2064,7 +2112,7 @@ export default {
       } catch (e) {
         s.error = this.extractProjectMembersError(
           e,
-          "Couldn't add team member."
+          t("Couldn't add team member.")
         );
       } finally {
         s.addingUid = null;
@@ -2117,26 +2165,26 @@ export default {
           saving: false,
           error: this.extractProjectMembersError(
             e,
-            "Couldn't update role."
+            t("Couldn't update role.")
           ),
         });
       }
     },
     extractProjectMembersError: function (err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       var status = err.response.status;
-      if (status === 403) return "No access to this project.";
-      if (status === 404) return "Project no longer exists.";
-      if (status === 400) return "Invalid request.";
-      if (status >= 500) return "Server error. Try again.";
+      if (status === 403) return t("No access to this project.");
+      if (status === 404) return t("Project no longer exists.");
+      if (status === 400) return t("Invalid request.");
+      if (status >= 500) return t("Server error. Try again.");
       var ocsMsg =
         err.response.data &&
         err.response.data.ocs &&
         err.response.data.ocs.meta &&
         err.response.data.ocs.meta.message;
       if (ocsMsg) return ocsMsg;
-      return fallback + " (HTTP " + status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: status });
     },
     fetchProjectGeocode: async function (projectId) {
       if (!projectId) return;
@@ -2165,10 +2213,10 @@ export default {
           this.$set(this.geocodeStatus, projectId, 'not_found');
         } else if (code === 503) {
           this.$set(this.geocodeStatus, projectId, 'unavailable');
-          this.$set(this.geocodeError, projectId, "Geocoding service unavailable.");
+          this.$set(this.geocodeError, projectId, t("Geocoding service unavailable."));
         } else {
           this.$set(this.geocodeStatus, projectId, 'unavailable');
-          this.$set(this.geocodeError, projectId, "Couldn't load map.");
+          this.$set(this.geocodeError, projectId, t("Couldn't load map."));
         }
       }
     },
