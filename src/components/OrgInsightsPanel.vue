@@ -516,18 +516,22 @@ export default {
        metrics get a figure plus a sub-line so the four cells share one
        baseline. */
     resourceCells: function () {
+      /* Singular for a count of one: "1 Voortgangsmonitor (Scrumban)". */
       var labels = {
-        whiteboards: t("Whiteboards"),
-        scrumban_boards: t("Scrumban Boards"),
-        files: t("Files"),
-        notes: t("Notes"),
+        whiteboards: function (count) { return n("Whiteboard", "Whiteboards", count); },
+        scrumban_boards: function (count) { return n("Scrumban Board", "Scrumban Boards", count); },
+        files: function (count) { return n("File", "Files", count); },
+        notes: function (count) { return n("Note", "Notes", count); },
       };
       var metrics = (this.resources && this.resources.metrics) || [];
       var cells = [];
       for (var i = 0; i < metrics.length; i++) {
         var m = metrics[i];
         var key = m.key || String(i);
-        var label = labels[m.key] || m.label;
+        var count = m.public !== undefined && m.private !== undefined
+          ? (Number(m.public) || 0) + (Number(m.private) || 0)
+          : Number(m.value) || 0;
+        var label = labels[m.key] ? labels[m.key](count) : m.label;
         if (m.public !== undefined && m.private !== undefined) {
           var pub = Number(m.public) || 0;
           var priv = Number(m.private) || 0;

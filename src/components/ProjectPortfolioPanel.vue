@@ -234,7 +234,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.3 3.5 2.4 18a2 2 0 0 0 1.8 3h15.6a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0z" /><path d="M12 9v4M12 17h.01" /></svg>
                 {{ t("Open planning gaps ({count})", { count: planningGaps.length }) }}
               </h4>
-              <button type="button" class="portfolio__link portfolio__link-btn" @click=openTableView('all')">{{ t("View all projects") }}</button>
+              <button type="button" class="portfolio__link portfolio__link-btn" @click="openTableView('all')">{{ t("View all projects") }}</button>
             </header>
             <div class="portfolio__gap-list">
               <div v-if="capacityLoading" class="portfolio__status-state iz-empty">{{ t("Loading capacity...") }}</div>
@@ -668,6 +668,7 @@ export default {
     capacityStatus: function (week) {
       if (week.overCapacity) return t("Over capacity");
       if (week.totalActive === 0) return t("No active projects");
+      if (!Number.isFinite(Number(week.remaining))) return t("Remaining: not available");
       return t("Remaining: {count}", { count: this.formatNumber(week.remaining) });
     },
     fetchTeams: async function () {

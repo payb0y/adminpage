@@ -225,7 +225,7 @@
         </header>
         <form @submit.prevent="saveTeam">
           <div class="iz-modal__body teams-panel__form">
-            <label class="iz-label" :for="'team-name-' + _uid">{{ t("Name") }}</label>
+            <label class="iz-label" :for="'team-name-' + _uid">{{ tc("Name", "team") }}</label>
             <input :id="'team-name-' + _uid" v-model="draft.name" class="iz-input" type="text" required :disabled="saving">
 
             <label class="iz-label" :for="'team-description-' + _uid">{{ t("Description") }}</label>
@@ -249,7 +249,7 @@
             </p>
 
             <fieldset class="teams-panel__members">
-              <legend class="iz-label">{{ t("Members") }}</legend>
+              <legend class="iz-label">{{ tc("Members", "team") }}</legend>
               <label v-for="member in members" :key="memberUid(member)" class="teams-panel__member">
                 <input v-model="selectedMembers" type="checkbox" :value="memberUid(member)" :disabled="saving">
                 <span>{{ member.displayName || memberUid(member) }}</span>
@@ -298,7 +298,7 @@ import {
   updateOrganizationTeam,
 } from "../services/organizationApi";
 import { addProjectTeamMembers } from "../services/projectCreatorApi";
-import { t, n, locale } from "../lib/l10n.mjs";
+import { t, n, tc, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "TeamsPanel",

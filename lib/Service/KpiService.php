@@ -329,7 +329,7 @@ class KpiService {
             INNER JOIN *PREFIX*custom_projects cp
                 ON pnf.parent = cp.folder_id
                AND cp.organization_id = ?
-            WHERE pnf.name IN ('Public Notes', 'Openbare notities')
+            WHERE pnf.name IN ('Public Notes', 'Openbare notities', 'Gedeelde notities')
               AND pnf.mimetype = (
                   SELECT id FROM *PREFIX*mimetypes WHERE mimetype = 'httpd/unix-directory'
               )

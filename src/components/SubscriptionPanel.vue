@@ -72,7 +72,7 @@
         <!-- Members -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
-            <span class="sub-panel__meter-label">{{ t("Members") }}</span>
+            <span class="sub-panel__meter-label">{{ tc("Members", "organization") }}</span>
             <span class="sub-panel__meter-value"
               >{{ usageSummary.memberCount
               }}<span class="sub-panel__meter-max"
@@ -161,7 +161,7 @@
 </template>
 
 <script>
-import { t, locale } from "../lib/l10n.mjs";
+import { t, tc, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "SubscriptionPanel",

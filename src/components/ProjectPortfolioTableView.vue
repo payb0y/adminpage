@@ -912,6 +912,8 @@ export default {
         return t("No active projects");
       }
       var space = Math.round(week.capacity - week.totalActive);
+      // No capacity set for the week: say so rather than print "NaN".
+      if (!Number.isFinite(space)) return t("Remaining: not available");
       return t("Remaining: {count}", { count: space });
     },
     statusBadgeClass: function (bucket) {

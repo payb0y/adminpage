@@ -134,11 +134,12 @@
 
 <script>
 import L from "leaflet";
+import { localizeLeaflet } from "../lib/leafletL10n.mjs";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { t } from "../lib/l10n.mjs";
+import { t, tc } from "../lib/l10n.mjs";
 
 // Canonical encoding, owned by projectcreatoraio's ProjectStatus enum — that app
 // writes oc_custom_projects.status. Mirrors GeocodeService::STATUS_LABELS.
@@ -177,7 +178,7 @@ function statusLabel(key) {
     active: t("Active"),
     waiting: t("Waiting on Customer"),
     hold: t("On Hold"),
-    done: t("Done"),
+    done: tc("Done", "project status"),
     archived: t("Archived"),
   }[key];
 }
@@ -391,6 +392,7 @@ export default {
       if (this._map) return;
       if (this.collapsed || !this.$refs.mapRoot) return;
       if (this.filteredProjects.length === 0) return;
+      localizeLeaflet(L);
       this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true })
         .setView([52.3676, 4.9041], 6);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {

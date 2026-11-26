@@ -99,9 +99,25 @@ OC.L10N.register(
         "Gemiddelde over %n project",
         "Gemiddelde over %n projecten"
     ],
+    "_File_::_Files_": [
+        "Bestand",
+        "Bestanden"
+    ],
     "_in %n month_::_in %n months_": [
         "over %n maand",
         "over %n maanden"
+    ],
+    "_Note_::_Notes_": [
+        "Notitie",
+        "Notities"
+    ],
+    "_Scrumban Board_::_Scrumban Boards_": [
+        "Voortgangsmonitor (Scrumban)",
+        "Voortgangsmonitors (Scrumban)"
+    ],
+    "_Whiteboard_::_Whiteboards_": [
+        "Samenwerkingsbord",
+        "Samenwerkingsborden"
     ],
     "_{count} member_::_{count} members_": [
         "{count} teamlid",
@@ -131,6 +147,7 @@ OC.L10N.register(
         "{weeks} (%n dag)",
         "{weeks} (%n dagen)"
     ],
+    "A JavaScript library for interactive maps": "Een JavaScript-bibliotheek voor interactieve kaarten",
     "A modern analytics dashboard for In Zicht administrators providing operational, financial, commercial, and safety insights.": "Een modern analysedashboard voor beheerders van In Zicht met inzicht in operationele, financiële, commerciële en veiligheidsgegevens.",
     "Accelerate": "Versnellen",
     "Accountable": "Eindverantwoordelijk",
@@ -526,6 +543,8 @@ OC.L10N.register(
     "Member Performance": "Prestaties van medewerkers",
     "Member Performance — Task Details": "Prestaties van medewerkers — taakdetails",
     "Members": "Projectleden",
+    "Members|organization": "Medewerkers",
+    "Members|team": "Teamleden",
     "Member|project member": "Projectlid",
     "Milestone": "Mijlpaal",
     "Milestone: {label} ({date})": "Mijlpaal: {label} ({date})",
@@ -553,6 +572,7 @@ OC.L10N.register(
     "N/A": "Niet ingesteld",
     "Name": "Projectnaam",
     "Name|client": "Naam",
+    "Name|team": "Teamnaam",
     "Needs attention": "Aandacht nodig",
     "Negative Float: {n} week(s) behind schedule": "Negatieve speling: {n} wk achter op schema",
     "Negative Float: {weeks} week(s) behind schedule": "Negatieve speling: {weeks} wk achter op schema",
@@ -793,6 +813,7 @@ OC.L10N.register(
     "Refreshing…": "Vernieuwen…",
     "Regenerate password": "Nieuw wachtwoord genereren",
     "Remaining": "Resterend",
+    "Remaining: not available": "Resterende projectcapaciteit: niet beschikbaar",
     "Remaining: {count}": "Resterende projectcapaciteit: {count}",
     "Remove": "Verwijderen",
     "Remove member": "Uit organisatie verwijderen",
@@ -1070,13 +1091,13 @@ OC.L10N.register(
     "{count} delayed": "{count} vertraagd",
     "{count} done": "{count} afgerond",
     "{count} Done": "{count} afgerond",
-    "{count} Due Today": "Deadline vandaag: {count}",
+    "{count} Due Today": "Deadline: vandaag ({count})",
     "{count} in progress": "In behandeling: {count}",
     "{count} need attention": "Opslagonderdelen die aandacht nodig hebben: {count}",
     "{count} on-time": "{count} op tijd",
     "{count} Open": "Openstaand: {count}",
     "{count} overdue": "{count} te laat",
-    "{count} Overdue": "{count} te laat",
+    "{count} Overdue": "Achterstallig: {count}",
     "{count} projects across five progress categories": "Aantal projecten verdeeld over vijf voortgangscategorieën: {count}",
     "{count} public": "Aantal openbare items: {count}",
     "{count} remaining to complete": "Nog {count} af te ronden",
