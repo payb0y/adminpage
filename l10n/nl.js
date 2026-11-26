@@ -103,6 +103,10 @@ OC.L10N.register(
         "Bestand",
         "Bestanden"
     ],
+    "_file_::_files_": [
+        "bestand",
+        "bestanden"
+    ],
     "_in %n month_::_in %n months_": [
         "over %n maand",
         "over %n maanden"
@@ -111,11 +115,39 @@ OC.L10N.register(
         "Notitie",
         "Notities"
     ],
+    "_note_::_notes_": [
+        "notitie",
+        "notities"
+    ],
     "_Scrumban Board_::_Scrumban Boards_": [
         "Voortgangsmonitor (Scrumban)",
         "Voortgangsmonitors (Scrumban)"
     ],
+    "_Showing {shown} of %n backup_::_Showing {shown} of %n backups_": [
+        "{shown} van %n back-up weergegeven",
+        "{shown} van %n back-ups weergegeven"
+    ],
+    "_Showing {shown} of %n meeting_::_Showing {shown} of %n meetings_": [
+        "{shown} van %n afspraak weergegeven",
+        "{shown} van %n afspraken weergegeven"
+    ],
+    "_Showing {shown} of %n member (click for full details)_::_Showing {shown} of %n members (click for full details)_": [
+        "{shown} van %n medewerker weergegeven (klik voor alle details)",
+        "{shown} van %n medewerkers weergegeven (klik voor alle details)"
+    ],
+    "_Showing {shown} of %n member_::_Showing {shown} of %n members_": [
+        "{shown} van %n medewerker weergegeven",
+        "{shown} van %n medewerkers weergegeven"
+    ],
+    "_Showing {shown} of %n project (click for full details)_::_Showing {shown} of %n projects (click for full details)_": [
+        "{shown} van %n project weergegeven (klik voor alle details)",
+        "{shown} van %n projecten weergegeven (klik voor alle details)"
+    ],
     "_Whiteboard_::_Whiteboards_": [
+        "Samenwerkingsbord",
+        "Samenwerkingsborden"
+    ],
+    "_whiteboard_::_whiteboards_": [
         "Samenwerkingsbord",
         "Samenwerkingsborden"
     ],

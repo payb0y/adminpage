@@ -252,19 +252,19 @@
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.files
               }}</span>
-              <span class="proj-details__resource-label">{{ t("Files") }}</span>
+              <span class="proj-details__resource-label">{{ n("file", "files", Number(selectedProject.resources.files) || 0) }}</span>
             </div>
             <div class="proj-details__resource-item">
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.whiteboards
               }}</span>
-              <span class="proj-details__resource-label">{{ t("Whiteboards") }}</span>
+              <span class="proj-details__resource-label">{{ n("whiteboard", "whiteboards", Number(selectedProject.resources.whiteboards) || 0) }}</span>
             </div>
             <div class="proj-details__resource-item">
               <span class="proj-details__resource-value">{{
                 selectedProject.resources.notes
               }}</span>
-              <span class="proj-details__resource-label">{{ t("Notes") }}</span>
+              <span class="proj-details__resource-label">{{ n("note", "notes", Number(selectedProject.resources.notes) || 0) }}</span>
             </div>
           </div>
         </div>

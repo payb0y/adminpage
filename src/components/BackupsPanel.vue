@@ -187,7 +187,7 @@
         >&#8250;</button>
       </div>
       <div v-if="filteredJobs.length > 0" class="backups-panel__showing-hint">
-        {{ t("Showing {shown} of {total} backups", { shown: paginatedJobs.length, total: filteredJobs.length }) }}
+        {{ n("Showing {shown} of %n backup", "Showing {shown} of %n backups", filteredJobs.length, { shown: paginatedJobs.length }) }}
       </div>
     </template>
   </div>

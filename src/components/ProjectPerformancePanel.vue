@@ -316,10 +316,7 @@
             class="perf-panel__bar-hint"
           >
             {{
-              t("Showing {shown} of {total} projects (click for full details)", {
-                shown: previewProjectProgress.length,
-                total: crFilteredProjectProgress.length,
-              })
+              n("Showing {shown} of %n project (click for full details)", "Showing {shown} of %n projects (click for full details)", crFilteredProjectProgress.length, { shown: previewProjectProgress.length })
             }}
           </div>
         </div>
@@ -517,10 +514,7 @@
             class="perf-panel__bar-hint"
           >
             {{
-              t("Showing {shown} of {total} members (click for full details)", {
-                shown: previewMemberRollup.length,
-                total: filteredMemberRollup.length,
-              })
+              n("Showing {shown} of %n member (click for full details)", "Showing {shown} of %n members (click for full details)", filteredMemberRollup.length, { shown: previewMemberRollup.length })
             }}
           </div>
         </div>

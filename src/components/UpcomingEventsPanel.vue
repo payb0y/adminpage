@@ -116,7 +116,7 @@
         >&#8250;</button>
       </div>
       <div v-if="filteredEvents.length > 0" class="events-panel__showing-hint">
-        {{ t("Showing {shown} of {total} meetings", { shown: paginatedEvents.length, total: filteredEvents.length }) }}
+        {{ n("Showing {shown} of %n meeting", "Showing {shown} of %n meetings", filteredEvents.length, { shown: paginatedEvents.length }) }}
       </div>
     </template>
   </div>
