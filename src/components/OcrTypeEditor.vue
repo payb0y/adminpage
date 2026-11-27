@@ -4,25 +4,25 @@
 
     <div class="ocr-editor__head">
       <label class="ocr-editor__field ocr-editor__field--grow">
-        <span class="iz-label">Document type name</span>
+        <span class="iz-label">{{ t("Document type name") }}</span>
         <input
           v-model="form.name"
           class="iz-input"
           type="text"
-          placeholder="e.g. Bodemrapport"
+          :placeholder="t('e.g. Bodemrapport')"
           :disabled="busy"
         />
       </label>
       <label class="ocr-editor__active">
         <input v-model="form.is_active" type="checkbox" :disabled="busy" />
-        Active
+        {{ t("Active") }}
       </label>
     </div>
 
     <div class="ocr-editor__fields-block">
-      <span class="iz-label">Extraction fields</span>
+      <span class="iz-label">{{ t("Extraction fields") }}</span>
       <p class="ocr-editor__hint">
-        Every data point OCR must pull out of this kind of document.
+        {{ t("Every data point OCR must pull out of this kind of document.") }}
       </p>
       <div class="ocr-editor__fields">
         <div
@@ -34,7 +34,7 @@
             v-model="field.name"
             class="iz-input"
             type="text"
-            placeholder="e.g. Totaalbedrag"
+            :placeholder="t('e.g. Totaalbedrag')"
             :disabled="busy"
           />
           <button
@@ -42,7 +42,7 @@
             class="iz-btn iz-btn--ghost iz-btn--sm"
             :disabled="busy || form.fields.length === 1"
             @click="$emit('remove-field', index)"
-          >Remove</button>
+          >{{ t("Remove") }}</button>
         </div>
       </div>
       <button
@@ -52,7 +52,7 @@
         @click="$emit('add-field')"
       >
         <span aria-hidden="true">+</span>
-        Add another field
+        {{ t("Add another field") }}
       </button>
     </div>
 
@@ -63,14 +63,14 @@
         class="iz-btn iz-btn--danger iz-btn--sm"
         :disabled="busy"
         @click="$emit('request-delete')"
-      >Delete type</button>
+      >{{ t("Delete type") }}</button>
       <span class="ocr-editor__actions-right">
         <button
           type="button"
           class="iz-btn iz-btn--sm"
           :disabled="busy"
           @click="$emit('reset')"
-        >Reset</button>
+        >{{ t("Reset") }}</button>
         <button
           type="button"
           class="iz-btn iz-btn--primary iz-btn--sm"
@@ -83,6 +83,8 @@
 </template>
 
 <script>
+import { t } from "../lib/l10n.mjs";
+
 /**
  * The document-type form, split out of OrganizationOcrSettings so the same
  * markup serves both an existing type and a new one. Presentational: the
@@ -105,7 +107,9 @@ export default {
     },
     saveLabel: {
       type: String,
-      default: "Save",
+      default: function () {
+        return t("Save");
+      },
     },
     error: {
       type: String,

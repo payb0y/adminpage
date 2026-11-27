@@ -2,7 +2,7 @@
   <div :class="['backups-panel', { 'backups-panel--embedded': embedded }]">
     <!-- Empty state (no jobs at all) -->
     <div v-if="!jobs || jobs.length === 0" class="iz-empty backups-panel__empty">
-      <p class="backups-panel__empty-text">No backup jobs found.</p>
+      <p class="backups-panel__empty-text">{{ t("No backup jobs found.") }}</p>
     </div>
 
     <template v-else>
@@ -25,15 +25,15 @@
         <!-- Type filter -->
         <div class="backups-panel__filter-group">
           <span
-            v-for="t in typeOptions"
-            :key="'tf-' + t.value"
+            v-for="ty in typeOptions"
+            :key="'tf-' + ty.value"
             class="backups-panel__filter-badge"
             :class="[
-              'backups-panel__filter-badge--' + (t.value || 'all'),
-              { 'backups-panel__filter-badge--active': typeFilter === t.value },
+              'backups-panel__filter-badge--' + (ty.value || 'all'),
+              { 'backups-panel__filter-badge--active': typeFilter === ty.value },
             ]"
-            @click="typeFilter = t.value; currentPage = 1"
-          >{{ t.label }}</span>
+            @click="typeFilter = ty.value; currentPage = 1"
+          >{{ ty.label }}</span>
         </div>
 
         <!-- Trigger filter -->
@@ -53,7 +53,7 @@
 
       <!-- No results after filtering -->
       <div v-if="filteredJobs.length === 0" class="iz-empty backups-panel__empty">
-        <p class="backups-panel__empty-text">No backup jobs match your filters.</p>
+        <p class="backups-panel__empty-text">{{ t("No backup jobs match your filters.") }}</p>
       </div>
 
       <!-- Backup jobs table -->
@@ -61,14 +61,14 @@
         <table class="backups-panel__table">
           <thead>
             <tr>
-              <th>Status</th>
-              <th>Type</th>
-              <th>Trigger</th>
-              <th>Artifact</th>
-              <th>Size</th>
-              <th>Created</th>
-              <th>Duration</th>
-              <th>Expires</th>
+              <th>{{ t("Status") }}</th>
+              <th>{{ t("Type") }}</th>
+              <th>{{ t("Trigger") }}</th>
+              <th>{{ t("Artifact") }}</th>
+              <th>{{ t("Size") }}</th>
+              <th>{{ t("Created") }}</th>
+              <th>{{ t("Duration") }}</th>
+              <th>{{ t("Expires") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -82,7 +82,7 @@
                 <span
                   class="backups-panel__badge"
                   :class="'backups-panel__badge--' + job.status"
-                >{{ job.status }}</span>
+                >{{ optionLabel(statusOptions, job.status) }}</span>
               </td>
 
               <!-- Backup type -->
@@ -90,7 +90,7 @@
                 <span
                   class="backups-panel__type"
                   :class="'backups-panel__type--' + job.backupType"
-                >{{ job.backupType }}</span>
+                >{{ optionLabel(typeOptions, job.backupType) }}</span>
               </td>
 
               <!-- Trigger source -->
@@ -126,7 +126,7 @@
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  {{ job.triggerSource }}
+                  {{ optionLabel(triggerOptions, job.triggerSource) }}
                 </span>
               </td>
 
@@ -154,7 +154,7 @@
               <!-- Duration -->
               <td>
                 <span v-if="job.startedAt && job.finishedAt" class="backups-panel__duration">{{ formatDuration(job.startedAt, job.finishedAt) }}</span>
-                <span v-else-if="job.status === 'running'" class="backups-panel__badge backups-panel__badge--running">running</span>
+                <span v-else-if="job.status === 'running'" class="backups-panel__badge backups-panel__badge--running">{{ t("running") }}</span>
                 <span v-else class="backups-panel__muted">&mdash;</span>
               </td>
 
@@ -187,13 +187,15 @@
         >&#8250;</button>
       </div>
       <div v-if="filteredJobs.length > 0" class="backups-panel__showing-hint">
-        Showing {{ paginatedJobs.length }} of {{ filteredJobs.length }} backups
+        {{ n("Showing {shown} of %n backup", "Showing {shown} of %n backups", filteredJobs.length, { shown: paginatedJobs.length }) }}
       </div>
     </template>
   </div>
 </template>
 
 <script>
+import { t, formatNumber, locale } from "../lib/l10n.mjs";
+
 export default {
   name: 'BackupsPanel',
   props: {
@@ -220,25 +222,25 @@ export default {
   computed: {
     statusOptions: function () {
       return [
-        { label: 'All', value: '' },
-        { label: 'Completed', value: 'completed' },
-        { label: 'Expired', value: 'expired' },
-        { label: 'Running', value: 'running' },
-        { label: 'Failed', value: 'failed' },
+        { label: t('All'), value: '' },
+        { label: t('Completed'), value: 'completed' },
+        { label: t('Expired'), value: 'expired' },
+        { label: t('Running'), value: 'running' },
+        { label: t('Failed'), value: 'failed' },
       ];
     },
     typeOptions: function () {
       return [
-        { label: 'All types', value: '' },
-        { label: 'Full', value: 'full' },
-        { label: 'Incremental', value: 'incremental' },
+        { label: t('All types'), value: '' },
+        { label: t('Full'), value: 'full' },
+        { label: t('Incremental'), value: 'incremental' },
       ];
     },
     triggerOptions: function () {
       return [
-        { label: 'All triggers', value: '' },
-        { label: 'Scheduled', value: 'scheduled' },
-        { label: 'Manual', value: 'manual' },
+        { label: t('All triggers'), value: '' },
+        { label: t('Scheduled'), value: 'scheduled' },
+        { label: t('Manual'), value: 'manual' },
       ];
     },
     filteredJobs: function () {
@@ -271,35 +273,43 @@ export default {
     },
   },
   methods: {
+    /* The translated label for a backend code (job.status, backupType,
+       triggerSource); the code itself when it is one the filters don't know. */
+    optionLabel: function (options, value) {
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].value && options[i].value === value) return options[i].label;
+      }
+      return value;
+    },
     formatSize: function (bytes) {
-      if (!bytes || bytes === 0) return '0 B';
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-      if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
-      return (bytes / 1073741824).toFixed(2) + ' GB';
+      if (!bytes || bytes === 0) return t('{size} B', { size: 0 });
+      if (bytes < 1024) return t('{size} B', { size: bytes });
+      if (bytes < 1048576) return t('{size} KB', { size: formatNumber(bytes / 1024, 1) });
+      if (bytes < 1073741824) return t('{size} MB', { size: formatNumber(bytes / 1048576, 1) });
+      return t('{size} GB', { size: formatNumber(bytes / 1073741824, 2) });
     },
     formatDate: function (dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr.replace(' ', 'T'));
       if (isNaN(d.getTime())) return dateStr;
-      var month = d.toLocaleString('en', { month: 'short' });
+      var month = d.toLocaleString(locale(), { month: 'short' });
       var day = d.getDate();
       var hours = String(d.getHours()).padStart(2, '0');
       var mins = String(d.getMinutes()).padStart(2, '0');
-      return month + ' ' + day + ', ' + hours + ':' + mins;
+      return t('{month} {day}, {time}', { month: month, day: day, time: hours + ':' + mins });
     },
     formatDuration: function (startStr, endStr) {
       var start = new Date(startStr.replace(' ', 'T'));
       var end = new Date(endStr.replace(' ', 'T'));
       var diffSec = Math.round((end - start) / 1000);
       if (diffSec < 0) return '\u2014';
-      if (diffSec < 60) return diffSec + 's';
+      if (diffSec < 60) return t('{seconds}s', { seconds: diffSec });
       var mins = Math.floor(diffSec / 60);
       var secs = diffSec % 60;
-      if (mins < 60) return mins + 'm ' + secs + 's';
+      if (mins < 60) return t('{minutes}m {seconds}s', { minutes: mins, seconds: secs });
       var hrs = Math.floor(mins / 60);
       mins = mins % 60;
-      return hrs + 'h ' + mins + 'm';
+      return t('{hours}h {minutes}m', { hours: hrs, minutes: mins });
     },
     truncateArtifact: function (name) {
       if (!name) return '';

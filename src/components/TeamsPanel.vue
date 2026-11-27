@@ -7,14 +7,14 @@
           v-if="unassignedCount > 0"
           type="button"
           class="iz-pill iz-pill--warning teams-panel__unassigned-pill"
-          title="Click to review and assign unassigned projects"
+          :title="t('Click to review and assign unassigned projects')"
           @click="unassignedModalOpen = true"
         >
-          {{ unassignedCount }} unassigned
+          {{ t("{count} unassigned", { count: unassignedCount }) }}
         </button>
       </div>
       <button v-if="canManage" type="button" class="iz-btn iz-btn--primary iz-btn--sm" @click="openCreate">
-        + New team
+        {{ t("+ New team") }}
       </button>
     </div>
 
@@ -27,8 +27,8 @@
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
         <span>
-          <strong>{{ unassignedCount }} unassigned {{ unassignedCount === 1 ? "project" : "projects" }}</strong>
-          — assign responsible teams to enable accurate capacity and workload tracking.
+          <strong>{{ n("%n unassigned project", "%n unassigned projects", unassignedCount) }}</strong>
+          {{ t("— assign responsible teams to enable accurate capacity and workload tracking.") }}
         </span>
       </div>
       <button
@@ -36,17 +36,17 @@
         class="iz-btn iz-btn--warning iz-btn--sm"
         @click="unassignedModalOpen = true"
       >
-        Review &amp; Assign ({{ unassignedCount }})
+        {{ t("Review & Assign ({count})", { count: unassignedCount }) }}
       </button>
     </div>
 
-    <div v-if="loading" class="iz-empty teams-panel__state">Loading teams...</div>
+    <div v-if="loading" class="iz-empty teams-panel__state">{{ t("Loading teams...") }}</div>
     <div v-else-if="error && !editorOpen" class="iz-error teams-panel__state" role="alert">
       <span>{{ error }}</span>
-      <button type="button" class="iz-btn iz-btn--accent iz-btn--sm" @click="load">Try again</button>
+      <button type="button" class="iz-btn iz-btn--accent iz-btn--sm" @click="load">{{ t("Try again") }}</button>
     </div>
     <div v-else-if="!teams.length" class="iz-empty teams-panel__state">
-      No teams yet. Create one to organize project capacity.
+      {{ t("No teams yet. Create one to organize project capacity.") }}
     </div>
     <ul v-else class="teams-panel__list">
       <li v-for="team in teams" :key="team.id" class="iz-row iz-row--card teams-panel__team">
@@ -54,30 +54,34 @@
           <span class="iz-identity__avatar teams-panel__avatar">{{ initials(team.name) }}</span>
           <span class="iz-identity__body">
             <strong class="iz-identity__name">{{ team.name }}</strong>
-            <small class="iz-identity__meta">{{ team.description || "No description" }}</small>
+            <small class="iz-identity__meta">{{ team.description || t("No description") }}</small>
           </span>
         </div>
         <div class="teams-panel__facts">
           <span>
-            <strong>{{ team.memberCount }}</strong>
-            {{ team.memberCount === 1 ? "member" : "members" }}
+            <template v-for="(part, i) in boldCount(n('{count} member', '{count} members', team.memberCount, { count: team.memberCount }), team.memberCount)">
+              <strong v-if="part.bold" :key="i">{{ part.text }}</strong>
+              <template v-else>{{ part.text }}</template>
+            </template>
           </span>
           <span>
-            <strong>{{ teamProjects(team.id).length }}</strong>
-            {{ teamProjects(team.id).length === 1 ? "project" : "projects" }}
+            <template v-for="(part, i) in boldCount(n('{count} project', '{count} projects', teamProjects(team.id).length, { count: teamProjects(team.id).length }), teamProjects(team.id).length)">
+              <strong v-if="part.bold" :key="i">{{ part.text }}</strong>
+              <template v-else>{{ part.text }}</template>
+            </template>
           </span>
         </div>
         <div class="teams-panel__actions">
           <button
             type="button"
             class="iz-btn iz-btn--sm iz-btn--secondary teams-panel__projects-btn"
-            title="View and manage projects assigned to this team"
+            :title="t('View and manage projects assigned to this team')"
             @click="openTeamProjects(team)"
           >
-            Projects ({{ teamProjects(team.id).length }})
+            {{ t("Projects ({count})", { count: teamProjects(team.id).length }) }}
           </button>
-          <button v-if="canManage" type="button" class="iz-btn iz-btn--sm" @click="openEdit(team)">Edit</button>
-          <button v-if="canManage" type="button" class="iz-btn iz-btn--danger iz-btn--sm" @click="openDelete(team)">Delete</button>
+          <button v-if="canManage" type="button" class="iz-btn iz-btn--sm" @click="openEdit(team)">{{ t("Edit") }}</button>
+          <button v-if="canManage" type="button" class="iz-btn iz-btn--danger iz-btn--sm" @click="openDelete(team)">{{ t("Delete") }}</button>
         </div>
       </li>
     </ul>
@@ -87,23 +91,30 @@
       <div class="iz-modal teams-panel__modal teams-panel__projects-modal" role="dialog" aria-modal="true" :aria-labelledby="'team-projects-title-' + _uid">
         <header class="iz-modal__header">
           <div>
-            <h3 :id="'team-projects-title-' + _uid">{{ projectsModalTeam.name }} — Projects</h3>
+            <h3 :id="'team-projects-title-' + _uid">{{ t("{team} — Projects", { team: projectsModalTeam.name }) }}</h3>
             <p class="teams-panel__modal-subtitle">
-              <strong>{{ teamProjects(projectsModalTeam.id).length }}</strong> {{ teamProjects(projectsModalTeam.id).length === 1 ? "project" : "projects" }}
-              · <strong>{{ projectsModalTeam.memberCount }}</strong> {{ projectsModalTeam.memberCount === 1 ? "member" : "members" }}
-              — every member works on every project of the team
+              <template v-for="(part, i) in boldCount(n('{count} project', '{count} projects', teamProjects(projectsModalTeam.id).length, { count: teamProjects(projectsModalTeam.id).length }), teamProjects(projectsModalTeam.id).length)">
+                <strong v-if="part.bold" :key="'p' + i">{{ part.text }}</strong>
+                <template v-else>{{ part.text }}</template>
+              </template>
+              ·
+              <template v-for="(part, i) in boldCount(n('{count} member', '{count} members', projectsModalTeam.memberCount, { count: projectsModalTeam.memberCount }), projectsModalTeam.memberCount)">
+                <strong v-if="part.bold" :key="'m' + i">{{ part.text }}</strong>
+                <template v-else>{{ part.text }}</template>
+              </template>
+              — {{ t("every member works on every project of the team") }}
             </p>
           </div>
-          <button type="button" class="iz-close iz-close--sm" aria-label="Close" @click="closeProjectsModal">&times;</button>
+          <button type="button" class="iz-close iz-close--sm" :aria-label="t('Close')" @click="closeProjectsModal">&times;</button>
         </header>
 
         <div class="iz-modal__body teams-panel__projects-body">
           <!-- Quick assign bar if unassigned projects exist -->
           <div v-if="canManage && unassignedProjects.length" class="teams-panel__quick-assign">
-            <label class="iz-label" :for="'assign-to-team-' + _uid">Assign an unassigned project to {{ projectsModalTeam.name }}:</label>
+            <label class="iz-label" :for="'assign-to-team-' + _uid">{{ t("Assign an unassigned project to {team}:", { team: projectsModalTeam.name }) }}</label>
             <div class="teams-panel__quick-assign-row">
               <select :id="'assign-to-team-' + _uid" class="iz-select iz-select--sm" v-model="projectToAssignId" :disabled="assigningQuick">
-                <option value="" disabled>Select unassigned project...</option>
+                <option value="" disabled>{{ t("Select unassigned project...") }}</option>
                 <option v-for="p in unassignedProjects" :key="p.projectId" :value="p.projectId">{{ p.projectName }}</option>
               </select>
               <button
@@ -112,22 +123,22 @@
                 :disabled="!projectToAssignId || assigningQuick"
                 @click="assignSelectedProjectToTeam(projectsModalTeam.id)"
               >
-                {{ assigningQuick ? "Assigning..." : "+ Assign to team" }}
+                {{ assigningQuick ? t("Assigning...") : t("+ Assign to team") }}
               </button>
             </div>
           </div>
 
           <!-- List of currently assigned projects -->
-          <h4 class="teams-panel__section-heading">Assigned projects ({{ teamProjects(projectsModalTeam.id).length }})</h4>
+          <h4 class="teams-panel__section-heading">{{ t("Assigned projects ({count})", { count: teamProjects(projectsModalTeam.id).length }) }}</h4>
           <div v-if="!teamProjects(projectsModalTeam.id).length" class="iz-empty teams-panel__empty-projects">
-            No projects assigned to {{ projectsModalTeam.name }} yet.
+            {{ t("No projects assigned to {team} yet.", { team: projectsModalTeam.name }) }}
           </div>
           <ul v-else class="teams-panel__project-modal-list">
             <li v-for="p in teamProjects(projectsModalTeam.id)" :key="p.projectId" class="teams-panel__project-modal-item">
               <div class="teams-panel__project-info">
                 <span class="teams-panel__project-bullet">&bull;</span>
                 <strong>{{ p.projectName }}</strong>
-                <small v-if="p.updatedAt" class="teams-panel__project-date">Assigned {{ formatDate(p.updatedAt) }}</small>
+                <small v-if="p.updatedAt" class="teams-panel__project-date">{{ t("Assigned {date}", { date: formatDate(p.updatedAt) }) }}</small>
                 <small v-if="assignmentErrors[p.projectId]" class="teams-panel__assignment-error" role="alert">
                   {{ assignmentErrors[p.projectId] }}
                 </small>
@@ -137,10 +148,10 @@
                   type="button"
                   class="iz-btn iz-btn--danger-quiet iz-btn--sm"
                   :disabled="assignmentBusy[p.projectId]"
-                  title="Unassign project from this team"
+                  :title="t('Unassign project from this team')"
                   @click="unassignProject(p.projectId)"
                 >
-                  {{ assignmentBusy[p.projectId] ? "..." : "Remove" }}
+                  {{ assignmentBusy[p.projectId] ? "..." : t("Remove") }}
                 </button>
               </div>
             </li>
@@ -148,7 +159,7 @@
         </div>
 
         <footer class="iz-modal__footer">
-          <button type="button" class="iz-btn iz-btn--sm" @click="closeProjectsModal">Done</button>
+          <button type="button" class="iz-btn iz-btn--sm" @click="closeProjectsModal">{{ t("Done") }}</button>
         </footer>
       </div>
     </div>
@@ -158,10 +169,10 @@
       <div class="iz-modal teams-panel__modal teams-panel__unassigned-modal" role="dialog" aria-modal="true" :aria-labelledby="'unassigned-modal-title-' + _uid">
         <header class="iz-modal__header">
           <div>
-            <h3 :id="'unassigned-modal-title-' + _uid">Unassigned Projects ({{ unassignedProjects.length }})</h3>
-            <p class="teams-panel__modal-subtitle">Assign each project to a responsible team to balance workload capacity.</p>
+            <h3 :id="'unassigned-modal-title-' + _uid">{{ t("Unassigned Projects ({count})", { count: unassignedProjects.length }) }}</h3>
+            <p class="teams-panel__modal-subtitle">{{ t("Assign each project to a responsible team to balance workload capacity.") }}</p>
           </div>
-          <button type="button" class="iz-close iz-close--sm" aria-label="Close" @click="unassignedModalOpen = false">&times;</button>
+          <button type="button" class="iz-close iz-close--sm" :aria-label="t('Close')" @click="unassignedModalOpen = false">&times;</button>
         </header>
 
         <div class="iz-modal__body">
@@ -170,11 +181,11 @@
               type="search"
               v-model="unassignedSearchQuery"
               class="iz-input iz-input--sm"
-              placeholder="Search unassigned projects..."
+              :placeholder="t('Search unassigned projects...')"
             />
           </div>
           <div v-if="!filteredUnassignedProjects.length" class="iz-empty">
-            {{ unassignedProjects.length === 0 ? "All projects are currently assigned to a team!" : "No unassigned projects match your search." }}
+            {{ unassignedProjects.length === 0 ? t("All projects are currently assigned to a team!") : t("No unassigned projects match your search.") }}
           </div>
           <ul v-else class="teams-panel__unassigned-list">
             <li v-for="p in filteredUnassignedProjects" :key="p.projectId" class="teams-panel__unassigned-item">
@@ -188,16 +199,16 @@
                 <select
                   class="iz-select iz-select--sm"
                   :disabled="!canManage || assignmentBusy[p.projectId] || !teams.length"
-                  :aria-label="'Select team for ' + p.projectName"
+                  :aria-label="t('Select team for {project}', { project: p.projectName })"
                   @change="handleUnassignedSelect(p, $event)"
                 >
-                  <option value="" selected disabled>Select team...</option>
-                  <option v-for="t in teams" :key="t.id" :value="t.id">
-                    {{ t.name }} ({{ teamProjects(t.id).length }} {{ teamProjects(t.id).length === 1 ? "project" : "projects" }})
+                  <option value="" selected disabled>{{ t("Select team...") }}</option>
+                  <option v-for="teamOption in teams" :key="teamOption.id" :value="teamOption.id">
+                    {{ teamOption.name }} ({{ n('{count} project', '{count} projects', teamProjects(teamOption.id).length, { count: teamProjects(teamOption.id).length }) }})
                   </option>
                 </select>
                 <span class="teams-panel__assignment-status" aria-live="polite">
-                  {{ assignmentBusy[p.projectId] ? "Saving..." : "" }}
+                  {{ assignmentBusy[p.projectId] ? t("Saving...") : "" }}
                 </span>
               </div>
             </li>
@@ -205,7 +216,7 @@
         </div>
 
         <footer class="iz-modal__footer">
-          <button type="button" class="iz-btn iz-btn--sm" @click="unassignedModalOpen = false">Done</button>
+          <button type="button" class="iz-btn iz-btn--sm" @click="unassignedModalOpen = false">{{ t("Done") }}</button>
         </footer>
       </div>
     </div>
@@ -213,33 +224,33 @@
     <div v-if="editorOpen" class="iz-modal-backdrop" @click.self="closeEditor">
       <div class="iz-modal teams-panel__modal" role="dialog" aria-modal="true" :aria-labelledby="'team-editor-title-' + _uid">
         <header class="iz-modal__header">
-          <h3 :id="'team-editor-title-' + _uid">{{ editing ? "Edit team" : "New team" }}</h3>
-          <button type="button" class="iz-close iz-close--sm" aria-label="Close" :disabled="saving" @click="closeEditor">&times;</button>
+          <h3 :id="'team-editor-title-' + _uid">{{ editing ? t("Edit team") : t("New team") }}</h3>
+          <button type="button" class="iz-close iz-close--sm" :aria-label="t('Close')" :disabled="saving" @click="closeEditor">&times;</button>
         </header>
         <form @submit.prevent="saveTeam">
           <div class="iz-modal__body teams-panel__form">
-            <label class="iz-label" :for="'team-name-' + _uid">Name</label>
+            <label class="iz-label" :for="'team-name-' + _uid">{{ tc("Name", "team") }}</label>
             <input :id="'team-name-' + _uid" v-model="draft.name" class="iz-input" type="text" required :disabled="saving">
 
-            <label class="iz-label" :for="'team-description-' + _uid">Description</label>
+            <label class="iz-label" :for="'team-description-' + _uid">{{ t("Description") }}</label>
             <textarea :id="'team-description-' + _uid" v-model="draft.description" class="iz-input" rows="2" :disabled="saving" />
 
             <fieldset class="teams-panel__members">
-              <legend class="iz-label">Members</legend>
+              <legend class="iz-label">{{ tc("Members", "team") }}</legend>
               <label v-for="member in members" :key="memberUid(member)" class="teams-panel__member">
                 <input v-model="selectedMembers" type="checkbox" :value="memberUid(member)" :disabled="saving">
                 <span>{{ member.displayName || memberUid(member) }}</span>
                 <small v-if="member.email">{{ member.email }}</small>
               </label>
-              <span v-if="!members.length" class="iz-empty">Add organization members before assigning teams.</span>
+              <span v-if="!members.length" class="iz-empty">{{ t("Add organization members before assigning teams.") }}</span>
             </fieldset>
 
             <p v-if="editorError" class="iz-error" role="alert">{{ editorError }}</p>
           </div>
           <footer class="iz-modal__footer">
-            <button type="button" class="iz-btn iz-btn--sm" :disabled="saving" @click="closeEditor">Cancel</button>
+            <button type="button" class="iz-btn iz-btn--sm" :disabled="saving" @click="closeEditor">{{ t("Cancel") }}</button>
             <button type="submit" class="iz-btn iz-btn--primary iz-btn--sm" :disabled="saving || !canSave">
-              {{ saving ? "Saving..." : "Save team" }}
+              {{ saving ? t("Saving...") : t("Save team") }}
             </button>
           </footer>
         </form>
@@ -248,10 +259,10 @@
 
     <ConfirmDialog
       v-if="deleteTarget"
-      :title="'Delete ' + deleteTarget.name + '?'"
-      message="Team memberships and project assignments for this team will also be removed."
-      confirm-label="Delete team"
-      busy-label="Deleting..."
+      :title="t('Delete {team}?', { team: deleteTarget.name })"
+      :message="t('Team memberships and project assignments for this team will also be removed.')"
+      :confirm-label="t('Delete team')"
+      :busy-label="t('Deleting...')"
       :busy="deleting"
       :error="deleteError"
       danger
@@ -273,6 +284,7 @@ import {
   removeTeamMember,
   updateOrganizationTeam,
 } from "../services/organizationApi";
+import { t, n, tc, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "TeamsPanel",
@@ -341,8 +353,7 @@ export default {
       return this.unassignedProjects.length;
     },
     teamCountLabel: function () {
-      var label = this.teams.length === 1 ? " team" : " teams";
-      return this.teams.length + label;
+      return n("%n team", "%n teams", this.teams.length);
     },
   },
   mounted: function () {
@@ -354,6 +365,17 @@ export default {
     },
     memberUid: function (member) {
       return member.userId || member.uid || "";
+    },
+    /* A translated sentence cut at its count, so the count alone is bold. */
+    boldCount: function (text, count) {
+      var value = String(count);
+      var at = text.indexOf(value);
+      if (at < 0) return [{ bold: false, text: text }];
+      return [
+        { bold: false, text: text.slice(0, at) },
+        { bold: true, text: value },
+        { bold: false, text: text.slice(at + value.length) },
+      ];
     },
     initials: function (name) {
       return String(name || "T")
@@ -395,7 +417,7 @@ export default {
       try {
         this.teams = await listOrganizationTeams(this.orgId);
       } catch (error) {
-        this.error = this.message(error, "Teams could not be loaded.");
+        this.error = this.message(error, t("Teams could not be loaded."));
       } finally {
         this.loading = false;
         this.emitSummary();
@@ -408,7 +430,7 @@ export default {
         this.assignments = await listProjectTeamAssignments(this.orgId);
         this.syncAssignmentSelections();
       } catch (error) {
-        this.assignmentsError = this.message(error, "Project assignments could not be loaded.");
+        this.assignmentsError = this.message(error, t("Project assignments could not be loaded."));
       } finally {
         this.assignmentsLoading = false;
         this.emitSummary();
@@ -470,8 +492,8 @@ export default {
         await this.load();
         this.$emit("changed");
       } catch (error) {
-        this.editorError = this.message(error, "The team could not be saved.");
-        if (teamSaved) this.editorError += " Any changes completed before this error remain saved; retry to finish synchronizing members.";
+        this.editorError = this.message(error, t("The team could not be saved."));
+        if (teamSaved) this.editorError += " " + t("Any changes completed before this error remain saved; retry to finish synchronizing members.");
       } finally {
         this.saving = false;
       }
@@ -495,7 +517,7 @@ export default {
         await this.load();
         this.$emit("changed");
       } catch (error) {
-        this.deleteError = this.message(error, "The team could not be deleted.");
+        this.deleteError = this.message(error, t("The team could not be deleted."));
         await this.load();
         if (!this.teams.some(function (team) {
           return team.id === this.deleteTarget.id;
@@ -547,7 +569,7 @@ export default {
         this.emitSummary();
         this.$emit("changed");
       } catch (error) {
-        this.$set(this.assignmentErrors, projectId, this.message(error, "The assignment could not be saved."));
+        this.$set(this.assignmentErrors, projectId, this.message(error, t("The assignment could not be saved.")));
         await this.loadAssignments();
       } finally {
         this.$set(this.assignmentBusy, projectId, false);
@@ -563,7 +585,7 @@ export default {
       try {
         var d = new Date(dateStr);
         if (isNaN(d.getTime())) return dateStr;
-        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        return d.toLocaleDateString(locale(), { month: "short", day: "numeric", year: "numeric" });
       } catch (e) {
         return dateStr;
       }

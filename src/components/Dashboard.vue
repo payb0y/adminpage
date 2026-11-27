@@ -21,10 +21,10 @@
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       </div>
-      <h2 class="adminpage-dashboard__empty-title">Admin access required</h2>
+      <h2 class="adminpage-dashboard__empty-title">{{ t("Admin access required") }}</h2>
       <p class="adminpage-dashboard__empty-text">
-        You're not an admin of any organization.<br />
-        Only organization owners can access this dashboard.
+        {{ t("You're not an admin of any organization.") }}<br />
+        {{ t("Only organization owners can access this dashboard.") }}
       </p>
     </div>
 
@@ -233,9 +233,10 @@ export default {
     },
   },
   methods: {
-    onFilterProjects: function (statusLabel) {
+    /* statusCode: a project status code from ProjectsKpiCard, null for all. */
+    onFilterProjects: function (statusCode) {
       if (this.$refs.perfPanel) {
-        this.$refs.perfPanel.filterProjectsByStatus(statusLabel);
+        this.$refs.perfPanel.filterProjectsByStatus(statusCode);
       }
     },
     onFilterProgress: function (band) {

@@ -17,7 +17,7 @@
           <polyline points="21 4 21 10 15 10" />
         </svg>
       </div>
-      <span class="iz-kpi__title progression-kpi__title">Progression</span>
+      <span class="iz-kpi__title progression-kpi__title">{{ t('Progression') }}</span>
     </div>
 
     <!-- Hero: the portfolio average. Clicking it clears the band filter, the
@@ -30,8 +30,7 @@
         >{{ averageProgress }}%</span
       >
       <span class="iz-kpi__hero-label progression-kpi__hero-label">
-        Average across {{ total }}
-        {{ total === 1 ? "project" : "projects" }}
+        {{ n("Average across %n project", "Average across %n projects", total) }}
       </span>
     </div>
 
@@ -69,7 +68,7 @@
       </div>
     </div>
     <div v-else class="iz-kpi__empty progression-kpi__empty">
-      No project progress yet
+      {{ t("No project progress yet") }}
     </div>
 
     <!-- Footer band — same geometry as the Projects and Tasks footers so
@@ -94,8 +93,7 @@
         <polyline points="20 6 9 17 4 12" />
       </svg>
       <span class="progression-kpi__near-done-text">
-        <strong>{{ nearlyDone }}</strong>
-        {{ nearlyDone === 1 ? "project" : "projects" }} above 75%
+        {{ nearlyDoneParts.before }}<strong>{{ nearlyDone }}</strong>{{ nearlyDoneParts.after }}
       </span>
     </div>
   </div>
@@ -105,6 +103,7 @@
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 import { themeColor as izThemeColor } from "../lib/izChart";
+import { n } from "../lib/l10n.mjs";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 /* The four bands are the ones the performance panel's completion filter
@@ -155,6 +154,14 @@ export default {
     },
     nearlyDone: function () {
       return this.counts["75-100"];
+    },
+    /* The sentence around the bold count, split at the count itself. */
+    nearlyDoneParts: function () {
+      var text = n("%n project above 75%", "%n projects above 75%", this.nearlyDone);
+      var count = String(this.nearlyDone);
+      var at = text.indexOf(count);
+      if (at < 0) return { before: text + " ", after: "" };
+      return { before: text.slice(0, at), after: text.slice(at + count.length) };
     },
     /* Colour is an explicit property per segment, never built from the key —
        a colour derived from data can silently resolve to nothing. */

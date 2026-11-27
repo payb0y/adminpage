@@ -3,14 +3,14 @@
     <div class="cp-modal iz-modal" role="dialog" aria-modal="true">
       <header class="cp-modal__header iz-modal__header">
         <h3 class="cp-modal__title">
-          New project
-          <span class="iz-badge iz-badge--muted cp-modal__step">Step {{ step }} of 2</span>
+          {{ t("New project") }}
+          <span class="iz-badge iz-badge--muted cp-modal__step">{{ t("Step {step} of 2", { step: step }) }}</span>
         </h3>
         <button
           type="button"
           class="iz-close iz-close--sm"
           :disabled="submitting || assigning"
-          aria-label="Close"
+          :aria-label="t('Close')"
           @click="$emit('cancel')"
         >×</button>
       </header>
@@ -19,7 +19,7 @@
       <section v-if="step === 1" class="cp-modal__body iz-modal__body">
         <div class="cp-modal__field">
           <label class="cp-modal__label" for="cp-name">
-            Name <span class="cp-modal__required">*</span>
+            {{ t("Name") }} <span class="cp-modal__required">*</span>
           </label>
           <input
             id="cp-name"
@@ -37,14 +37,14 @@
 
         <div class="cp-modal__field">
           <label class="cp-modal__label" for="cp-number">
-            Number <span class="cp-modal__required">*</span>
+            {{ t("Number") }} <span class="cp-modal__required">*</span>
           </label>
           <input
             id="cp-number"
             type="text"
             class="iz-input cp-modal__input"
             v-model="form.number"
-            placeholder="e.g. P-2026-014"
+            :placeholder="t('e.g. P-2026-014')"
              :disabled="submitting || assigning"
             @blur="markBlurred('number')"
           />
@@ -56,7 +56,7 @@
 
         <div class="cp-modal__field">
           <label class="cp-modal__label" for="cp-type">
-            Type <span class="cp-modal__required">*</span>
+            {{ t("Type") }} <span class="cp-modal__required">*</span>
           </label>
           <select
             id="cp-type"
@@ -65,15 +65,15 @@
             :disabled="submitting || assigning"
           >
             <option
-              v-for="t in projectTypes"
-              :key="'pt-' + t.id"
-              :value="t.id"
-            >{{ t.label }}</option>
+              v-for="pt in projectTypes"
+              :key="'pt-' + pt.id"
+              :value="pt.id"
+            >{{ pt.label }}</option>
           </select>
         </div>
 
         <div class="cp-modal__field">
-          <label class="cp-modal__label" for="cp-desc">Description</label>
+          <label class="cp-modal__label" for="cp-desc">{{ t("Description") }}</label>
           <textarea
             id="cp-desc"
             class="iz-textarea cp-modal__input cp-modal__textarea"
@@ -84,10 +84,10 @@
         </div>
 
         <div class="cp-modal__group">
-          <span class="cp-modal__group-title">Project Location</span>
+          <span class="cp-modal__group-title">{{ t("Project Location") }}</span>
           <div class="cp-modal__row">
             <div class="cp-modal__field cp-modal__field--grow">
-              <label class="cp-modal__label" for="cp-street">Street</label>
+              <label class="cp-modal__label" for="cp-street">{{ t("Street") }}</label>
               <input
                 id="cp-street"
                 type="text"
@@ -99,7 +99,7 @@
           </div>
           <div class="cp-modal__row">
             <div class="cp-modal__field cp-modal__field--grow">
-              <label class="cp-modal__label" for="cp-city">City</label>
+              <label class="cp-modal__label" for="cp-city">{{ t("City") }}</label>
               <input
                 id="cp-city"
                 type="text"
@@ -109,7 +109,7 @@
               />
             </div>
             <div class="cp-modal__field">
-              <label class="cp-modal__label" for="cp-zip">ZIP</label>
+              <label class="cp-modal__label" for="cp-zip">{{ t("ZIP") }}</label>
               <input
                 id="cp-zip"
                 type="text"
@@ -125,9 +125,9 @@
       <!-- Step 2: Client + Members + Timing -->
       <section v-else class="cp-modal__body iz-modal__body">
         <div class="cp-modal__group">
-          <span class="cp-modal__group-title">Client</span>
+          <span class="cp-modal__group-title">{{ t("Client") }}</span>
           <div class="cp-modal__field">
-            <label class="cp-modal__label" for="cp-cname">Name</label>
+            <label class="cp-modal__label" for="cp-cname">{{ tc("Name", "client") }}</label>
             <input
               id="cp-cname"
               type="text"
@@ -137,7 +137,7 @@
             />
           </div>
           <div class="cp-modal__field">
-            <label class="cp-modal__label" for="cp-crole">Role</label>
+            <label class="cp-modal__label" for="cp-crole">{{ t("Role") }}</label>
             <input
               id="cp-crole"
               type="text"
@@ -147,7 +147,7 @@
             />
           </div>
           <div class="cp-modal__field">
-            <label class="cp-modal__label" for="cp-cemail">Email</label>
+            <label class="cp-modal__label" for="cp-cemail">{{ t("Email") }}</label>
             <input
               id="cp-cemail"
               type="email"
@@ -162,7 +162,7 @@
             >{{ fieldErrors.client_email }}</div>
           </div>
           <div class="cp-modal__field">
-            <label class="cp-modal__label" for="cp-cphone">Phone</label>
+            <label class="cp-modal__label" for="cp-cphone">{{ t("Phone") }}</label>
             <input
               id="cp-cphone"
               type="text"
@@ -172,7 +172,7 @@
             />
           </div>
           <div class="cp-modal__field">
-            <label class="cp-modal__label" for="cp-caddr">Address</label>
+            <label class="cp-modal__label" for="cp-caddr">{{ t("Address") }}</label>
             <textarea
               id="cp-caddr"
               class="iz-textarea cp-modal__input cp-modal__textarea"
@@ -184,7 +184,7 @@
         </div>
 
         <div class="cp-modal__group">
-          <span class="cp-modal__group-title">Members</span>
+          <span class="cp-modal__group-title">{{ t("Members") }}</span>
           <div v-if="form.members.length" class="cp-modal__chips">
             <span
               v-for="uid in form.members"
@@ -196,7 +196,7 @@
                 type="button"
                 class="cp-modal__chip-x"
                 :disabled="submitting"
-                :aria-label="'Remove ' + displayNameFor(uid)"
+                :aria-label="t('Remove {name}', { name: displayNameFor(uid) })"
                 @click="removeMember(uid)"
               >×</button>
             </span>
@@ -205,7 +205,7 @@
             type="search"
             class="iz-input cp-modal__input"
             v-model="memberSearch"
-            placeholder="Search org members…"
+            :placeholder="t('Search org members…')"
             :disabled="submitting"
           />
           <ul
@@ -220,14 +220,14 @@
               <div class="cp-modal__member-info">
                 <span class="cp-modal__member-name">{{ m.displayName || m.userId }}</span>
                 <span class="cp-modal__member-meta">
-                  <template v-if="m.email">{{ m.email }} · </template>uid: {{ m.userId }}
+                  <template v-if="m.email">{{ m.email }} · </template>{{ t("uid: {userId}", { userId: m.userId }) }}
                 </span>
               </div>
               <button
                 type="button"
                 class="cp-modal__member-add"
                 :disabled="submitting"
-                :aria-label="'Add ' + (m.displayName || m.userId)"
+                :aria-label="t('Add {name}', { name: m.displayName || m.userId })"
                 @click="addMember(m.userId)"
               >+</button>
             </li>
@@ -235,18 +235,18 @@
           <div
             v-else-if="memberSearch.trim().length >= 2"
             class="cp-modal__member-empty"
-          >No matches.</div>
+          >{{ t("No matches.") }}</div>
           <div
             v-else-if="form.members.length === 0 && !orgMembers.length"
             class="cp-modal__member-empty"
-          >No org members available.</div>
+          >{{ t("No org members available.") }}</div>
         </div>
 
         <div class="cp-modal__group">
-          <span class="cp-modal__group-title">Timing</span>
+          <span class="cp-modal__group-title">{{ t("Timing") }}</span>
           <div class="cp-modal__row">
             <div class="cp-modal__field cp-modal__field--grow">
-              <label class="cp-modal__label" for="cp-weeks">Required prep weeks</label>
+              <label class="cp-modal__label" for="cp-weeks">{{ t("Required prep weeks") }}</label>
               <input
                 id="cp-weeks"
                 type="number"
@@ -262,7 +262,7 @@
               >{{ fieldErrors.required_preparation_weeks }}</div>
             </div>
             <div class="cp-modal__field cp-modal__field--grow">
-              <label class="cp-modal__label" for="cp-execdate">Desired execution date</label>
+              <label class="cp-modal__label" for="cp-execdate">{{ t("Desired execution date") }}</label>
               <input
                 id="cp-execdate"
                 type="date"
@@ -275,21 +275,21 @@
         </div>
 
         <div class="cp-modal__group">
-          <span class="cp-modal__group-title">Responsible team</span>
+          <span class="cp-modal__group-title">{{ t("Responsible team") }}</span>
           <select
             id="cp-team"
             class="iz-select cp-modal__input"
             v-model="selectedTeamId"
             :disabled="submitting || teamsLoading || !teams.length"
           >
-            <option value="">No team selected</option>
+            <option value="">{{ t("No team selected") }}</option>
             <option
               v-for="team in teams"
               :key="'team-' + team.id"
               :value="String(team.id)"
             >{{ team.name }}</option>
           </select>
-          <small v-if="teamsLoading" class="cp-modal__team-hint">Teams laden...</small>
+          <small v-if="teamsLoading" class="cp-modal__team-hint">{{ t("Teams laden...") }}</small>
           <small v-else-if="teamsError" class="cp-modal__team-hint cp-modal__team-hint--error">{{ teamsError }}</small>
         </div>
       </section>
@@ -298,37 +298,37 @@
         <div v-if="error" class="cp-modal__error">{{ error }}</div>
         <div v-if="assignmentWarning" class="cp-modal__warning">
           {{ assignmentWarning }}
-          <button type="button" class="cp-modal__retry" :disabled="assigning" @click="retryAssignment">Opnieuw proberen</button>
+          <button type="button" class="cp-modal__retry" :disabled="assigning" @click="retryAssignment">{{ t("Opnieuw proberen") }}</button>
         </div>
-        <div v-if="slowHint" class="cp-modal__hint">This may take a few seconds…</div>
+        <div v-if="slowHint" class="cp-modal__hint">{{ t("This may take a few seconds…") }}</div>
         <div class="cp-modal__actions">
           <button
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
             :disabled="submitting || assigning"
             @click="$emit('cancel')"
-          >Cancel</button>
+          >{{ t("Cancel") }}</button>
           <button
             v-if="step === 2"
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
             :disabled="submitting || assigning"
             @click="step = 1"
-          >← Back</button>
+          >{{ t("← Back") }}</button>
           <button
             v-if="step === 1"
             type="button"
             class="cp-modal__btn cp-modal__btn--primary"
             :disabled="!step1Valid"
             @click="goToStep2"
-          >Next →</button>
+          >{{ t("Next →") }}</button>
           <button
             v-if="step === 2"
             type="button"
             class="cp-modal__btn cp-modal__btn--ghost"
             :disabled="submitting || assigning || createdProjectId"
             @click="submit"
-          >Skip &amp; Create</button>
+          >{{ t("Skip & Create") }}</button>
           <button
             v-if="step === 2"
             type="button"
@@ -341,7 +341,7 @@
               class="cp-modal__spinner"
               aria-hidden="true"
             ></span>
-            Create project
+            {{ t("Create project") }}
           </button>
         </div>
       </footer>
@@ -353,15 +353,19 @@
 import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 import { assignProjectTeam, listOrganizationTeams } from "../services/organizationApi";
+import { t } from "../lib/l10n.mjs";
 
 // Hard-coded; mirrors projectcreatoraio/src/macros/project-types.js
 // Update here if that catalog changes — we don't import across apps.
-const PROJECT_TYPES = [
-  { id: 0, label: "Combi" },
-  { id: 1, label: "Solo Elektra" },
-  { id: 2, label: "Solo Water" },
-  { id: 3, label: "Custom" },
-];
+// A function, so the labels are translated when the modal opens.
+function projectTypes() {
+  return [
+    { id: 0, label: t("Combi") },
+    { id: 1, label: t("Solo Elektra") },
+    { id: 2, label: t("Solo Water") },
+    { id: 3, label: t("Custom") },
+  ];
+}
 
 const PCAIO_HEADERS = {
   "OCS-APIRequest": "true",
@@ -438,30 +442,30 @@ export default {
   },
   computed: {
     projectTypes: function () {
-      return PROJECT_TYPES;
+      return projectTypes();
     },
     fieldErrors: function () {
       var errs = {};
       var f = this.form;
       var name = (f.name || "").trim();
       if (!name) {
-        errs.name = "Required";
+        errs.name = t("Required");
       } else if (name.length > 255) {
-        errs.name = "Max 255 characters";
+        errs.name = t("Max 255 characters");
       }
       var number = (f.number || "").trim();
       if (!number) {
-        errs.number = "Required";
+        errs.number = t("Required");
       } else if (number.length > 64) {
-        errs.number = "Max 64 characters";
+        errs.number = t("Max 64 characters");
       }
       var email = (f.client_email || "").trim();
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errs.client_email = "Invalid email address";
+        errs.client_email = t("Invalid email address");
       }
       var weeks = f.required_preparation_weeks;
       if (weeks !== null && weeks !== "" && (typeof weeks !== "number" || isNaN(weeks) || weeks < 0)) {
-        errs.required_preparation_weeks = "Must be 0 or more";
+        errs.required_preparation_weeks = t("Must be 0 or more");
       }
       return errs;
     },
@@ -516,7 +520,7 @@ export default {
       try {
         this.teams = await listOrganizationTeams(this.orgId);
       } catch (e) {
-        this.teamsError = "Teams konden niet worden geladen.";
+        this.teamsError = t("Teams konden niet worden geladen.");
       } finally {
         this.teamsLoading = false;
       }
@@ -600,7 +604,7 @@ export default {
         );
         const data = (res && res.data) || {};
         if (data.projectId == null) {
-          this.error = "Server didn't return a project id.";
+          this.error = t("Server didn't return a project id.");
           return;
         }
         this.createdProjectId = Number(data.projectId);
@@ -612,7 +616,7 @@ export default {
       } catch (e) {
         this.error = this.extractError(
           e,
-          "Couldn't create the project. Please try again."
+          t("Couldn't create the project. Please try again.")
         );
       } finally {
         if (this._slowHintTimer) clearTimeout(this._slowHintTimer);
@@ -633,7 +637,7 @@ export default {
         // The organization app adds the team's members to the project itself.
         await assignProjectTeam(this.orgId, this.createdProjectId, this.selectedTeamId);
       } catch (e) {
-        this.assignmentWarning = "Het project is aangemaakt, maar kon niet aan het team worden toegewezen.";
+        this.assignmentWarning = t("Het project is aangemaakt, maar kon niet aan het team worden toegewezen.");
       } finally {
         this.assigning = false;
       }
@@ -645,7 +649,7 @@ export default {
     },
     extractError: function (err, fallback) {
       if (!err) return fallback;
-      if (!err.response) return "Couldn't reach the server. Try again.";
+      if (!err.response) return t("Couldn't reach the server. Try again.");
       var msg =
         err.response.data &&
         (err.response.data.message ||
@@ -653,7 +657,7 @@ export default {
             err.response.data.ocs.meta &&
             err.response.data.ocs.meta.message));
       if (msg) return String(msg);
-      return fallback + " (HTTP " + err.response.status + ")";
+      return t("{message} (HTTP {status})", { message: fallback, status: err.response.status });
     },
   },
 };

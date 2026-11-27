@@ -21,7 +21,7 @@
             d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
           />
         </svg>
-        Public Dashboard Links
+        {{ t("Public Dashboard Links") }}
       </h3>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -42,8 +42,7 @@
 
     <div v-show="!collapsed" class="public-links-admin__body">
       <p class="public-links-admin__desc">
-        Share a read-only view of KPIs and project performance with anyone — no
-        login required.
+        {{ t("Share a read-only view of KPIs and project performance with anyone — no login required.") }}
       </p>
 
       <div class="public-links-admin__create-card">
@@ -51,19 +50,19 @@
           <div
             class="public-links-admin__field public-links-admin__field--label"
           >
-            <label for="pl-label">Label (optional)</label>
+            <label for="pl-label">{{ t("Label (optional)") }}</label>
             <input class="iz-input"
               id="pl-label"
               v-model="newLabel"
               type="text"
-              placeholder="e.g. Client review"
+              :placeholder="t('e.g. Client review')"
             />
           </div>
 
           <div
             class="public-links-admin__field public-links-admin__field--datetime"
           >
-            <label for="pl-expires">Expires at (optional)</label>
+            <label for="pl-expires">{{ t("Expires at (optional)") }}</label>
             <div
               class="public-links-admin__datetime-wrap"
               @click="openDatePicker"
@@ -98,7 +97,7 @@
               <button
                 v-if="newExpiresAt"
                 class="public-links-admin__datetime-clear"
-                title="Clear date"
+                :title="t('Clear date')"
                 @click.stop="newExpiresAt = ''"
               >
                 ✕
@@ -111,39 +110,39 @@
             :disabled="creating"
             @click="createLink"
           >
-            {{ creating ? "Creating…" : "+ Create Link" }}
+            {{ creating ? t("Creating…") : t("+ Create Link") }}
           </button>
         </div>
       </div>
 
       <!-- Status Filter -->
       <div v-if="!loading && links.length > 0" class="public-links-admin__filter-row">
-        <label class="public-links-admin__filter-label">Filter by status</label>
+        <label class="public-links-admin__filter-label">{{ t("Filter by status") }}</label>
         <select v-model="statusFilter" class="iz-select public-links-admin__filter-select">
-          <option value="">All</option>
-          <option value="active">Active</option>
-          <option value="revoked">Revoked</option>
-          <option value="expired">Expired</option>
+          <option value="">{{ t("All") }}</option>
+          <option value="active">{{ t("Active") }}</option>
+          <option value="revoked">{{ t("Revoked") }}</option>
+          <option value="expired">{{ t("Expired") }}</option>
         </select>
       </div>
 
-      <div v-if="loading" class="iz-empty public-links-admin__state">Loading links…</div>
+      <div v-if="loading" class="iz-empty public-links-admin__state">{{ t("Loading links…") }}</div>
       <div v-else-if="error" class="public-links-admin__error">{{ error }}</div>
       <div v-else-if="links.length === 0" class="iz-empty public-links-admin__state">
-        No public links yet. Create one above.
+        {{ t("No public links yet. Create one above.") }}
       </div>
       <div v-else-if="filteredLinks.length === 0" class="iz-empty public-links-admin__state">
-        No links match the selected filter.
+        {{ t("No links match the selected filter.") }}
       </div>
       <table v-else class="public-links-admin__table">
         <thead>
           <tr>
-            <th>Label</th>
-            <th>URL</th>
-            <th>Status</th>
-            <th>Expires</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th>{{ t("Label") }}</th>
+            <th>{{ t("URL") }}</th>
+            <th>{{ t("Status") }}</th>
+            <th>{{ t("Expires") }}</th>
+            <th>{{ t("Created") }}</th>
+            <th>{{ t("Actions") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -164,7 +163,7 @@
                     copiedLinkId === link.id,
                 }"
                 :title="
-                  copiedLinkId === link.id ? 'Copied!' : 'Click to copy URL'
+                  copiedLinkId === link.id ? t('Copied!') : t('Click to copy URL')
                 "
                 @click="copyLink(link.id, link.token)"
               >
@@ -174,7 +173,7 @@
                 <span
                   v-if="copiedLinkId === link.id"
                   class="public-links-admin__url-copied-badge"
-                  >Copied!</span
+                  >{{ t("Copied!") }}</span
                 >
               </code>
             </td>
@@ -182,21 +181,21 @@
               <span
                 v-if="!link.enabled"
                 class="public-links-admin__badge public-links-admin__badge--revoked"
-                >Revoked</span
+                >{{ t("Revoked") }}</span
               >
               <span
                 v-else-if="link.expired"
                 class="public-links-admin__badge public-links-admin__badge--expired"
-                >Expired</span
+                >{{ t("Expired") }}</span
               >
               <span
                 v-else
                 class="public-links-admin__badge public-links-admin__badge--active"
-                >Active</span
+                >{{ t("Active") }}</span
               >
             </td>
             <td>
-              {{ link.expires_at ? formatDateTime(link.expires_at) : "Never" }}
+              {{ link.expires_at ? formatDateTime(link.expires_at) : t("Never") }}
             </td>
             <td>{{ formatDateTime(link.created_at) }}</td>
             <td class="public-links-admin__actions-cell">
@@ -206,14 +205,14 @@
                 :disabled="revoking === link.id"
                 @click="revokeLink(link.id)"
               >
-                {{ revoking === link.id ? "Revoking…" : "Revoke" }}
+                {{ revoking === link.id ? t("Revoking…") : t("Revoke") }}
               </button>
               <button
                 class="public-links-admin__btn public-links-admin__btn--delete"
                 :disabled="deleting === link.id"
                 @click="deleteLink(link.id)"
               >
-                {{ deleting === link.id ? "Deleting…" : "Delete" }}
+                {{ deleting === link.id ? t("Deleting…") : t("Delete") }}
               </button>
             </td>
           </tr>
@@ -229,7 +228,7 @@
           <button
             class="iz-btn"
             :disabled="page === 1"
-            aria-label="Previous page"
+            :aria-label="t('Previous page')"
             @click="goToPage(page - 1)"
           >
             ‹
@@ -255,7 +254,7 @@
           <button
             class="iz-btn"
             :disabled="page === pageCount"
-            aria-label="Next page"
+            :aria-label="t('Next page')"
             @click="goToPage(page + 1)"
           >
             ›
@@ -285,6 +284,7 @@ import axios from "@nextcloud/axios";
 import { generateUrl } from "@nextcloud/router";
 
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { t, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "PublicLinksAdmin",
@@ -331,7 +331,7 @@ export default {
     rangeLabel() {
       const total = this.filteredLinks.length;
       const start = (this.page - 1) * this.pageSize + 1;
-      return `${start}–${Math.min(start + this.pageSize - 1, total)} of ${total}`;
+      return t("{start}–{end} of {total}", { start, end: Math.min(start + this.pageSize - 1, total), total });
     },
     /**
      * Page numbers to render, with "…" where the run is elided.
@@ -385,7 +385,7 @@ export default {
       this.ask({
         title,
         message,
-        confirmLabel: "OK",
+        confirmLabel: t("OK"),
         alertOnly: true,
         action: null,
       });
@@ -410,7 +410,7 @@ export default {
         // Stay open and say why, rather than closing and popping a second
         // dialog the user has to dismiss separately.
         this.dialogError =
-          e.response?.data?.error || e.message || "Something went wrong";
+          e.response?.data?.error || e.message || t("Something went wrong");
         this.dialogBusy = false;
       }
     },
@@ -427,7 +427,7 @@ export default {
       } catch (e) {
         console.error("Failed to load public links", e);
         this.error =
-          e.response?.data?.error || e.message || "Failed to load links";
+          e.response?.data?.error || e.message || t("Failed to load links");
       } finally {
         this.loading = false;
       }
@@ -447,8 +447,8 @@ export default {
       } catch (e) {
         console.error("Failed to create public link", e);
         this.notify(
-          "Could not create link",
-          e.response?.data?.error || "Failed to create link",
+          t("Could not create link"),
+          e.response?.data?.error || t("Failed to create link"),
         );
       } finally {
         this.creating = false;
@@ -457,11 +457,10 @@ export default {
 
     revokeLink(id) {
       this.ask({
-        title: "Revoke this link?",
-        message:
-          "Anyone holding the URL will stop being able to open the dashboard immediately. The link stays in this list and can be deleted separately.",
-        confirmLabel: "Revoke link",
-        busyLabel: "Revoking…",
+        title: t("Revoke this link?"),
+        message: t("Anyone holding the URL will stop being able to open the dashboard immediately. The link stays in this list and can be deleted separately."),
+        confirmLabel: t("Revoke link"),
+        busyLabel: t("Revoking…"),
         danger: true,
         action: async () => {
           this.revoking = id;
@@ -478,11 +477,10 @@ export default {
 
     deleteLink(id) {
       this.ask({
-        title: "Delete this link?",
-        message:
-          "The link is removed from this list and its URL can never be reissued. This cannot be undone.",
-        confirmLabel: "Delete link",
-        busyLabel: "Deleting…",
+        title: t("Delete this link?"),
+        message: t("The link is removed from this list and its URL can never be reissued. This cannot be undone."),
+        confirmLabel: t("Delete link"),
+        busyLabel: t("Deleting…"),
         danger: true,
         action: async () => {
           this.deleting = id;
@@ -543,7 +541,7 @@ export default {
     formatDateTime(dateStr) {
       if (!dateStr) return "";
       const d = new Date(dateStr);
-      return d.toLocaleString(undefined, {
+      return d.toLocaleString(locale(), {
         year: "numeric",
         month: "short",
         day: "numeric",

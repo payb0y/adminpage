@@ -18,6 +18,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Http\Client\IClientService;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
@@ -38,6 +39,7 @@ class DashboardController extends Controller {
     private StorageMonitoringService $storageMonitoringService;
     private IUserSession $userSession;
     private LoggerInterface $logger;
+    private IL10N $l;
 
     public function __construct(
         string $appName,
@@ -54,7 +56,8 @@ class DashboardController extends Controller {
         SignatureService $signatureService,
         StorageMonitoringService $storageMonitoringService,
         IUserSession $userSession,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        IL10N $l
     ) {
         parent::__construct($appName, $request);
         $this->clientService = $clientService;
@@ -70,6 +73,7 @@ class DashboardController extends Controller {
         $this->storageMonitoringService = $storageMonitoringService;
         $this->userSession = $userSession;
         $this->logger = $logger;
+        $this->l = $l;
     }
 
     /**
@@ -91,7 +95,7 @@ class DashboardController extends Controller {
             return new JSONResponse(
                 [
                     'error' => 'internal',
-                    'message' => 'Something went wrong loading this data. Please try again in a moment.',
+                    'message' => $this->l->t('Something went wrong loading this data. Please try again in a moment.'),
                 ],
                 Http::STATUS_INTERNAL_SERVER_ERROR,
             );
@@ -179,7 +183,7 @@ class DashboardController extends Controller {
             if ($orgId === null) {
                 return new JSONResponse([
                     'error' => 'forbidden',
-                    'message' => 'Organization administrator access is required.',
+                    'message' => $this->l->t('Organization administrator access is required.'),
                 ], Http::STATUS_FORBIDDEN);
             }
 
@@ -219,7 +223,7 @@ class DashboardController extends Controller {
             ]);
             return new JSONResponse([
                 'error' => 'internal',
-                'message' => 'Could not load upcoming tasks.',
+                'message' => $this->l->t('Could not load upcoming tasks.'),
             ], 500);
         }
     }
@@ -318,7 +322,7 @@ class DashboardController extends Controller {
         $orgId = $this->orgOverviewService->resolveOrgId($uid);
 
         if ($orgId === null) {
-            return new JSONResponse(['error' => 'No organization found'], 404);
+            return new JSONResponse(['error' => $this->l->t('No organization found')], 404);
         }
 
         $links = $this->publicTokenService->listTokens($orgId);
@@ -334,7 +338,7 @@ class DashboardController extends Controller {
         $orgId = $this->orgOverviewService->resolveOrgId($uid);
 
         if ($orgId === null) {
-            return new JSONResponse(['error' => 'No organization found'], 404);
+            return new JSONResponse(['error' => $this->l->t('No organization found')], 404);
         }
 
         $label = $this->request->getParam('label', null);
@@ -345,7 +349,7 @@ class DashboardController extends Controller {
             try {
                 $expiresAt = new DateTime($expiresAtStr);
             } catch (\Exception $e) {
-                return new JSONResponse(['error' => 'Invalid date format'], 400);
+                return new JSONResponse(['error' => $this->l->t('Invalid date format')], 400);
             }
         }
 
@@ -360,10 +364,10 @@ class DashboardController extends Controller {
     public function revokePublicLink(int $id): JSONResponse {
         $orgId = $this->callerOrgId();
         if ($orgId === null) {
-            return new JSONResponse(['error' => 'No organization found'], 404);
+            return new JSONResponse(['error' => $this->l->t('No organization found')], 404);
         }
         if (!$this->publicTokenService->revokeToken($id, $orgId)) {
-            return new JSONResponse(['error' => 'Link not found'], 404);
+            return new JSONResponse(['error' => $this->l->t('Link not found')], 404);
         }
         return new JSONResponse(['status' => 'revoked']);
     }
@@ -375,10 +379,10 @@ class DashboardController extends Controller {
     public function deletePublicLink(int $id): JSONResponse {
         $orgId = $this->callerOrgId();
         if ($orgId === null) {
-            return new JSONResponse(['error' => 'No organization found'], 404);
+            return new JSONResponse(['error' => $this->l->t('No organization found')], 404);
         }
         if (!$this->publicTokenService->deleteToken($id, $orgId)) {
-            return new JSONResponse(['error' => 'Link not found'], 404);
+            return new JSONResponse(['error' => $this->l->t('Link not found')], 404);
         }
         return new JSONResponse(['status' => 'deleted']);
     }
@@ -433,7 +437,7 @@ class DashboardController extends Controller {
             ]);
             return new JSONResponse([
                 'error' => 'internal',
-                'message' => 'Could not load backup jobs.',
+                'message' => $this->l->t('Could not load backup jobs.'),
             ], 500);
         }
     }

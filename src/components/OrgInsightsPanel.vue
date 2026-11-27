@@ -21,7 +21,7 @@
             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
             <line x1="12" y1="22.08" x2="12" y2="12" />
           </svg>
-          Organization Insights
+          {{ t("Organization Insights") }}
         </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +42,7 @@
     </h3>
 
     <div :id="'insights-body-' + _uid" v-show="!collapsed" class="insights-panel__body">
-      <nav class="insights-panel__nav" aria-label="Organization insights sections">
+      <nav class="insights-panel__nav" :aria-label="t('Organization insights sections')">
         <button
           v-for="item in navigationItems"
           :key="item.id"
@@ -55,12 +55,12 @@
         >
           <span class="insights-panel__nav-label">{{ item.label }}</span>
           <span v-if="item.summary" class="insights-panel__nav-summary">{{ item.summary }}</span>
-          <span v-if="item.id === 'capacity' && storageAttentionCount" class="iz-pill iz-pill--warning">{{ storageAttentionCount }} need attention</span>
+          <span v-if="item.id === 'capacity' && storageAttentionCount" class="iz-pill iz-pill--warning">{{ t("{count} need attention", { count: storageAttentionCount }) }}</span>
         </button>
       </nav>
       <div class="insights-panel__content">
         <!-- ── Sub-section: Organization ── -->
-        <div class="insights-panel__section" v-show="activeSection === 'organization'" :id="'insights-section-' + _uid + '-organization'" role="region" aria-label="Organization">
+        <div class="insights-panel__section" v-show="activeSection === 'organization'" :id="'insights-section-' + _uid + '-organization'" role="region" :aria-label="t('Organization')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -76,14 +76,14 @@
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
-            Organization
+            {{ t("Organization") }}
           </div>
           <OrganizationPanel :embedded="true" :profile="profile" />
         </div>
 
 
         <!-- ── Sub-section: Organization Members ── -->
-        <div class="insights-panel__section" v-show="activeSection === 'members'" :id="'insights-section-' + _uid + '-members'" role="region" aria-label="Organization Members">
+        <div class="insights-panel__section" v-show="activeSection === 'members'" :id="'insights-section-' + _uid + '-members'" role="region" :aria-label="t('Organization Members')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            Organization Members
+            {{ t("Organization Members") }}
             <span class="insights-panel__badge">{{ members.length }}</span>
           </div>
           <MembersPanel
@@ -123,7 +123,7 @@
           class="insights-panel__section"
           :id="'insights-section-' + _uid + '-teams'"
           role="region"
-          aria-label="Teams"
+          :aria-label="t('Teams')"
         >
           <div class="insights-panel__section-title">
             <svg
@@ -142,7 +142,7 @@
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            Teams
+            {{ t("Teams") }}
             <span v-if="teamsSeen" class="insights-panel__badge">{{ teamSummary.teamCount }}</span>
           </div>
           <TeamsPanel
@@ -162,7 +162,7 @@
           class="insights-panel__section"
           :id="'insights-section-' + _uid + '-externals'"
           role="region"
-          aria-label="External collaborators"
+          :aria-label="t('External collaborators')"
         >
           <div class="insights-panel__section-title">
             <svg
@@ -181,7 +181,7 @@
               <line x1="20" y1="8" x2="20" y2="14" />
               <line x1="23" y1="11" x2="17" y2="11" />
             </svg>
-            External collaborators
+            {{ t("External collaborators") }}
             <span v-if="externalCount !== null" class="insights-panel__badge">{{ externalCount }}</span>
           </div>
           <!-- Load on first selection, like Teams. -->
@@ -194,7 +194,7 @@
 
 
         <!-- ── Sub-section: Subscription & Plan ── -->
-        <div class="insights-panel__section" v-show="activeSection === 'subscription'" :id="'insights-section-' + _uid + '-subscription'" role="region" aria-label="Subscription &amp; Plan">
+        <div class="insights-panel__section" v-show="activeSection === 'subscription'" :id="'insights-section-' + _uid + '-subscription'" role="region" :aria-label="t('Subscription & Plan')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +210,7 @@
               <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
               <line x1="1" y1="10" x2="23" y2="10" />
             </svg>
-            Subscription &amp; Plan
+            {{ t("Subscription & Plan") }}
           </div>
           <SubscriptionPanel
             :embedded="true"
@@ -221,7 +221,7 @@
 
 
         <!-- ── Sub-section: Backups ── -->
-        <div class="insights-panel__section" v-show="activeSection === 'backups'" :id="'insights-section-' + _uid + '-backups'" role="region" aria-label="Backups">
+        <div class="insights-panel__section" v-show="activeSection === 'backups'" :id="'insights-section-' + _uid + '-backups'" role="region" :aria-label="t('Backups')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -238,7 +238,7 @@
               <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
               <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
             </svg>
-            Backups
+            {{ t("Backups") }}
             <span v-if="backupJobs.length" class="insights-panel__badge">{{ backupJobs.length }}</span>
           </div>
           <BackupsPanel :embedded="true" :jobs="backupJobs" />
@@ -246,7 +246,7 @@
 
 
         <!-- Capacity retains its status and refresh controls in the detail pane. -->
-        <section class="insights-panel__section" v-show="activeSection === 'capacity'" :id="'insights-section-' + _uid + '-capacity'" role="region" aria-label="Capacity">
+        <section class="insights-panel__section" v-show="activeSection === 'capacity'" :id="'insights-section-' + _uid + '-capacity'" role="region" :aria-label="t('Capacity')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -264,17 +264,17 @@
               <line x1="6" y1="16" x2="6.01" y2="16" />
               <line x1="10" y1="16" x2="10.01" y2="16" />
             </svg>
-            Capacity
+            {{ t("Capacity") }}
             <span v-if="storage" :class="['iz-pill', storagePillClass]">{{ storageStatus }}</span>
             <span class="insights-panel__section-actions">
-              <span v-if="storage" class="insights-panel__section-meta">Updated {{ storageUpdatedAt }}</span>
+              <span v-if="storage" class="insights-panel__section-meta">{{ t("Updated {time}", { time: storageUpdatedAt }) }}</span>
               <button
                 class="iz-btn iz-btn--ghost iz-btn--sm"
                 type="button"
                 :disabled="storageLoading"
                 @click="$emit('retry-storage')"
               >
-                {{ storageLoading ? "Refreshing..." : "Refresh" }}
+                {{ storageLoading ? t("Refreshing...") : t("Refresh") }}
               </button>
             </span>
           </div>
@@ -293,7 +293,7 @@
              storage bytes, the same question at a different grain. Rendered as
              figures rather than the donut the KPI card used — four counts that
              do not sum to a meaningful whole are not a chart. -->
-        <div v-if="resourceCells.length" class="insights-panel__section" v-show="activeSection === 'resources'" :id="'insights-section-' + _uid + '-resources'" role="region" aria-label="Resources">
+        <div v-if="resourceCells.length" class="insights-panel__section" v-show="activeSection === 'resources'" :id="'insights-section-' + _uid + '-resources'" role="region" :aria-label="t('Resources')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -310,12 +310,12 @@
               <line x1="8" y1="21" x2="16" y2="21" />
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
-            Resources
+            {{ t("Resources") }}
           </div>
           <div class="insights-panel__resources">
             <div
               v-for="cell in resourceCells"
-              :key="'res-' + cell.label"
+              :key="'res-' + cell.key"
               class="insights-panel__resource"
             >
               <span class="insights-panel__resource-value">{{ cell.value }}</span>
@@ -334,7 +334,7 @@
              What the Organization settings modal used to hold. The two blocks
              are one section because they answer the same question: what does a
              new project start with. -->
-        <div v-if="showSettings" class="insights-panel__section" v-show="activeSection === 'settings'" :id="'insights-section-' + _uid + '-settings'" role="region" aria-label="Project defaults">
+        <div v-if="showSettings" class="insights-panel__section" v-show="activeSection === 'settings'" :id="'insights-section-' + _uid + '-settings'" role="region" :aria-label="t('Project defaults')">
           <div class="insights-panel__section-title">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -357,20 +357,20 @@
               <line x1="9" y1="8" x2="15" y2="8" />
               <line x1="17" y1="16" x2="23" y2="16" />
             </svg>
-            Project defaults
+            {{ t("Project defaults") }}
             <span class="insights-panel__section-actions">
-              <span class="insights-panel__section-meta">Applies to every new project</span>
+              <span class="insights-panel__section-meta">{{ t("Applies to every new project") }}</span>
             </span>
           </div>
 
           <!-- Load on first selection, then preserve form state between sections. -->
           <template v-if="settingsSeen">
             <div class="insights-panel__settings-block">
-              <h4 class="insights-panel__settings-sub">Default project PDF</h4>
+              <h4 class="insights-panel__settings-sub">{{ t("Default project PDF") }}</h4>
               <OrganizationPdfSettings :organization-id="orgId" />
             </div>
             <div class="insights-panel__settings-block">
-              <h4 class="insights-panel__settings-sub">OCR document types</h4>
+              <h4 class="insights-panel__settings-sub">{{ t("OCR document types") }}</h4>
               <OrganizationOcrSettings :organization-id="orgId" />
             </div>
           </template>
@@ -390,6 +390,7 @@ import BackupsPanel from "./BackupsPanel.vue";
 import StorageMonitoringPanel from "./StorageMonitoringPanel.vue";
 import OrganizationPdfSettings from "./OrganizationPdfSettings.vue";
 import OrganizationOcrSettings from "./OrganizationOcrSettings.vue";
+import { t, n, locale } from "../lib/l10n.mjs";
 
 export default {
   name: "OrgInsightsPanel",
@@ -522,39 +523,38 @@ export default {
   computed: {
     navigationItems: function () {
       var items = [
-        { id: "organization", label: "Organization", summary: this.profile.name },
-        { id: "members", label: "Organization Members", summary: this.members.length + " members" },
+        { id: "organization", label: t("Organization"), summary: this.profile.name },
+        { id: "members", label: t("Organization Members"), summary: n("%n member", "%n members", this.members.length) },
       ];
       if (this.showTeams) {
-        items.push({ id: "teams", label: "Teams", summary: this.teamNavigationSummary });
+        items.push({ id: "teams", label: t("Teams"), summary: this.teamNavigationSummary });
       }
       if (this.showExternals) {
-        items.push({ id: "externals", label: "External collaborators", summary: this.externalNavigationSummary });
+        items.push({ id: "externals", label: t("External collaborators"), summary: this.externalNavigationSummary });
       }
       items.push(
-        { id: "subscription", label: "Subscription & Plan", summary: [this.subscription.planName, this.subscription.status].filter(Boolean).join(" · ") },
-        { id: "backups", label: "Backups", summary: this.backupJobs.length ? this.backupJobs.length + " jobs" : "No backup jobs" },
-        { id: "capacity", label: "Capacity", summary: this.storageNavigationSummary },
+        { id: "subscription", label: t("Subscription & Plan"), summary: [this.subscription.planName, this.subscriptionStatusLabel].filter(Boolean).join(" · ") },
+        { id: "backups", label: t("Backups"), summary: this.backupJobs.length ? n("%n job", "%n jobs", this.backupJobs.length) : t("No backup jobs") },
+        { id: "capacity", label: t("Capacity"), summary: this.storageNavigationSummary },
       );
-      if (this.resourceCells.length) items.push({ id: "resources", label: "Resources", summary: "Files, notes and collaboration" });
-      if (this.showSettings) items.push({ id: "settings", label: "Project defaults", summary: "PDF template and OCR types" });
+      if (this.resourceCells.length) items.push({ id: "resources", label: t("Resources"), summary: t("Files, notes and collaboration") });
+      if (this.showSettings) items.push({ id: "settings", label: t("Project defaults"), summary: t("PDF template and OCR types") });
       return items;
     },
     showTeams: function () {
       return this.canManage && Boolean(this.orgId);
     },
     teamNavigationSummary: function () {
-      if (!this.teamsSeen) return "Capacity and project ownership";
-      var teamLabel = this.teamSummary.teamCount === 1 ? " team" : " teams";
-      var summary = this.teamSummary.teamCount + teamLabel;
+      if (!this.teamsSeen) return t("Capacity and project ownership");
+      var summary = n("%n team", "%n teams", this.teamSummary.teamCount);
       if (this.teamSummary.unassignedCount) {
-        summary += " · " + this.teamSummary.unassignedCount + " unassigned";
+        summary += " · " + t("{count} unassigned", { count: this.teamSummary.unassignedCount });
       }
       return summary;
     },
     storageNavigationSummary: function () {
-      if (this.storageLoading) return "Refreshing…";
-      if (this.storageError) return "Unable to refresh storage";
+      if (this.storageLoading) return t("Refreshing…");
+      if (this.storageError) return t("Unable to refresh storage");
       return this.storageStatus;
     },
     storageAttentionCount: function () {
@@ -568,39 +568,68 @@ export default {
       return this.canManage && Boolean(this.orgId);
     },
     externalNavigationSummary: function () {
-      if (this.externalCount === null) return "Clients and subcontractors on projects";
-      return this.externalCount + (this.externalCount === 1 ? " external" : " externals");
+      if (this.externalCount === null) return t("Clients and subcontractors on projects");
+      return n("%n external", "%n externals", this.externalCount);
     },
-    /* KpiService ships these as {value, label} strings, with the file and note
-       counts pre-formatted as "23 pub / 161 priv". Split that into a figure
-       and a sub-line so the four cells share one baseline. */
+    /* KpiService ships each metric with a stable key; files and notes also
+       carry their public and private counts as numbers. The label is worded
+       here by key (the backend's English label is never shown), and split
+       metrics get a figure plus a sub-line so the four cells share one
+       baseline. */
     resourceCells: function () {
+      /* Singular for a count of one: "1 Voortgangsmonitor (Scrumban)". */
+      var labels = {
+        whiteboards: function (count) { return n("Whiteboard", "Whiteboards", count); },
+        scrumban_boards: function (count) { return n("Scrumban Board", "Scrumban Boards", count); },
+        files: function (count) { return n("File", "Files", count); },
+        notes: function (count) { return n("Note", "Notes", count); },
+      };
       var metrics = (this.resources && this.resources.metrics) || [];
       var cells = [];
       for (var i = 0; i < metrics.length; i++) {
-        var raw = String(metrics[i].value === undefined ? "" : metrics[i].value);
-        var split = raw.match(/^(\d+)\s*pub\s*\/\s*(\d+)\s*priv$/i);
-        if (split) {
+        var m = metrics[i];
+        var key = m.key || String(i);
+        var count = m.public !== undefined && m.private !== undefined
+          ? (Number(m.public) || 0) + (Number(m.private) || 0)
+          : Number(m.value) || 0;
+        var label = labels[m.key] ? labels[m.key](count) : m.label;
+        if (m.public !== undefined && m.private !== undefined) {
+          var pub = Number(m.public) || 0;
+          var priv = Number(m.private) || 0;
           cells.push({
-            label: metrics[i].label,
-            value: String(Number(split[1]) + Number(split[2])),
-            sub: split[1] + " public · " + split[2] + " private",
+            key: key,
+            label: label,
+            value: String(pub + priv),
+            sub: t("{public} public · {private} private", { public: pub, private: priv }),
           });
         } else {
-          cells.push({ label: metrics[i].label, value: raw, sub: "" });
+          cells.push({ key: key, label: label, value: String(m.value === undefined ? "" : m.value), sub: "" });
         }
       }
       return cells;
+    },
+    /* The subscription status arrives as a code (active, paused, ...). */
+    subscriptionStatusLabel: function () {
+      var status = this.subscription.status;
+      if (!status) return "";
+      var labels = {
+        active: t("Active"),
+        paused: t("Paused"),
+        cancelled: t("Cancelled"),
+        expired: t("Expired"),
+        none: t("None"),
+      };
+      return labels[status] || status;
     },
     storageSummary: function () {
       return (this.storage && this.storage.summary) || {};
     },
     storageStatus: function () {
       var percentage = this.storageSummary.percentage;
-      if (percentage === null || percentage === undefined) return "Capacity unavailable";
-      if (percentage >= 100) return "Action needed";
-      if (percentage >= 80) return "Watch closely";
-      return "Healthy";
+      if (percentage === null || percentage === undefined) return t("Capacity unavailable");
+      if (percentage >= 100) return t("Action needed");
+      if (percentage >= 80) return t("Watch closely");
+      return t("Healthy");
     },
     storagePillClass: function () {
       var percentage = this.storageSummary.percentage;
@@ -610,8 +639,8 @@ export default {
       return "iz-pill--success";
     },
     storageUpdatedAt: function () {
-      if (!this.storageSummary.calculatedAt) return "recently";
-      return new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(
+      if (!this.storageSummary.calculatedAt) return t("recently");
+      return new Intl.DateTimeFormat(locale(), { hour: "2-digit", minute: "2-digit" }).format(
         new Date(this.storageSummary.calculatedAt)
       );
     },

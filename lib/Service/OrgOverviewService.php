@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\AdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 
 /**
  * Returns all data scoped to the organization the logged-in admin belongs to.
@@ -16,9 +17,11 @@ class OrgOverviewService {
     use SqlDialectTrait;
 
     private IDBConnection $db;
+    private IL10N $l;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -80,7 +83,7 @@ class OrgOverviewService {
         $row = $stmt->fetch();
 
         if (!$row) {
-            return ['id' => $orgId, 'name' => 'Unknown', 'contactFirstName' => '', 'contactLastName' => '', 'contactEmail' => '—', 'contactPhone' => '', 'adminUid' => '—'];
+            return ['id' => $orgId, 'name' => $this->l->t('Unknown'), 'contactFirstName' => '', 'contactLastName' => '', 'contactEmail' => '—', 'contactPhone' => '', 'adminUid' => '—'];
         }
 
         return [
@@ -127,7 +130,7 @@ class OrgOverviewService {
         if (!$row) {
             return [
                 'status'          => 'none',
-                'planName'        => 'No plan',
+                'planName'        => $this->l->t('No plan'),
                 'price'           => 0.0,
                 'currency'        => 'EUR',
                 'maxProjects'     => 0,

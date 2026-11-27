@@ -1,12 +1,12 @@
 <template>
   <div class="org-pdf">
     <p class="org-pdf__intro">
-      Automatically added to the shared folder of every new project in your organization.
+      {{ t("Automatically added to the shared folder of every new project in your organization.") }}
     </p>
 
     <p v-if="error" class="org-pdf__error" role="alert">{{ error }}</p>
 
-    <div v-if="loading" class="iz-empty org-pdf__loading">Loading template settings…</div>
+    <div v-if="loading" class="iz-empty org-pdf__loading">{{ t("Loading template settings…") }}</div>
 
     <template v-else>
       <div class="org-pdf__status">
@@ -17,9 +17,9 @@
           </svg>
         </span>
         <span class="org-pdf__status-copy">
-          <span class="iz-label">Current template</span>
-          <strong>{{ hasCustomPdf ? currentFileName || "Custom organization PDF" : "System default PDF" }}</strong>
-          <small>{{ hasCustomPdf ? "Custom template active" : "Fallback used for new projects" }}</small>
+          <span class="iz-label">{{ t("Current template") }}</span>
+          <strong>{{ hasCustomPdf ? currentFileName || t("Custom organization PDF") : t("System default PDF") }}</strong>
+          <small>{{ hasCustomPdf ? t("Custom template active") : t("Fallback used for new projects") }}</small>
         </span>
         <button
           v-if="hasCustomPdf"
@@ -27,7 +27,7 @@
           class="iz-btn iz-btn--danger iz-btn--sm org-pdf__reset"
           :disabled="busy"
           @click="showResetConfirmation = true"
-        >Reset to default</button>
+        >{{ t("Reset to default") }}</button>
       </div>
 
       <div
@@ -59,8 +59,8 @@
           <small>{{ formatFileSize(selectedFile.size) }}</small>
         </template>
         <template v-else>
-          <strong>Choose or drop a PDF here</strong>
-          <small>Only PDF documents are accepted</small>
+          <strong>{{ t("Choose or drop a PDF here") }}</strong>
+          <small>{{ t("Only PDF documents are accepted") }}</small>
         </template>
       </div>
 
@@ -68,15 +68,15 @@
            inline section has no modal footer to park a permanent Save in. -->
       <div v-if="selectedFile" class="org-pdf__pending">
         <label class="org-pdf__field">
-          <span class="iz-label">Filename in new projects</span>
+          <span class="iz-label">{{ t("Filename in new projects") }}</span>
           <input
             v-model="fileName"
             class="iz-input"
             type="text"
-            placeholder="e.g. Welcome guide.pdf"
+            :placeholder="t('e.g. Welcome guide.pdf')"
             :disabled="busy"
           />
-          <small>The .pdf extension is added if omitted.</small>
+          <small>{{ t("The .pdf extension is added if omitted.") }}</small>
         </label>
         <div class="org-pdf__actions">
           <button
@@ -84,23 +84,23 @@
             class="iz-btn iz-btn--sm"
             :disabled="busy"
             @click="clearSelection"
-          >Discard</button>
+          >{{ t("Discard") }}</button>
           <button
             type="button"
             class="iz-btn iz-btn--primary iz-btn--sm"
             :disabled="busy"
             @click="save"
-          >{{ uploading ? "Uploading…" : "Save template" }}</button>
+          >{{ uploading ? t("Uploading…") : t("Save template") }}</button>
         </div>
       </div>
     </template>
 
     <ConfirmDialog
       v-if="showResetConfirmation"
-      title="Reset project PDF?"
-      message="The custom template will be removed and new projects will use the system default PDF."
-      confirm-label="Reset to default"
-      busy-label="Resetting…"
+      :title="t('Reset project PDF?')"
+      :message="t('The custom template will be removed and new projects will use the system default PDF.')"
+      :confirm-label="t('Reset to default')"
+      :busy-label="t('Resetting…')"
       :danger="true"
       :busy="resetting"
       :error="resetError"
@@ -112,6 +112,7 @@
 
 <script>
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { t, formatNumber } from "../lib/l10n.mjs";
 import {
   deleteOrganizationPdf,
   getOrganizationPdfInfo,
@@ -162,7 +163,7 @@ export default {
         this.currentFileName = (info && info.file_name) || "";
       } catch (error) {
         console.error("Failed to load organization PDF settings", error);
-        this.error = this.errorMessage(error, "Could not load the PDF template settings.");
+        this.error = this.errorMessage(error, t("Could not load the PDF template settings."));
       } finally {
         this.loading = false;
       }
@@ -179,7 +180,7 @@ export default {
     setFile(file) {
       if (!file) return;
       if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-        this.error = "Please select a valid PDF document (.pdf).";
+        this.error = t("Please select a valid PDF document (.pdf).");
         this.selectedFile = null;
         return;
       }
@@ -201,7 +202,7 @@ export default {
     async save() {
       const fileName = this.normalizedFileName();
       if (!fileName) {
-        this.error = "Enter a filename for the PDF template.";
+        this.error = t("Enter a filename for the PDF template.");
         return;
       }
       this.uploading = true;
@@ -212,7 +213,7 @@ export default {
         await this.load();
       } catch (error) {
         console.error("Failed to upload organization PDF", error);
-        this.error = this.errorMessage(error, "Could not upload the PDF template.");
+        this.error = this.errorMessage(error, t("Could not upload the PDF template."));
       } finally {
         this.uploading = false;
       }
@@ -227,7 +228,7 @@ export default {
         this.showResetConfirmation = false;
       } catch (error) {
         console.error("Failed to reset organization PDF", error);
-        this.resetError = this.errorMessage(error, "Could not reset the PDF template.");
+        this.resetError = this.errorMessage(error, t("Could not reset the PDF template."));
       } finally {
         this.resetting = false;
       }
@@ -240,9 +241,9 @@ export default {
     },
     formatFileSize(bytes) {
       if (!bytes && bytes !== 0) return "";
-      if (bytes < 1024) return `${bytes} B`;
-      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      if (bytes < 1024) return t("{bytes} B", { bytes });
+      if (bytes < 1024 * 1024) return t("{size} KB", { size: formatNumber(bytes / 1024) });
+      return t("{size} MB", { size: formatNumber(bytes / (1024 * 1024)) });
     },
     errorMessage(error, fallback) {
       const data = error && error.response && error.response.data;

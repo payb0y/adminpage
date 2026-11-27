@@ -14,7 +14,7 @@
         <button
           class="iz-close iz-close--sm"
           type="button"
-          aria-label="Close"
+          :aria-label="t('Close')"
           :disabled="busy"
           @click="onCancel"
         >
@@ -76,15 +76,19 @@
  * A Nextcloud theme cannot ship a Vue component, so a change here has to be
  * copied to the other apps in the same commit.
  */
+import { t } from "../lib/l10n.mjs";
+
 export default {
   name: "ConfirmDialog",
   props: {
     title: { type: String, required: true },
     message: { type: String, default: "" },
-    confirmLabel: { type: String, default: "Confirm" },
-    cancelLabel: { type: String, default: "Cancel" },
+    // Defaults are factories so they are translated per instance, after
+    // Nextcloud has registered the l10n bundle.
+    confirmLabel: { type: String, default: () => t("Confirm") },
+    cancelLabel: { type: String, default: () => t("Cancel") },
     // Shown in place of confirmLabel while the parent's request is in flight.
-    busyLabel: { type: String, default: "Working…" },
+    busyLabel: { type: String, default: () => t("Working…") },
     // Red confirm button for irreversible actions; blue-pink primary otherwise.
     danger: { type: Boolean, default: false },
     // Notice mode: one dismiss button, no cancel. This is the alert() shape.

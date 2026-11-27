@@ -8,6 +8,7 @@ use OCP\App\IAppManager;
 use OCP\Http\Client\IClientService;
 use OCP\IConfig;
 use OCP\IDBConnection;
+use OCP\IL10N;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -20,19 +21,6 @@ class GeocodeService {
     private const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
     private const HTTP_TIMEOUT_SECONDS = 10;
 
-    /**
-     * Mirrors DeckService::statusLabel — kept local so this service stays free of inter-service deps.
-     * Canonical encoding is owned by projectcreatoraio's ProjectStatus enum, which
-     * writes oc_custom_projects.status.
-     */
-    private const STATUS_LABELS = [
-        0 => 'Archived',
-        1 => 'Active',
-        2 => 'Waiting on Customer',
-        3 => 'On Hold',
-        4 => 'Done',
-    ];
-
     private const MAX_FRESH_GEOCODES_PER_REQUEST = 10;
     private const NOMINATIM_SPACING_USEC = 1_100_000; // 1.1s between requests
 
@@ -41,19 +29,45 @@ class GeocodeService {
     private IAppManager $appManager;
     private IConfig $config;
     private LoggerInterface $logger;
+    private IL10N $l;
 
     public function __construct(
         IDBConnection $db,
         IClientService $clientService,
         IAppManager $appManager,
         IConfig $config,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        IL10N $l
     ) {
+        $this->l = $l;
         $this->db = $db;
         $this->clientService = $clientService;
         $this->appManager = $appManager;
         $this->config = $config;
         $this->logger = $logger;
+    }
+
+    /**
+     * Mirrors DeckService::statusLabel — kept local so this service stays free of inter-service deps.
+     * Canonical encoding is owned by projectcreatoraio's ProjectStatus enum, which
+     * writes oc_custom_projects.status.
+     *
+     * The numeric code is what the map filters on; the label is only ever
+     * shown, so it comes in the user's language. "Done" is asked for with its
+     * context key, as the frontend does; English users get "Done".
+     */
+    private function statusLabel(int $status): string {
+        switch ($status) {
+            case 0: return $this->l->t('Archived');
+            case 1: return $this->l->t('Active');
+            case 2: return $this->l->t('Waiting on Customer');
+            case 3: return $this->l->t('On Hold');
+            case 4:
+                $key = 'Done|project status';
+                $label = $this->l->t('Done|project status');
+                return $label === $key ? $this->l->t('Done') : $label;
+            default: return $this->l->t('Unknown');
+        }
     }
 
     /**
@@ -346,7 +360,7 @@ class GeocodeService {
                 'name'          => (string)$r['name'],
                 'number'        => (string)($r['number'] ?? ''),
                 'status'        => $status,
-                'statusLabel'   => self::STATUS_LABELS[$status] ?? 'Unknown',
+                'statusLabel'   => $this->statusLabel($status),
                 'completionPct' => $completion,
                 'totalTasks'    => (int)$stats['totalTasks'],
                 'doneTasks'    => (int)$stats['doneTasks'],

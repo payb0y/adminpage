@@ -4,7 +4,7 @@
       <canvas ref="chartCanvas" width="220" height="220"></canvas>
     </div>
     <div v-else class="donut-chart__empty">
-      <span class="donut-chart__empty-text">No tasks yet</span>
+      <span class="donut-chart__empty-text">{{ t("No tasks yet") }}</span>
     </div>
     <div class="donut-chart__legend">
       <div

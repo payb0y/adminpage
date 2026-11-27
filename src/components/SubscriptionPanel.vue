@@ -23,7 +23,7 @@
           <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
           <line x1="1" y1="10" x2="23" y2="10" />
         </svg>
-        Subscription &amp; Plan
+        {{ t("Subscription & Plan") }}
       </h3>
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@
         <!-- Projects -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
-            <span class="sub-panel__meter-label">Projects</span>
+            <span class="sub-panel__meter-label">{{ t("Projects") }}</span>
             <span class="sub-panel__meter-value"
               >{{ usageSummary.projectCount
               }}<span class="sub-panel__meter-max"
@@ -72,7 +72,7 @@
         <!-- Members -->
         <div class="sub-panel__meter">
           <div class="sub-panel__meter-header">
-            <span class="sub-panel__meter-label">Members</span>
+            <span class="sub-panel__meter-label">{{ tc("Members", "organization") }}</span>
             <span class="sub-panel__meter-value"
               >{{ usageSummary.memberCount
               }}<span class="sub-panel__meter-max"
@@ -98,61 +98,61 @@
       <!-- ── Plan Detail Grid ── -->
       <div class="sub-panel__details">
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Plan</span>
+          <span class="sub-panel__detail-label">{{ t("Plan") }}</span>
           <span class="sub-panel__plan-badge" :class="planBadgeClass">{{
             subscription.planName
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Status</span>
+          <span class="sub-panel__detail-label">{{ t("Status") }}</span>
           <span
             class="sub-panel__status"
             :class="'sub-panel__status--' + subscription.status"
-            >{{ subscription.status }}</span
+            >{{ statusLabel }}</span
           >
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Visibility</span>
+          <span class="sub-panel__detail-label">{{ t("Visibility") }}</span>
           <span class="sub-panel__detail-value">{{
-            subscription.isPublic ? "Public" : "Private"
+            subscription.isPublic ? t("Public") : t("Private")
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Max Projects</span>
+          <span class="sub-panel__detail-label">{{ t("Max Projects") }}</span>
           <span class="sub-panel__detail-value">{{
             subscription.maxProjects
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Max Members</span>
+          <span class="sub-panel__detail-label">{{ t("Max Members") }}</span>
           <span class="sub-panel__detail-value">{{
             subscription.maxMembers
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Shared Storage</span>
+          <span class="sub-panel__detail-label">{{ t("Shared Storage") }}</span>
           <span class="sub-panel__detail-value"
-            >{{ subscription.sharedStorageGb }} GB / project</span
+            >{{ t("{size} GB / project", { size: subscription.sharedStorageGb }) }}</span
           >
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Private Storage</span>
+          <span class="sub-panel__detail-label">{{ t("Private Storage") }}</span>
           <span class="sub-panel__detail-value"
-            >{{ subscription.privateStorageGb }} GB / user</span
+            >{{ t("{size} GB / user", { size: subscription.privateStorageGb }) }}</span
           >
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Started</span>
+          <span class="sub-panel__detail-label">{{ t("Started") }}</span>
           <span class="sub-panel__detail-value">{{
             formatDate(subscription.startedAt)
           }}</span>
         </div>
         <div class="sub-panel__detail-row">
-          <span class="sub-panel__detail-label">Expires</span>
+          <span class="sub-panel__detail-label">{{ t("Expires") }}</span>
           <span class="sub-panel__detail-value">{{
             subscription.endedAt
               ? formatDate(subscription.endedAt)
-              : "No expiry"
+              : t("No expiry")
           }}</span>
         </div>
       </div>
@@ -161,6 +161,8 @@
 </template>
 
 <script>
+import { t, tc, locale } from "../lib/l10n.mjs";
+
 export default {
   name: "SubscriptionPanel",
   props: {
@@ -173,7 +175,7 @@ export default {
       default: function () {
         return {
           status: "none",
-          planName: "No plan",
+          planName: t("No plan"),
           price: 0,
           maxProjects: 0,
           maxMembers: 0,
@@ -200,8 +202,21 @@ export default {
   computed: {
     priceDisplay: function () {
       var p = this.subscription.price;
-      if (!p || p === 0) return "Free";
-      return "€" + Number(p).toFixed(2) + "/mo";
+      if (!p || p === 0) return t("Free");
+      var price = new Intl.NumberFormat(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(p));
+      return t("€{price}/mo", { price: price });
+    },
+    /* The status arrives as a code (active, paused, ...); unknown codes show as sent. */
+    statusLabel: function () {
+      var status = this.subscription.status;
+      var labels = {
+        active: t("Active"),
+        paused: t("Paused"),
+        cancelled: t("Cancelled"),
+        expired: t("Expired"),
+        none: t("None"),
+      };
+      return labels[status] || status;
     },
     planBadgeClass: function () {
       var p = (this.subscription.planName || "").toLowerCase();
@@ -216,7 +231,7 @@ export default {
       if (!dateStr) return "—";
       var d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-GB", {
+      return d.toLocaleDateString(locale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",

@@ -16,7 +16,7 @@
       >
         <polyline points="20 6 9 17 4 12" />
       </svg>
-      <p class="events-panel__empty-text">No upcoming meetings</p>
+      <p class="events-panel__empty-text">{{ t("No upcoming meetings") }}</p>
     </div>
 
     <template v-else>
@@ -40,7 +40,7 @@
             class="iz-select events-panel__select"
             @change="currentPage = 1"
           >
-            <option value="">All members</option>
+            <option value="">{{ t("All members") }}</option>
             <option v-for="m in memberOptions" :key="'m-' + m" :value="m">{{ m }}</option>
           </select>
         </div>
@@ -52,7 +52,7 @@
             class="iz-select events-panel__select"
             @change="currentPage = 1"
           >
-            <option value="">All calendars</option>
+            <option value="">{{ t("All calendars") }}</option>
             <option v-for="c in calendarOptions" :key="'c-' + c" :value="c">{{ c }}</option>
           </select>
         </div>
@@ -63,7 +63,7 @@
             v-model="searchFilter"
             type="text"
             class="iz-input events-panel__input"
-            placeholder="Search meetings…"
+            :placeholder="t('Search meetings…')"
             @input="currentPage = 1"
           />
         </div>
@@ -71,7 +71,7 @@
 
       <!-- No results after filtering -->
       <div v-if="filteredEvents.length === 0" class="iz-empty events-panel__empty">
-        <p class="events-panel__empty-text">No meetings match your filters.</p>
+        <p class="events-panel__empty-text">{{ t("No meetings match your filters.") }}</p>
       </div>
 
       <!-- Event list -->
@@ -103,24 +103,28 @@
       <div v-if="totalPages > 1" class="events-panel__pagination">
         <button
           class="events-panel__page-btn"
+          :aria-label="t('Previous page')"
           :disabled="currentPage <= 1"
           @click="currentPage--"
         >&#8249;</button>
         <span class="events-panel__page-info">{{ currentPage }} / {{ totalPages }}</span>
         <button
           class="events-panel__page-btn"
+          :aria-label="t('Next page')"
           :disabled="currentPage >= totalPages"
           @click="currentPage++"
         >&#8250;</button>
       </div>
       <div v-if="filteredEvents.length > 0" class="events-panel__showing-hint">
-        Showing {{ paginatedEvents.length }} of {{ filteredEvents.length }} meetings
+        {{ n("Showing {shown} of %n meeting", "Showing {shown} of %n meetings", filteredEvents.length, { shown: paginatedEvents.length }) }}
       </div>
     </template>
   </div>
 </template>
 
 <script>
+import { t, n, locale } from "../lib/l10n.mjs";
+
 var FALLBACK_COLORS = [
   "#1e4a8a",
   "#0082c9",
@@ -158,10 +162,10 @@ export default {
   computed: {
     rangeOptions: function () {
       return [
-        { label: "Today", value: "today" },
-        { label: "Next 7 days", value: "7d" },
-        { label: "Next 30 days", value: "30d" },
-        { label: "All", value: "all" },
+        { label: t("Today"), value: "today" },
+        { label: t("Next 7 days"), value: "7d" },
+        { label: t("Next 30 days"), value: "30d" },
+        { label: t("All"), value: "all" },
       ];
     },
     memberOptions: function () {
@@ -224,8 +228,8 @@ export default {
     rangeUpperBound: function () {
       var now = new Date();
       if (this.rangeFilter === "today") {
-        var t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        return t.getTime();
+        var tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        return tomorrow.getTime();
       }
       if (this.rangeFilter === "7d") {
         return now.getTime() + 7 * 86400000;
@@ -241,21 +245,20 @@ export default {
       var startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
       var nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       var diffDays = Math.round((startDay - nowDay) / 86400000);
-      if (diffDays <= 0) return "Today";
-      if (diffDays === 1) return "Tomorrow";
-      if (diffDays < 7) return "in " + diffDays + " days";
-      if (diffDays < 14) return "in 1 week";
-      if (diffDays < 30) return "in " + Math.round(diffDays / 7) + " weeks";
+      if (diffDays <= 0) return t("Today");
+      if (diffDays === 1) return t("Tomorrow");
+      if (diffDays < 7) return t("in {count} days", { count: diffDays });
+      if (diffDays < 14) return t("in 1 week");
+      if (diffDays < 30) return t("in {count} weeks", { count: Math.round(diffDays / 7) });
       var months = Math.round(diffDays / 30);
-      return "in " + months + " month" + (months > 1 ? "s" : "");
+      return n("in %n month", "in %n months", months);
     },
     whenLabel: function (ev) {
       var d = new Date(ev.start * 1000);
-      var month = d.toLocaleString("en", { month: "short" });
-      var day = d.getDate();
-      var datePart = month + " " + day;
+      // Day and short month in the user's own order ("3 mrt." / "Mar 3").
+      var datePart = d.toLocaleDateString(locale(), { month: "short", day: "numeric" });
       if (ev.allDay) {
-        return datePart + " · all day";
+        return t("{date} · all day", { date: datePart });
       }
       var hours = String(d.getHours()).padStart(2, "0");
       var mins = String(d.getMinutes()).padStart(2, "0");

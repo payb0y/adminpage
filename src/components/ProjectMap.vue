@@ -6,7 +6,7 @@
       class="project-map__link"
       target="_blank"
       rel="noopener noreferrer"
-    >Open in OpenStreetMap →</a>
+    >{{ t('Open in OpenStreetMap →') }}</a>
   </div>
 </template>
 
@@ -17,13 +17,28 @@
 // them), and even renaming the chunks didn't help. Static imports trade
 // ~40kb gzipped on the main bundle for total deploy reliability.
 import L from "leaflet";
+import { localizeLeaflet } from "../lib/leafletL10n.mjs";
 import "leaflet/dist/leaflet.css";
+import { t } from "../lib/l10n.mjs";
 
 // Inline SVG marker pin (Feather-style "map-pin"). Using L.divIcon avoids
 // shipping marker-icon.png / marker-icon-2x.png / marker-shadow.png as
 // separate webpack-emitted asset files, which would have the same
 // "file-not-on-server" problem the lazy chunks had.
 const MARKER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#fff" stroke="#7f1d1d"/></svg>';
+
+// Leaflet inserts the attribution as HTML, so the translated text is escaped
+// first and only then gets its link back around the word "OpenStreetMap".
+function osmAttribution() {
+  const text = t("© OpenStreetMap contributors")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return text.replace(
+    "OpenStreetMap",
+    '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>'
+  );
+}
 
 export default {
   name: "ProjectMap",
@@ -52,6 +67,7 @@ export default {
     },
   },
   mounted() {
+    localizeLeaflet(L);
     this._map = L.map(this.$refs.mapRoot, { scrollWheelZoom: true }).setView(
       [this.lat, this.lng],
       16
@@ -60,8 +76,7 @@ export default {
       maxZoom: 19,
       // OSM requires a Referer; override Nextcloud only for tiles, without page paths.
       referrerPolicy: "strict-origin",
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+      attribution: osmAttribution(),
     }).addTo(this._map);
 
     const icon = L.divIcon({

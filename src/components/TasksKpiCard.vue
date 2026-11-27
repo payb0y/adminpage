@@ -17,7 +17,7 @@
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
       </div>
-      <span class="iz-kpi__title tasks-kpi__title">Tasks</span>
+      <span class="iz-kpi__title tasks-kpi__title">{{ t("Tasks") }}</span>
     </div>
 
     <!-- Hero figure. The active count used to sit in the donut's centre; it
@@ -26,7 +26,7 @@
     <div class="iz-kpi__hero tasks-kpi__hero">
       <span class="iz-kpi__hero-value tasks-kpi__hero-value iz-figure">{{ inProgress }}</span>
       <span class="iz-kpi__hero-label tasks-kpi__hero-label">
-        Active<template v-if="avgDays"> · {{ avgDays }} avg days</template>
+        {{ t("Active") }}<template v-if="avgDays"> · {{ t("{count} avg days", { count: avgDays }) }}</template>
       </span>
     </div>
 
@@ -38,7 +38,7 @@
             <canvas ref="chartCanvas" width="160" height="160"></canvas>
           </div>
           <div v-else class="tasks-kpi__chart-empty">
-            <span>No tasks</span>
+            <span>{{ t("No tasks") }}</span>
           </div>
         </div>
       </div>
@@ -68,9 +68,10 @@
       v-if="oldestTask"
       class="iz-kpi__footer tasks-kpi__oldest"
       :title="
-        (oldestTask.fullTitle || oldestTask.taskTitle) +
-        ' — Opened ' +
-        oldestTask.createdAt
+        t('{title} — Opened {date}', {
+          title: oldestTask.fullTitle || oldestTask.taskTitle,
+          date: oldestTask.createdAt,
+        })
       "
       @click.stop="$emit('goto-oldest-task', oldestTask)"
     >
@@ -90,13 +91,12 @@
         <line x1="12" y1="16" x2="12.01" y2="16" />
       </svg>
       <span class="tasks-kpi__oldest-text">
-        Oldest: <strong>{{ oldestTask.taskTitle }}</strong>
-        <span class="tasks-kpi__oldest-age"
-          >({{ formatAge(oldestTask.ageDays) }})</span
-        >
-        <span class="tasks-kpi__oldest-project"
-          >in {{ oldestTask.projectName }}</span
-        >
+        <template v-for="(part, i) in oldestParts">
+          <strong v-if="part.kind === 'task'" :key="i">{{ oldestTask.taskTitle }}</strong>
+          <span v-else-if="part.kind === 'age'" :key="i" class="tasks-kpi__oldest-age">{{ formatAge(oldestTask.ageDays) }}</span>
+          <span v-else-if="part.kind === 'project'" :key="i" class="tasks-kpi__oldest-project">{{ oldestTask.projectName }}</span>
+          <template v-else>{{ part.text }}</template>
+        </template>
       </span>
     </div>
   </div>
@@ -106,6 +106,7 @@
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 import { themeColor as izThemeColor } from "../lib/izChart";
+import { t, n } from "../lib/l10n.mjs";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 export default {
@@ -122,37 +123,46 @@ export default {
     };
   },
   computed: {
+    /* Metrics by their stable backend key; the English label is never read. */
     metricsMap: function () {
       var map = {};
       (this.kpi.metrics || []).forEach(function (m) {
-        map[m.label] = m.value;
+        if (m.key) map[m.key] = m.value;
       });
       return map;
     },
     overdue: function () {
-      return parseInt(this.metricsMap["Overdue"], 10) || 0;
+      return parseInt(this.metricsMap.overdue, 10) || 0;
     },
     today: function () {
-      return parseInt(this.metricsMap["Today"], 10) || 0;
+      return parseInt(this.metricsMap.today, 10) || 0;
     },
     upcoming: function () {
-      return parseInt(this.metricsMap["Upcoming"], 10) || 0;
+      return parseInt(this.metricsMap.upcoming, 10) || 0;
     },
     inProgress: function () {
-      return parseInt(this.metricsMap["In Progress"], 10) || 0;
+      return parseInt(this.metricsMap.in_progress, 10) || 0;
     },
     nonDue: function () {
-      return parseInt(this.metricsMap["Non Due"], 10) || 0;
+      return parseInt(this.metricsMap.non_due, 10) || 0;
     },
     avgDays: function () {
-      var val = this.metricsMap["Avg Days Active"] || "0d";
-      return val.replace("d", "");
+      return String(parseInt(this.metricsMap.avg_days_active, 10) || 0);
+    },
+    /* "Oldest: <strong>{task}</strong> ({age}) in {project}" cut at its
+       placeholders, so the template can style each value without v-html. */
+    oldestParts: function () {
+      var text = t("Oldest: <strong>{task}</strong> ({age}) in {project}").replace(/<\/?strong>/g, "");
+      return text.split(/(\{task\}|\{age\}|\{project\})/).filter(Boolean).map(function (piece) {
+        var m = /^\{(task|age|project)\}$/.exec(piece);
+        return m ? { kind: m[1], text: "" } : { kind: "text", text: piece };
+      });
     },
     segments: function () {
       return [
         {
           key: "overdue",
-          label: "Overdue",
+          label: t("Overdue"),
           value: this.overdue,
           colorToken: ["--iz-danger", "#c9314a"],
           filterType: "due",
@@ -160,7 +170,7 @@ export default {
         },
         {
           key: "today",
-          label: "Today",
+          label: t("Today"),
           value: this.today,
           colorToken: ["--iz-cat-4", "#d98a2b"],
           filterType: "due",
@@ -168,7 +178,7 @@ export default {
         },
         {
           key: "upcoming",
-          label: "Upcoming",
+          label: t("Upcoming"),
           value: this.upcoming,
           colorToken: ["--iz-cat-3", "#2f9e8f"],
           filterType: "due",
@@ -176,7 +186,7 @@ export default {
         },
         {
           key: "nondue",
-          label: "Non Due",
+          label: t("Non Due"),
           value: this.nonDue,
           colorToken: ["--iz-text-muted", "#9a94a2"],
           filterType: "due",
@@ -236,15 +246,14 @@ export default {
       return izThemeColor(this.$el, name, fallback);
     },
     formatAge: function (days) {
-      if (!days || days < 1) return "Today";
-      if (days === 1) return "1 day";
-      if (days < 7) return days + " days";
+      if (!days || days < 1) return t("Today");
+      if (days < 7) return n("%n day", "%n days", days);
       var weeks = Math.floor(days / 7);
-      if (weeks < 5) return weeks + (weeks === 1 ? " week" : " weeks");
+      if (weeks < 5) return n("%n week", "%n weeks", weeks);
       var months = Math.floor(days / 30);
-      if (months < 12) return months + (months === 1 ? " month" : " months");
+      if (months < 12) return n("%n month", "%n months", months);
       var years = Math.floor(days / 365);
-      return years + (years === 1 ? " year" : " years");
+      return n("%n year", "%n years", years);
     },
     renderChart: function () {
       var ctx = this.$refs.chartCanvas.getContext("2d");

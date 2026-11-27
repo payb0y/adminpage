@@ -18,14 +18,14 @@
           <line x1="12" y1="17" x2="12" y2="21" />
         </svg>
       </div>
-      <span class="iz-kpi__title resources-kpi__title">Resources</span>
+      <span class="iz-kpi__title resources-kpi__title">{{ t("Resources") }}</span>
     </div>
 
     <!-- Hero figure -->
     <div class="iz-kpi__hero resources-kpi__hero">
       <span class="iz-kpi__hero-value resources-kpi__hero-value iz-figure">{{ grandTotal }}</span>
       <span class="iz-kpi__hero-label resources-kpi__hero-label">
-        Items<template v-if="publicTotal"> · {{ publicTotal }} public</template>
+        {{ t("Items") }}<template v-if="publicTotal"> · {{ t("{count} public", { count: publicTotal }) }}</template>
       </span>
     </div>
 
@@ -37,7 +37,7 @@
           <canvas ref="chartCanvas" width="120" height="120"></canvas>
         </div>
         <div v-else class="resources-kpi__chart-empty">
-          <span>No resources</span>
+          <span>{{ t("No resources") }}</span>
         </div>
       </div>
 
@@ -67,6 +67,7 @@
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 import { themeColor as izThemeColor } from "../lib/izChart";
+import { t } from "../lib/l10n.mjs";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 export default {
@@ -83,21 +84,22 @@ export default {
     };
   },
   computed: {
+    /* Metrics by their stable backend key; the English label is never read. */
     metricsMap: function () {
       var map = {};
       (this.kpi.metrics || []).forEach(function (m) {
-        map[m.label] = m.value;
+        if (m.key) map[m.key] = m;
       });
       return map;
     },
     whiteboards: function () {
-      return parseInt(this.metricsMap["Whiteboards"], 10) || 0;
+      return parseInt((this.metricsMap.whiteboards || {}).value, 10) || 0;
     },
     scrumbanBoards: function () {
-      return parseInt(this.metricsMap["Scrumban Boards"], 10) || 0;
+      return parseInt((this.metricsMap.scrumban_boards || {}).value, 10) || 0;
     },
     filesParts: function () {
-      return this.parsePubPriv(this.metricsMap["Files"] || "0 pub / 0 priv");
+      return this.pubPriv(this.metricsMap.files);
     },
     filesPublic: function () {
       return this.filesParts.pub;
@@ -109,7 +111,7 @@ export default {
       return this.filesPublic + this.filesPrivate;
     },
     notesParts: function () {
-      return this.parsePubPriv(this.metricsMap["Notes"] || "0 pub / 0 priv");
+      return this.pubPriv(this.metricsMap.notes);
     },
     notesPublic: function () {
       return this.notesParts.pub;
@@ -135,31 +137,31 @@ export default {
       return [
         {
           key: "whiteboards",
-          label: "Whiteboards",
+          label: t("Whiteboards"),
           value: this.whiteboards,
           colorToken: ["--iz-cat-5", "#7c5cbf"],
           sub: "",
         },
         {
           key: "scrumban",
-          label: "Scrumban",
+          label: t("Scrumban"),
           value: this.scrumbanBoards,
           colorToken: ["--iz-cat-3", "#2f9e8f"],
           sub: "",
         },
         {
           key: "files",
-          label: "Files",
+          label: t("Files"),
           value: this.filesTotal,
           colorToken: ["--iz-cat-2", "#3a2350"],
-          sub: this.filesPublic + " pub · " + this.filesPrivate + " priv",
+          sub: t("{public} pub · {private} priv", { public: this.filesPublic, private: this.filesPrivate }),
         },
         {
           key: "notes",
-          label: "Notes",
+          label: t("Notes"),
           value: this.notesTotal,
           colorToken: ["--iz-cat-4", "#d98a2b"],
-          sub: this.notesPublic + " pub · " + this.notesPrivate + " priv",
+          sub: t("{public} pub · {private} priv", { public: this.notesPublic, private: this.notesPrivate }),
         },
       ];
     },
@@ -195,12 +197,11 @@ export default {
       // inside plain-function callbacks, where `this` is not the component.
       return izThemeColor(this.$el, name, fallback);
     },
-    parsePubPriv: function (val) {
-      // Expected format: "12 pub / 3 priv"
-      var parts = String(val).split("/");
-      var pub = parseInt(parts[0], 10) || 0;
-      var priv = parts.length > 1 ? parseInt(parts[1], 10) || 0 : 0;
-      return { pub: pub, priv: priv };
+    /* The backend sends the public and private counts as numbers next to
+       the formatted value. */
+    pubPriv: function (metric) {
+      var m = metric || {};
+      return { pub: parseInt(m.public, 10) || 0, priv: parseInt(m.private, 10) || 0 };
     },
     renderChart: function () {
       if (!this.$refs.chartCanvas) return;

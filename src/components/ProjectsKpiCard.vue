@@ -18,22 +18,22 @@
           />
         </svg>
       </div>
-      <span class="iz-kpi__title projects-kpi__title">Projects</span>
+      <span class="iz-kpi__title projects-kpi__title">{{ t("Projects") }}</span>
       <button
         v-if="canCreate"
         type="button"
         class="iz-btn iz-btn--primary iz-btn--sm projects-kpi__new-btn"
         @click.stop="$emit('create-project')"
-      >+ New</button>
+      >{{ t("+ New") }}</button>
     </div>
 
     <!-- Hero number -->
     <div
       class="iz-kpi__hero projects-kpi__hero iz-kpi__hero--clickable projects-kpi__hero--clickable"
-      @click="$emit('filter-projects', '')"
+      @click="$emit('filter-projects', null)"
     >
       <span class="iz-kpi__hero-value projects-kpi__hero-value iz-figure">{{ total }}</span>
-      <span class="iz-kpi__hero-label projects-kpi__hero-label">Total Projects</span>
+      <span class="iz-kpi__hero-label projects-kpi__hero-label">{{ t("Total Projects") }}</span>
     </div>
 
     <!-- Body: donut left, status rows right — the same shape as the Tasks,
@@ -52,7 +52,8 @@
           :key="seg.key"
           type="button"
           class="iz-kpi__row projects-kpi__row"
-          @click="$emit('filter-projects', seg.statusLabel)"
+          :title="seg.title"
+          @click="$emit('filter-projects', seg.statusCode)"
         >
           <span
             class="iz-kpi__row-dot projects-kpi__row-dot"
@@ -63,7 +64,7 @@
         </button>
       </div>
     </div>
-    <div v-else class="iz-kpi__empty projects-kpi__empty">No projects yet</div>
+    <div v-else class="iz-kpi__empty projects-kpi__empty">{{ t("No projects yet") }}</div>
 
     <!-- Issue count — full-width footer, same geometry as TasksKpiCard's
          oldest-task footer and ProgressionKpiCard's near-done line so the
@@ -89,10 +90,7 @@
         <line x1="12" y1="9" x2="12" y2="13" />
         <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
-      <span class="projects-kpi__issues-text">
-        <strong>{{ withIssue }}</strong>
-        {{ withIssue === 1 ? "project" : "projects" }} with issues
-      </span>
+      <span class="projects-kpi__issues-text">{{ issueText.before }}<strong>{{ issueText.count }}</strong>{{ issueText.after }}</span>
     </div>
   </div>
 </template>
@@ -101,6 +99,8 @@
 import { Chart, DoughnutController, ArcElement, Tooltip } from "chart.js";
 
 import { themeColor as izThemeColor } from "../lib/izChart";
+import { t, n, tc } from "../lib/l10n.mjs";
+import { PROJECT_STATUS } from "../lib/projectStatus.mjs";
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
 export default {
@@ -121,30 +121,46 @@ export default {
     };
   },
   computed: {
+    /* Keyed on KpiService's stable `key`, never on the English `label`. */
     metricsMap: function () {
       var map = {};
       (this.kpi.metrics || []).forEach(function (m) {
-        map[m.label] = parseInt(m.value, 10) || 0;
+        if (m.key) map[m.key] = parseInt(m.value, 10) || 0;
       });
       return map;
     },
     active: function () {
-      return this.metricsMap["Active"] || 0;
+      return this.metricsMap.active || 0;
     },
     waiting: function () {
-      return this.metricsMap["W.o.c."] || 0;
+      return this.metricsMap.waiting || 0;
     },
     onHold: function () {
-      return this.metricsMap["On Hold"] || 0;
+      return this.metricsMap.on_hold || 0;
     },
     done: function () {
-      return this.metricsMap["Done"] || 0;
+      return this.metricsMap.done || 0;
     },
     total: function () {
       return this.active + this.waiting + this.onHold + this.done;
     },
     withIssue: function () {
-      return this.metricsMap["With Issue"] || 0;
+      return this.metricsMap.with_issue || 0;
+    },
+    /* "3 projects with issues" with the number in bold, wherever the
+       translation puts it. */
+    issueText: function () {
+      var count = this.withIssue;
+      var text = n("{count} project with issues", "{count} projects with issues", count, {
+        count: count,
+      });
+      var at = text.indexOf(String(count));
+      if (at === -1) return { before: text, count: "", after: "" };
+      return {
+        before: text.slice(0, at),
+        count: String(count),
+        after: text.slice(at + String(count).length),
+      };
     },
     /* Colour is an explicit property per segment, never built from the key —
        a class or colour derived from data can silently resolve to nothing. */
@@ -152,29 +168,30 @@ export default {
       return [
         {
           key: "active",
-          label: "Active",
-          statusLabel: "Active",
+          label: t("Active"),
+          statusCode: PROJECT_STATUS.ACTIVE,
           value: this.active,
           colorToken: ["--iz-success", "#1f7a3e"],
         },
         {
           key: "waiting",
-          label: "W.o.c.",
-          statusLabel: "Waiting on Customer",
+          label: t("W.o.c."),
+          title: t("Waiting on Customer"),
+          statusCode: PROJECT_STATUS.WAITING,
           value: this.waiting,
           colorToken: ["--iz-cat-4", "#d98a2b"],
         },
         {
           key: "on_hold",
-          label: "On Hold",
-          statusLabel: "On Hold",
+          label: t("On Hold"),
+          statusCode: PROJECT_STATUS.ON_HOLD,
           value: this.onHold,
           colorToken: ["--iz-text-muted", "#9a94a2"],
         },
         {
           key: "done",
-          label: "Done",
-          statusLabel: "Done",
+          label: tc("Done", "project status"),
+          statusCode: PROJECT_STATUS.DONE,
           value: this.done,
           colorToken: ["--iz-cat-5", "#7c5cbf"],
         },

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\AdminPage\Service;
 
 use OCP\IDBConnection;
+use OCP\IL10N;
 use Sabre\VObject\Reader;
 
 /**
@@ -22,6 +23,7 @@ use Sabre\VObject\Reader;
 class CalendarService {
 
     private IDBConnection $db;
+    private IL10N $l;
 
     /** How far ahead (days) to look for upcoming events. */
     private const WINDOW_DAYS = 90;
@@ -29,8 +31,9 @@ class CalendarService {
     /** Hard cap on the number of events returned. */
     private const MAX_EVENTS = 300;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IL10N $l) {
         $this->db = $db;
+        $this->l = $l;
     }
 
     /**
@@ -314,7 +317,7 @@ class CalendarService {
 
             $title = isset($vevent->SUMMARY) ? trim((string)$vevent->SUMMARY) : '';
             if ($title === '') {
-                $title = 'Busy';
+                $title = $this->l->t('Busy');
             }
             $location = isset($vevent->LOCATION) ? trim((string)$vevent->LOCATION) : '';
 
